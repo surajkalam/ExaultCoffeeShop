@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:coffee_shop/Cores/Widget/Navigation_bar.dart';
+import 'package:coffee_shop/Features/Map/mapscreen.dart';
 import 'package:coffee_shop/Features/Cart/presnetation/cart_screen.dart';
 import 'package:coffee_shop/Features/Event/eventbooking_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/notification_Screen.dart';
@@ -19,9 +19,10 @@ import 'package:coffee_shop/Features/Profile/presentation/helpsupportscreen.dart
 import 'package:coffee_shop/Features/Profile/presentation/levelscreen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/rewards_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/scratchcard.dart';
+import 'package:coffee_shop/Features/Profile/presentation/twakto_screen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/datastore.dart';
-import 'package:coffee_shop/Features/payment/paymentmethods.dart';
 import 'package:coffee_shop/Services/notification_screen.dart';
+import 'package:coffee_shop/core/core.dart';
 import 'package:coffee_shop/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -40,9 +41,21 @@ void main() async {
     log('Firebase initialization failed', error: e, stackTrace: stack);
     rethrow;
   }
+  _setupLogging();
   await NotificationService.initialize();
   log("NotificationService.initialize finished");
+  // await FirebaseAppCheck.instance.activate(
+  //   androidProvider: AndroidProvider.debug,
+  //   webProvider: ReCaptchaV3Provider('6LdxOMErAAAAAH6WkDCHztkWBmB0DocRPoZX3E1G'),
+  //   appleProvider: AppleProvider.appAttest,
+  // );
+
   runApp(ProviderScope(child: MainApp()));
+}
+
+void _setupLogging() {
+  // This will filter out the specific warning
+  log('Setting up logging filters...');
 }
 
 class MainApp extends StatelessWidget {
@@ -136,7 +149,7 @@ class MainApp extends StatelessWidget {
       //   path: '/payment-method',
       //   builder: (context, state) => const PaymentMethodScreen(),
       // ),
-       GoRoute(
+      GoRoute(
         path: '/payment-method',
         builder: (context, state) => const RecentOrderScreen(),
       ),
@@ -144,9 +157,21 @@ class MainApp extends StatelessWidget {
         path: '/datastore',
         builder: (context, state) => const Datadstore(),
       ),
-        GoRoute(
+      GoRoute(
         path: '/scratch-cart',
         builder: (context, state) => const ScratchCardDemo(),
+      ),
+      GoRoute(
+        path: '/chat-screen',
+        builder: (context, state) => const TwaktoScreen(),
+      ),
+      GoRoute(
+        path: '/googlemap',
+        builder: (context, state) => const MapScreen(
+          latitude: 18.4475,
+          longitude: 73.8232,
+          address: 'Pune, Maharashtra, India',
+        ),
       ),
     ],
     errorBuilder: (context, state) =>
@@ -160,10 +185,10 @@ class MainApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
-      theme: ThemeData(
-        // Your theme data
-        primarySwatch: Colors.blue,
-      ),
+      // theme: ThemeData(
+      //   // Your theme data
+      //   primarySwatch: Colors.blue,
+      // ),
     );
   }
 

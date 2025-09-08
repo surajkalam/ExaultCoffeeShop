@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "com.example.coffee_shop"
     //compileSdk = flutter.compileSdkVersion
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -66,7 +66,8 @@ dependencies {
 
   implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
   implementation("com.google.firebase:firebase-analytics")
-  implementation("com.google.firebase:firebase-auth") 
+  implementation("com.google.firebase:firebase-auth")
+  implementation("com.google.firebase:firebase-appcheck-debug")
   //implementation 'com.google.android.gms:play-services-auth:20.7.0'
 
     // ✅ Kotlin DSL requires function-style calls

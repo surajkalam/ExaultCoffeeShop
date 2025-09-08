@@ -10,7 +10,7 @@ final List offerlist = [
     "image": 'Assets/Images/Chocolate Bourbon Milkshake.jpg',
     "description": "Strong and rich black coffee shot.",
     "price": '450',
-    
+
   },
   {
     "name": "Elaichi Tea",
@@ -423,25 +423,25 @@ final menuCategoriesProvider = Provider<Map<String, List<Map<String, dynamic>>>>
     "price":'450',
   },
     ],
-    'vadapav': [
-      {
-        "name": "vadapav",
-        "type": "vadapav",
-        "rating": 4.6,
-        "image": 'Assets/Images/Pumpkin-Spice-Latte.png',
-        "description": "Crispy fries tossed in spicy peri peri seasoning.",
-        "price":'450',
-      },
-    ],
-    'panipuri': [
-      {
-        "name": "paipuri",
-        "type": "panipuri",
-        "rating": 4.6,
-        "image": 'Assets/Images/Pumpkin-Spice-Latte.png',
-        "description": "Crispy fries tossed in spicy peri peri seasoning.",
-        "price":'450',
-      },
-    ],
+    // 'vadapav': [
+    //   {
+    //     "name": "vadapav",
+    //     "type": "vadapav",
+    //     "rating": 4.6,
+    //     "image": 'Assets/Images/Pumpkin-Spice-Latte.png',
+    //     "description": "Crispy fries tossed in spicy peri peri seasoning.",
+    //     "price":'450',
+    //   },
+    // ],
+    // 'panipuri': [
+    //   {
+    //     "name": "paipuri",
+    //     "type": "panipuri",
+    //     "rating": 4.6,
+    //     "image": 'Assets/Images/Pumpkin-Spice-Latte.png',
+    //     "description": "Crispy fries tossed in spicy peri peri seasoning.",
+    //     "price":'450',
+    //   },
+    // ],
 };
 });

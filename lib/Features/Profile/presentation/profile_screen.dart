@@ -578,7 +578,7 @@ class ProfileScreen extends ConsumerWidget {
                 title: Text(
                   option['title'] as String,
                   style: GoogleFonts.dmSans(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: AppColors.primaryDark,
                   ),

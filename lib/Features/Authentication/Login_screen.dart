@@ -269,14 +269,16 @@
 
 import 'dart:developer';
 
-import 'package:coffee_shop/App/appTheme.dart';
-import 'package:coffee_shop/Cores/Widget/button.dart';
+// import 'package:coffee_shop/App/appTheme.dart';
+import 'package:coffee_shop/core/widget/button.dart';
 
 import 'package:coffee_shop/Features/Authentication/signup_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../../core/utils/utils.dart';
 
 class LoginScreen2 extends StatefulWidget {
   const LoginScreen2({super.key});

@@ -276,14 +276,13 @@
 
 import 'dart:async';
 import 'dart:developer';
-
-import 'package:coffee_shop/Features/Authentication/home2screen.dart';
-import 'package:coffee_shop/App/appTheme.dart';
-import 'package:coffee_shop/Cores/Widget/button.dart';
+import 'package:coffee_shop/core/widget/button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../../core/utils/utils.dart';
 
 class OTPScreen extends StatefulWidget {
   final String verificationId;
@@ -419,10 +418,6 @@ class _OTPScreenState extends State<OTPScreen> {
       log('Authentication successful');
       if (!mounted) return;
       
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const home()),
-      );
     } catch (e, stack) {
       log('Verification failed', error: e, stackTrace: stack);
       if (!mounted) return;

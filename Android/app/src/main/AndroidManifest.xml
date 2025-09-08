@@ -30,7 +30,7 @@
                 android:resource="@style/NormalTheme" />
             <meta-data
                 android:name="com.google.android.geo.API_KEY"
-                android:value="AIzaSyA3omzVdR84kdZ1-FuamextNk809RZEILI"/>
+                android:value="AIzaSyBIKHaHX6KTcBDzqg-eKbeDAt9cEfU_xQ8"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -26,4 +26,14 @@ class Product {
       description: map['description'],
     );
   }
+   Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'price': price,
+      'rating': rating,
+      'image': image,
+      'description': description,
+    };
+  }
 }

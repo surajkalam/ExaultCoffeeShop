@@ -179,8 +179,8 @@
 //   }
 // }
 
-import 'package:coffee_shop/App/appTheme.dart';
-import 'package:coffee_shop/Cores/Widget/appbar.dart';
+
+import 'package:coffee_shop/core/widget/appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';

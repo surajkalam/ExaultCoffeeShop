@@ -128,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   // Successful login - navigate to MainAppere
                                   if (mounted) {
                                     // ignore: use_build_context_synchronously
-                                    context.go('/location');
+                                    context.go('/navbar');
                                   }
                                 } finally {
                                   if (mounted) {

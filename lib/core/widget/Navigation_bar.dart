@@ -1,10 +1,10 @@
 // ignore: file_names
-import 'package:coffee_shop/App/appTheme.dart';
 import 'package:coffee_shop/Features/Cart/presnetation/cart_screen.dart';
 import 'package:coffee_shop/Features/Event/event_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/home_screen.dart';
 import 'package:coffee_shop/Features/Menu/presentation/menu_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/profile_screen.dart';
+import 'package:coffee_shop/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,32 +30,35 @@ class MainAppere extends ConsumerWidget {
       body: screens[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
+        type: BottomNavigationBarType.shifting,
+
+        selectedItemColor: Colorclass.blackcolor,
         onTap: (index) {
           ref.read(currentIndexProvider.notifier).state = index;
         },
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Colorclass.fantgreencolor),
+            icon: Icon(Icons.home, color: Colorclass.orangecolor),
             label: 'Home',
             backgroundColor: const Color.fromARGB(255, 209, 237, 250),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.menu, color: Colorclass.fantgreencolor),
+            icon: Icon(Icons.menu, color: Colorclass.orangecolor),
             label: 'Menu',
             backgroundColor: const Color.fromARGB(255, 194, 232, 250),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart, color: Colorclass.fantgreencolor),
+            icon: Icon(Icons.shopping_cart, color: Colorclass.orangecolor),
             label: 'cart',
             backgroundColor: const Color.fromARGB(255, 194, 232, 250),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.event_available, color: Colorclass.fantgreencolor),
+            icon: Icon(Icons.event_available, color: Colorclass.orangecolor),
             label: 'Event',
             backgroundColor: const Color.fromARGB(255, 194, 232, 250),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person, color: Colorclass.fantgreencolor),
+            icon: Icon(Icons.person, color: Colorclass.orangecolor),
             label: 'profile',
             backgroundColor: const Color.fromARGB(255, 194, 232, 250),
           ),
@@ -65,7 +68,3 @@ class MainAppere extends ConsumerWidget {
     );
   }
 }
-
-
-
-
