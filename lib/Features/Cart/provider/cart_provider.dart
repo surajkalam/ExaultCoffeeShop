@@ -38,4 +38,14 @@ class CartNotifier extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>>
     await DatabaseHelper.instance.close();
     state = const AsyncValue.data([]);
   }
+  Future<void> removeAllItems() async {
+  try {
+    state = const AsyncValue.loading(); // Show loading state
+    await DatabaseHelper.instance.clearCart();
+    state = const AsyncValue.data([]); // Set empty cart
+  } catch (e, stack) {
+    state = AsyncValue.error(e, stack);
+    rethrow;
+  }
+}
 }

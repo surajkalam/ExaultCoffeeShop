@@ -405,6 +405,7 @@
 
 import 'package:coffee_shop/Features/Event/provider/eventprovider.dart';
 import 'package:coffee_shop/Features/Login_Screen/authenticationService.dart';
+import 'package:coffee_shop/core/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -899,14 +900,3 @@ class EventbookingScreen extends ConsumerWidget {
   }
 }
 
-// Define a color palette for the app
-class AppColors {
-  static const Color primary = Color(0xFFC67C4E);
-  static const Color primaryDark = Color(0xFF372213);
-  static const Color primaryLight = Color(0xFFFFF5EE);
-  static const Color accent = Color(0xFF36C07E);
-  static const Color background = Color(0xFFF9F9F9);
-  static const Color textPrimary = Color(0xFF2F2D2C);
-  static const Color textSecondary = Color(0xFF9B9B9B);
-  static const Color lightBorder = Color(0xFFEAEAEA);
-}

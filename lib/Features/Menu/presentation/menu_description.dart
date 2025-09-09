@@ -1,6 +1,6 @@
 import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffee_shop/core/utils/app_theme.dart' show AppColors;
 import 'package:coffee_shop/core/widget/favoriteIcon.dart';
 import 'package:coffee_shop/DATABASE_HELPER/cart_data.dart';
 import 'package:coffee_shop/Features/Cart/provider/cart_provider.dart';
@@ -137,7 +137,7 @@ class CategoryItemsScreen extends ConsumerWidget {
           Stack(
             children: [
               Container(
-                height: height * 0.15,
+                height: height * 0.12,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
@@ -208,6 +208,7 @@ class CategoryItemsScreen extends ConsumerWidget {
                       fontSize: 10,
                       color: AppColors.textSecondary,
                     ),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
 
@@ -389,13 +390,3 @@ class CategoryItemsScreen extends ConsumerWidget {
 }
 
 // Define a color palette for the app
-class AppColors {
-  static const Color primary = Color(0xFFC67C4E);
-  static const Color primaryDark = Color(0xFF372213);
-  static const Color primaryLight = Color(0xFFFFF5EE);
-  static const Color accent = Color(0xFF36C07E);
-  static const Color background = Color(0xFFF9F9F9);
-  static const Color textPrimary = Color(0xFF2F2D2C);
-  static const Color textSecondary = Color(0xFF9B9B9B);
-  static const Color lightBorder = Color(0xFFEAEAEA);
-}

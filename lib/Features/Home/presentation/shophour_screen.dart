@@ -180,22 +180,13 @@
 // }
 
 
+import 'package:coffee_shop/core/utils/app_theme.dart';
 import 'package:coffee_shop/core/widget/appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-class AppColors {
-  static const Color primary = Color(0xFFC67C4E);
-  static const Color primaryDark = Color(0xFF372213);
-  static const Color primaryLight = Color(0xFFFFF5EE);
-  static const Color accent = Color(0xFF36C07E);
-  static const Color background = Color(0xFFF9F9F9);
-  static const Color textPrimary = Color(0xFF2F2D2C);
-  static const Color textSecondary = Color(0xFF9B9B9B);
-  static const Color lightBorder = Color(0xFFEAEAEA);
-}
 
 class ShophourScreen extends ConsumerWidget {
   const ShophourScreen({super.key});
@@ -222,7 +213,7 @@ class ShophourScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(
-        titleText: 'Shop Hours', 
+        titleText: 'Shop Hours',
         centerTitle: true,
         backgroundColor:AppColors.primary,
         // foregroundColor: AppColors.textPrimary,

@@ -254,7 +254,7 @@
 import 'package:coffee_shop/Features/Map/map_navigation_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:coffee_shop/Features/Map/provider/locationprovider.dart';
+import 'package:coffee_shop/Features/Map/provider/location_provider.dart';
 import 'package:geolocator/geolocator.dart';// Your new service
 
 class LocationScreen extends ConsumerStatefulWidget {

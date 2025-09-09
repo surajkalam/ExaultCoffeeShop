@@ -86,4 +86,8 @@ class DatabaseHelper {
     final db = await instance.database;
     db.close();
   }
+  Future<int> clearCart() async {
+  final db = await database;
+  return await db.delete('cart_items'); // Changed from 'cart' to 'cart_items'
+}
 }

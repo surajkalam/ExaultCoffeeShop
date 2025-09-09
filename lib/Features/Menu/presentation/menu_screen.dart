@@ -1,4 +1,5 @@
 import 'package:coffee_shop/Features/Menu/Provider/menu_provider.dart';
+import 'package:coffee_shop/core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -157,7 +158,6 @@ class MenuScreen extends ConsumerWidget {
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    // REMOVED Expanded widget
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: AppColors.primaryLight,
@@ -175,15 +175,16 @@ class MenuScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          height: 50,
-                          width: 50,
+                          height: 60,
+                          width: 60,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(50),
+                            border: BoxBorder.all(color: Colorclass.shadowcolor)
                           ),
                           child: Center(
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(50),
                               child: hasImage
                                   ? SizedBox(
                                       height: 50,
@@ -209,7 +210,7 @@ class MenuScreen extends ConsumerWidget {
                             categoryName,
                             style: GoogleFonts.dmSans(
                               fontSize: 10,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                               color: AppColors.primaryDark,
                             ),
                             textAlign: TextAlign.center,

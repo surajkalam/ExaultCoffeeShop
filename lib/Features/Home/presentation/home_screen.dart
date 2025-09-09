@@ -3,18 +3,20 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop/Features/Login_Screen/Signupscreen.dart';
 import 'package:coffee_shop/Features/Login_Screen/login_screen.dart';
-import 'package:coffee_shop/Features/Map/map_navigation_service.dart';
-import 'package:coffee_shop/Features/Map/provider/locationprovider.dart';
-import 'package:coffee_shop/Features/Menu/data/ProductModel.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:user_profile_avatar/user_profile_avatar.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../core/utils/utils.dart';
+import '../../Map/Map.dart';
+import '../../Menu/Menu.dart';
+import 'package:lottie/lottie.dart';
 
+final hoveredCategoryProvider = StateProvider<int?>((ref) => null);
 final homeStateProvider = StateProvider<String>((ref) => 'Initial state');
 final carouselIndexProvider = StateProvider<int>((ref) => 0);
 final carouselImagesProvider = Provider<List<String>>((ref) {
@@ -24,6 +26,11 @@ final carouselImagesProvider = Provider<List<String>>((ref) {
     'Assets/Images/banner.jpeg',
   ];
 });
+List voucherlist = [
+  'Assets/Images/banner.jpeg',
+  'Assets/Images/banner.jpeg',
+  'Assets/Images/banner.jpeg',
+];
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -94,6 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
@@ -102,137 +110,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _buildAppBar(width, height),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCarouselSection(height, width, bannerImages, currentIndex),
-              SizedBox(height: height * 0.03),
-              _buildCategoriesSection(height, width),
-              SizedBox(height: height * 0.03),
-              _buildSectionTitle("Top 10 Bestsellers", "In Hyderabad"),
-              SizedBox(height: height * 0.02),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildBestsellerSection(height, width),
-                    _buildBestsellerSection(height, width),
-                  ],
-                ),
+      body: CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(width, height),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
               ),
-              SizedBox(height: height * 0.03),
-              _buildSectionTitle("New Arrivals", "Seasonal specials"),
-              SizedBox(height: height * 0.02),
-              _buildNewArrivalsSection(height, width),
-            ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildCarouselSection(
+                    height,
+                    width,
+                    bannerImages,
+                    currentIndex,
+                  ),
+                  SizedBox(height: height * 0.03),
+
+                  Text(
+                    'Voucher for you🎉',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryDark,
+                    ),
+                  ),
+                  SizedBox(height: height * 0.03),
+                  vouchersection(height, width, voucherlist),
+                  SizedBox(height: height * 0.03),
+                  _buildCategoriesSection(height, width),
+                  SizedBox(height: height * 0.03),
+                  _buildSectionTitle("Top 10 Bestsellers", "In Hyderabad"),
+                  SizedBox(height: height * 0.02),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildBestsellerSection(height, width),
+                        _buildBestsellerSection(height, width),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: height * 0.03),
+                  _buildSectionTitle("New Arrivals", "Seasonal specials"),
+                  SizedBox(height: height * 0.02),
+                  _buildNewArrivalsSection(height, width),
+                  SizedBox(height: height * 0.03),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   // Build a more professional app bar
-  PreferredSizeWidget _buildAppBar(double width, double height) {
-    return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(width: 1, color: AppColors.lightBorder),
-          ),
-          child: IconButton(
-            icon: Icon(Iconsax.location, color: AppColors.primaryDark),
-            onPressed: () async {
-              try {
-                // First get user's location to calculate distance
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) =>
-                      const Center(child: CircularProgressIndicator()),
-                );
-
-                await ref.read(locationProvider.notifier).fetchLocation();
-                final locationState = ref.read(locationProvider);
-
-                if (context.mounted) Navigator.pop(context);
-
-                if (locationState.position != null) {
-                  final userLat = locationState.position!.latitude;
-                  final userLng = locationState.position!.longitude;
-
-                  // Calculate distance
-                  final distance = MapNavigationService.calculateDistance(
-                    userLat,
-                    userLng,
-                    CoffeeShopLocations.shopLatitude,
-                    CoffeeShopLocations.shopLongitude,
-                  );
-
-                  final distanceText =
-                      '${(distance / 1000).toStringAsFixed(1)} km away';
-
-                  // Show options dialog with distance information
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Coffee Shop Location'),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(CoffeeShopLocations.shopName),
-                          const SizedBox(height: 8),
-                          Text(
-                            distanceText,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text('Choose an option:'),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            await _navigateToCoffeeShop();
-                          },
-                          child: const Text('Get Directions'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            await _viewCoffeeShopLocation();
-                          },
-                          child: const Text('View Location'),
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  throw 'Could not get your location';
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                }
-              }
-            },
-          ),
-        ),
-      ),
+  Widget _buildSliverAppBar(double width, double height) {
+    return SliverAppBar(
+      key: Key('sliver_app_bar'),
+      leading: _buildLocationButton(width),
+      automaticallyImplyLeading: true,
       title: Text(
         "Exault Coffee",
         style: GoogleFonts.dmSans(
@@ -241,28 +182,269 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: AppColors.primaryDark,
         ),
       ),
-      actions: [
-        IconButton(
-          icon: Icon(Iconsax.calendar, color: AppColors.primaryDark),
-          onPressed: () => context.push('/shophour'),
+      actions: _buildAppBarActions(),
+      flexibleSpace: _buildFlexibleSpace(height, width),
+      elevation: 1,
+      scrolledUnderElevation: 2,
+      shadowColor: Colors.black12,
+      surfaceTintColor: Colors.transparent,
+      forceElevated: false,
+      backgroundColor: AppColors.background,
+      foregroundColor: AppColors.primaryDark,
+      iconTheme: IconThemeData(color: AppColors.primaryDark),
+      actionsIconTheme: IconThemeData(color: AppColors.primaryDark),
+      primary: true,
+      centerTitle: true,
+      excludeHeaderSemantics: false,
+      titleSpacing: NavigationToolbar.kMiddleSpacing,
+      collapsedHeight: kToolbarHeight + 5,
+      expandedHeight: height * 0.18,
+      floating: false,
+      pinned: true, // Changed to true to pin when scrolled up
+      snap: false,
+      stretch: true,
+      stretchTriggerOffset: 100.0,
+      onStretchTrigger: () async {
+        // Refresh logic can go here
+        await Future.delayed(Duration(seconds: 2));
+      },
+      shape: ContinuousRectangleBorder(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0, left: 4.0),
-          child: UserProfileAvatar(
-            avatarUrl:
-                "https://icons.veryicon.com/png/o/object/material-design-icons/notifications-1.png",
-            radius: 10,
-            notificationCount: 5,
-            notificationBubbleTextStyle: TextStyle(
-              backgroundColor: Colors.red,
-              color: Colors.white,
-              fontSize: 8,
-            ),
-            onAvatarTap: () => context.push('/notification'),
+      ),
+      toolbarHeight: kToolbarHeight,
+      leadingWidth: 56,
+      toolbarTextStyle: GoogleFonts.dmSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        color: AppColors.primaryDark,
+      ),
+      titleTextStyle: GoogleFonts.dmSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        color: AppColors.primaryDark,
+      ),
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
+      forceMaterialTransparency: false,
+      useDefaultSemanticsOrder: true,
+      clipBehavior: Clip.none,
+      actionsPadding: EdgeInsets.symmetric(horizontal: 4),
+    );
+  }
+
+  Widget _buildFlexibleSpace(double height, double width) {
+    return FlexibleSpaceBar(
+      collapseMode: CollapseMode.parallax,
+      stretchModes: [StretchMode.zoomBackground],
+      background: Container(
+        decoration: BoxDecoration(
+          color: Colors.amberAccent,
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(25),
+            bottomRight: Radius.circular(25),
           ),
         ),
-      ],
+        padding: EdgeInsets.only(left: 16, right: 16, bottom: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'Good morning',
+              style: GoogleFonts.dmSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primaryDark,
+              ),
+            ),
+            // SizedBox(height: 1),
+            Row(
+              children: [
+                Text(
+                  'Suraj ☕☕',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primaryDark,
+                  ),
+                ),
+                SizedBox(width: width * 0.5),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: InkWell(
+                        onTap: () {},
+                        child: Icon(
+                          Iconsax.search_normal,
+                          size: 20,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // SizedBox(height: 2),
+            Text(
+              'What would you like to order today?',
+              style: GoogleFonts.dmSans(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            //  SizedBox(height: 8),
+            // SizedBox(
+            //   height: 40,
+            //   child: TextField(
+            //         // controller: searchController,
+            //         decoration: InputDecoration(
+            //           hintText: "Search...",
+            //           prefixIcon:  Icon(Iconsax.search_normal,size: 18,), // 🔍 search icon
+            //           border: OutlineInputBorder(
+            //   borderRadius: BorderRadius.circular(12),
+            //   borderSide: BorderSide.none,
+            //           ),
+            //           filled: true,
+            //           fillColor: const Color.fromARGB(255, 245, 243, 243),
+            //           contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+            //         ),
+
+            //         onChanged: (value) {
+            //           // 🔑 Handle search query
+            //           debugPrint("User searching: $value");
+            //         },
+            //       ),
+            // ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Widget _buildLocationButton(double width) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(width: 1, color: AppColors.lightBorder),
+        ),
+        child: IconButton(
+          icon: Icon(Iconsax.location, color: AppColors.primaryDark, size: 20),
+          onPressed: _handleLocationPress,
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildAppBarActions() {
+    return [
+      IconButton(
+        icon: Icon(Iconsax.calendar, color: AppColors.primaryDark, size: 20),
+        onPressed: () => context.push('/shophour'),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(right: 8.0, left: 4.0),
+        child: UserProfileAvatar(
+          avatarUrl:
+              "https://icons.veryicon.com/png/o/object/material-design-icons/notifications-1.png",
+          radius: 10,
+          notificationCount: 5,
+          notificationBubbleTextStyle: TextStyle(
+            backgroundColor: Colors.red,
+            color: Colors.white,
+            fontSize: 8,
+          ),
+          onAvatarTap: () => context.push('/notification'),
+        ),
+      ),
+    ];
+  }
+
+  void _handleLocationPress() async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      await ref.read(locationProvider.notifier).fetchLocation();
+      final locationState = ref.read(locationProvider);
+
+      if (context.mounted) Navigator.pop(context);
+
+      if (locationState.position != null) {
+        final userLat = locationState.position!.latitude;
+        final userLng = locationState.position!.longitude;
+
+        final distance = MapNavigationService.calculateDistance(
+          userLat,
+          userLng,
+          CoffeeShopLocations.shopLatitude,
+          CoffeeShopLocations.shopLongitude,
+        );
+
+        final distanceText = '${(distance / 1000).toStringAsFixed(1)} km away';
+
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Coffee Shop Location'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(CoffeeShopLocations.shopName),
+                const SizedBox(height: 8),
+                Text(
+                  distanceText,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text('Choose an option:'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await _navigateToCoffeeShop();
+                },
+                child: const Text('Get Directions'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await _viewCoffeeShopLocation();
+                },
+                child: const Text('View Location'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        throw 'Could not get your location';
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
   }
 
   // Build carousel section with improved UI
@@ -272,60 +454,103 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     List<String> bannerImages,
     int currentIndex,
   ) {
-    return Column(
-      children: [
-        CarouselSlider(
-          options: CarouselOptions(
-            height: height * 0.2,
-            aspectRatio: 16 / 9,
-            viewportFraction: 0.7, // Side banners partially visible
-            initialPage: 0,
-            enableInfiniteScroll: true, // Infinite looping
-            reverse: false,
-            autoPlay: true, // Auto-play enabled
-            autoPlayInterval: const Duration(seconds: 3), // Faster transition
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enlargeCenterPage: true, // Center banner is larger
-            enlargeFactor: 0.3, // How much center banner is enlarged
-            enlargeStrategy: CenterPageEnlargeStrategy.scale, // Scale effect
-            onPageChanged: (index, reason) {
-              ref.read(carouselIndexProvider.notifier).state = index;
-            },
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Special offer ',
+            style: GoogleFonts.dmSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryDark,
+            ),
           ),
-          items: bannerImages.map((imagePath) {
-            return GestureDetector(
-              onTap: () {
-                context.push('/datastore');
-
-                // if (imagePath.contains('combobanner')) {
-                //   context.push('/offer');
-                // }
+          SizedBox(height: height * 0.02),
+          CarouselSlider(
+            options: CarouselOptions(
+              height: height * 0.2,
+              aspectRatio: 14 / 9,
+              viewportFraction: 0.7, // Side banners partially visible
+              initialPage: 0,
+              enableInfiniteScroll: true, // Infinite looping
+              reverse: false,
+              autoPlay: true, // Auto-play enabled
+              autoPlayInterval: const Duration(seconds: 3), // Faster transition
+              autoPlayAnimationDuration: const Duration(milliseconds: 800),
+              autoPlayCurve: Curves.fastOutSlowIn,
+              enlargeCenterPage: true, // Center banner is larger
+              enlargeFactor: 0.3, // How much center banner is enlarged
+              enlargeStrategy: CenterPageEnlargeStrategy.scale, // Scale effect
+              onPageChanged: (index, reason) {
+                ref.read(carouselIndexProvider.notifier).state = index;
               },
-              // child: _buildCoffeePromoBanner(width, height, imagePath),
-              child: _buildCarouselBannerItem(width, height, imagePath),
-            );
-          }).toList(),
-        ),
-        SizedBox(height: height * 0.015),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: bannerImages.asMap().entries.map((entry) {
-            return Container(
-              width: currentIndex == entry.key ? 14.0 : 6.0,
-              height: 6.0,
-              margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: currentIndex == entry.key
-                    ? AppColors.primary
-                    // ignore: deprecated_member_use
-                    : AppColors.primary.withOpacity(0.3),
+            ),
+            items: bannerImages.map((imagePath) {
+              return GestureDetector(
+                onTap: () {
+                  context.push('/datastore');
+
+                  // if (imagePath.contains('combobanner')) {
+                  //   context.push('/offer');
+                  // }
+                },
+                // child: _buildCoffeePromoBanner(width, height, imagePath),
+                child: _buildCarouselBannerItem(width, height, imagePath),
+              );
+            }).toList(),
+          ),
+          SizedBox(height: height * 0.015),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: bannerImages.asMap().entries.map((entry) {
+              return Container(
+                width: currentIndex == entry.key ? 14.0 : 6.0,
+                height: 6.0,
+                margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: currentIndex == entry.key
+                      ? AppColors.primary
+                      // ignore: deprecated_member_use
+                      : AppColors.primary.withOpacity(0.3),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget vouchersection(double height, double width, List voucherlist) {
+    return SizedBox(
+      height: height * 0.17, // Set a fixed height for the voucher section
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: voucherlist.length,
+        itemBuilder: (context, voucherindex) => Container(
+          width: width * 0.7,
+          height: height * 0.12,
+          margin: EdgeInsets.only(right: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
               ),
-            );
-          }).toList(),
+            ],
+            image: DecorationImage(
+              image: AssetImage(voucherlist[voucherindex]),
+              fit: BoxFit.fill,
+            ),
+          ),
         ),
-      ],
+      ),
     );
   }
 
@@ -371,7 +596,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
+        builder: (context) => Center(
+          child: Lottie.asset(
+            'Assets/Icons/coffee-break.json',
+            height: 300,
+            width: double.infinity,
+          ),
+        ),
       );
       List<Product> products = await getProductsByCategory(category);
 
@@ -402,10 +633,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Build categories section
   Widget _buildCategoriesSection(double height, double width) {
     final categories = [
-      'coffee',
+      'Coffee',
       'Tea',
       'Frozen',
-      'cooler',
+      'Cooler',
       'Pastry',
       'Special',
     ];
@@ -424,53 +655,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
         itemBuilder: (context, index) {
-          return Row(
-            children: [
-              Column(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      log('Category tapped: ${categories[index]}');
-                      getProductsByCategory(categories[index]);
-                      navigateToCategoryScreen(categories[index]);
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              icons[index],
-                              color: AppColors.primaryDark,
-                            ),
-                          ),
-                          // SizedBox(height: height*0.01),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              categories[index],
-                              style: GoogleFonts.dmSans(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.primaryDark,
+          return Consumer(
+            builder: (context, ref, child) {
+              final hoveredIndex = ref.watch(hoveredCategoryProvider);
+              final isHovered = hoveredIndex == index;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: MouseRegion(
+                  onEnter: (_) =>
+                      ref.read(hoveredCategoryProvider.notifier).state = index,
+                  onExit: (_) =>
+                      ref.read(hoveredCategoryProvider.notifier).state = null,
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          log('Category tapped: ${categories[index]}');
+                          getProductsByCategory(categories[index]);
+                          navigateToCategoryScreen(categories[index]);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(10),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: isHovered
+                                      ? Colors.white
+                                      : AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: isHovered
+                                      ? Border.all(
+                                          color: AppColors.accent,
+                                          width: 2,
+                                        )
+                                      : null,
+                                  boxShadow: isHovered
+                                      ? [
+                                          BoxShadow(
+                                            // ignore: deprecated_member_use
+                                            color: AppColors.accent.withOpacity(
+                                              0.3,
+                                            ),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Icon(
+                                  icons[index],
+                                  color: isHovered
+                                      ? AppColors.accent
+                                      : AppColors.primaryDark,
+                                  size: isHovered ? 24 : 20,
+                                ),
                               ),
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              SizedBox(height: 4),
+                              Text(
+                                categories[index],
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                  color: isHovered
+                                      ? AppColors.accent
+                                      : AppColors.primaryDark,
+                                ),
+                                softWrap: true,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ],
+                ),
+              );
+            },
           );
         },
       ),

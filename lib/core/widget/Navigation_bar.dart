@@ -1,5 +1,5 @@
 // ignore: file_names
-import 'package:coffee_shop/Features/Cart/presnetation/cart_screen.dart';
+import 'package:coffee_shop/Features/Cart/presentation/cart_screen.dart';
 import 'package:coffee_shop/Features/Event/event_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/home_screen.dart';
 import 'package:coffee_shop/Features/Menu/presentation/menu_screen.dart';

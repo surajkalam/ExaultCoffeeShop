@@ -67,12 +67,12 @@ class _DatadstoreState extends State<Datadstore> {
                     pricecontroller.text.isNotEmpty) {
                   // Submit to Firebase
                   _submitForm();
-                  // namecontroller.clear();
-                  // typecontroller.clear();
-                  // ratingcontroller.clear();
-                  // imagecontroller.clear();
-                  // descriptioncontroller.clear();
-                  // pricecontroller.clear();
+                  namecontroller.clear();
+                  typecontroller.clear();
+                  ratingcontroller.clear();
+                  imagecontroller.clear();
+                  descriptioncontroller.clear();
+                  pricecontroller.clear();
                 } else {
                   // Show error if any field is empty
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -97,33 +97,6 @@ class _DatadstoreState extends State<Datadstore> {
   }
 
   void _submitForm() {
-    // String? category = 'Tea';
-    // try {
-    //   FirebaseFirestore.instance
-    //       .collection('items') // Reference the 'items' collection
-    //       .doc(DateTime.now().microsecondsSinceEpoch.toString())
-    //       .collection(category) // Create a sub-collection under the document
-    //       .add({
-    //         'name': namecontroller.text.trim(),
-    //         'type': typecontroller.text.trim(),
-    //         'rating': double.parse(ratingcontroller.text.trim()),
-    //         'image': imagecontroller.text.trim(),
-    //         'description': descriptioncontroller.text.trim(),
-    //         'price': double.parse(pricecontroller.text.trim()),
-    //         'category': category,
-    //         'timestamp': FieldValue.serverTimestamp(),
-    //       });
-
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(
-    //       content: Text('Item added successfully!'),
-    //       backgroundColor: Colors.green,
-    //     ),
-    //   );
-    // } catch (e) {
-    //   log('$e');
-    // }
-
     final newItem = Item(
       name: namecontroller.text.trim(),
       type: typecontroller.text.trim(),
@@ -131,10 +104,10 @@ class _DatadstoreState extends State<Datadstore> {
       image: imagecontroller.text.trim(),
       description: descriptioncontroller.text.trim(),
       price: double.parse(pricecontroller.text.trim()),
-      category: 'Tea',
+      category: 'coffee',
       timestamp: Timestamp.now(),
     );
-    addItem(newItem, customCategory: 'Tea');
+    addItem(newItem, customCategory: 'Coffee');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Item added successfully!'),

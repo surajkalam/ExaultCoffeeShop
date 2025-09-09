@@ -527,8 +527,9 @@
 //   static const Color textPrimary = Color(0xFF2F2D2C);
 //   static const Color textSecondary = Color(0xFF9B9B9B);
 //   static const Color lightBorder = Color(0xFFEAEAEA);
-// }
+// }import 'dart:developer';
 import 'dart:developer';
+
 import 'package:coffee_shop/Features/Cart/provider/cart_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
@@ -546,6 +547,13 @@ class CartScreen extends ConsumerWidget {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     log('🔄 Cart provider state: ${cartAsync.toString()}');
+    
+    List couponlist = [
+      'Assets/Images/Coffee lovers _ Voucher for a free cappuccino - Maria Palienko (1).jpg',
+      'Assets/Images/Coupon (1).jpg',
+      'Assets/Images/coupon2.jpg',
+      'Assets/Images/coupon 3.jpg',
+    ];
 
     // Listen for cart changes
     ref.listen(cartProvider, (_, state) {
@@ -558,7 +566,7 @@ class CartScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, ref), // Updated to pass ref
       body: cartAsync.when(
         loading: () => _buildLoadingState(),
         error: (error, stack) => _buildErrorState(error),
@@ -579,24 +587,30 @@ class CartScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   children: [
                     // Cart items
-                    ...items.map((item) => _buildCartItem(context, ref, item)).toList(),
-                    
+                    ...items
+                        .map((item) => _buildCartItem(context, ref, item))
+                        // ignore: unnecessary_to_list_in_spreads
+                        .toList(),
+
                     const SizedBox(height: 20),
-                    
+
                     // Apply coupon code section
-                    _buildCouponSection(),
-                    
+                    _buildCouponSection(couponlist),
+
                     const SizedBox(height: 20),
-                    
+
                     // Order summary
                     _buildOrderSummary(total),
                   ],
                 ),
               ),
-              
+
               // Checkout button
               _buildCheckoutButton(context, total, items),
             ],
@@ -606,8 +620,8 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
-  // Build iOS-style app bar
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  // Build iOS-style app bar (updated to accept ref)
+  PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -627,14 +641,56 @@ class CartScreen extends ConsumerWidget {
       actions: [
         IconButton(
           icon: const Icon(Iconsax.trash, color: Colors.black),
-          onPressed: () {
-            // Add clear cart functionality
-          },
+          onPressed: () => _showClearCartDialog(context, ref),
         ),
       ],
     );
   }
 
+  // Show confirmation dialog for clearing cart
+  void _showClearCartDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Cart'),
+        content: const Text('Are you sure you want to remove all items from your cart?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                await ref.read(cartProvider.notifier).removeAllItems();
+                // ignore: use_build_context_synchronously
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Cart cleared successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error clearing cart: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text(
+              'Clear All',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ... rest of your methods remain the same (loadingState, errorState, emptyState, etc.)
   // Build loading state
   Widget _buildLoadingState() {
     return Center(
@@ -714,94 +770,116 @@ class CartScreen extends ConsumerWidget {
   }
 
   // Build cart item card
-  Widget _buildCartItem(BuildContext context, WidgetRef ref, Map<String, dynamic> item) {
+  Widget _buildCartItem(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> item,
+  ) {
     final quantity = item['quantity'] ?? 1;
     final itemPrice = item['price'] * quantity;
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            offset: const Offset(0, 4),
-            blurRadius: 10,
+
+    return Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                offset: const Offset(0, 4),
+                blurRadius: 10,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Product Image
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF2E2D9),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: item['image'] != null
-                ? Image.asset(
-                    item['image'],
-                    fit: BoxFit.cover,
-                  )
-                : const Icon(Iconsax.coffee, color: Color(0xFFC67C4E), size: 32),
-          ),
-          const SizedBox(width: 16),
-          
-          // Product Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Product Type and Name
-                Text(
-                  item['category'] ?? 'Cappuccino',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF9B9B9B),
-                  ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2E2D9),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  item['name'] ?? 'Unnamed Item',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                // Price and Quantity Controls
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: item['image'] != null
+                    ? Image.asset(item['image'], fit: BoxFit.cover)
+                    : const Icon(
+                        Iconsax.coffee,
+                        color: Color(0xFFC67C4E),
+                        size: 32,
+                      ),
+              ),
+              const SizedBox(width: 16),
+
+              // Product Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Product Type and Name
                     Text(
-                      '₹${itemPrice.toStringAsFixed(0)}',
+                      item['category'] ?? 'Cappuccino',
                       style: GoogleFonts.dmSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFFC67C4E),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF9B9B9B),
                       ),
                     ),
-                    _buildQuantityControls(ref, item, quantity),
+                    const SizedBox(height: 4),
+                    Text(
+                      item['name'] ?? 'Unnamed Item',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Price and Quantity Controls
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '₹${itemPrice.toStringAsFixed(0)}',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFFC67C4E),
+                          ),
+                        ),
+                        _buildQuantityControls(ref, item, quantity),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: IconButton(
+            icon: const Icon(Iconsax.trash, size: 20, color: Colors.red),
+            onPressed: () =>
+                ref.read(cartProvider.notifier).removeItem(item['id']),
+          ),
+        ),
+      ],
     );
   }
 
   // Build quantity controls
-  Widget _buildQuantityControls(WidgetRef ref, Map<String, dynamic> item, int quantity) {
+  Widget _buildQuantityControls(
+    WidgetRef ref,
+    Map<String, dynamic> item,
+    int quantity,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF2E2D9),
@@ -813,13 +891,17 @@ class CartScreen extends ConsumerWidget {
           IconButton(
             onPressed: () {
               if (quantity > 1) {
-                ref.read(cartProvider.notifier).updateQuantity(item['id'], quantity - 1);
+                ref
+                    .read(cartProvider.notifier)
+                    .updateQuantity(item['id'], quantity - 1);
               }
             },
             icon: Icon(
               Icons.remove,
               size: 18,
-              color: quantity > 1 ? const Color(0xFFC67C4E) : const Color(0xFF9B9B9B),
+              color: quantity > 1
+                  ? const Color(0xFFC67C4E)
+                  : const Color(0xFF9B9B9B),
             ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(
@@ -829,7 +911,7 @@ class CartScreen extends ConsumerWidget {
               maxHeight: 36,
             ),
           ),
-          
+
           // Quantity display
           Text(
             quantity.toString(),
@@ -839,11 +921,13 @@ class CartScreen extends ConsumerWidget {
               color: Colors.black,
             ),
           ),
-          
+
           // Increase button
           IconButton(
             onPressed: () {
-              ref.read(cartProvider.notifier).updateQuantity(item['id'], quantity + 1);
+              ref
+                  .read(cartProvider.notifier)
+                  .updateQuantity(item['id'], quantity + 1);
             },
             icon: const Icon(Icons.add, size: 18, color: Color(0xFFC67C4E)),
             padding: EdgeInsets.zero,
@@ -860,37 +944,51 @@ class CartScreen extends ConsumerWidget {
   }
 
   // Build coupon section
-  Widget _buildCouponSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            offset: const Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const Icon(Iconsax.discount_shape, color: Color(0xFFC67C4E), size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Apply Coupon Code',
-              style: GoogleFonts.dmSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
+  Widget _buildCouponSection(List couponlist) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header row
+        Row(
+          children: [
+            const Icon(
+              Iconsax.discount_shape,
+              color: Color(0xFFC67C4E),
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Apply Coupon Code',
+                style: GoogleFonts.dmSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 80,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: couponlist.length,
+            itemBuilder: (context, listindex) => Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white),
+              child: Image(
+                image: AssetImage(couponlist[listindex]),
+                fit: BoxFit.cover,
+                height: 80,
+                width: 180,
               ),
             ),
           ),
-          const Icon(Iconsax.arrow_right_3, color: Color(0xFF9B9B9B), size: 20),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -925,18 +1023,18 @@ class CartScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Delivery Charges
           _buildSummaryRow('Delivery Charges', '₹40.00'),
           const SizedBox(height: 12),
-          
+
           // Taxes
           _buildSummaryRow('Taxes', '₹10.87'),
           const SizedBox(height: 12),
           // Divider
           const Divider(height: 1, color: Color(0xFFEAEAEA)),
           const SizedBox(height: 12),
-          
+
           // Grand Total
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -989,7 +1087,11 @@ class CartScreen extends ConsumerWidget {
   }
 
   // Build checkout button
-  Widget _buildCheckoutButton(BuildContext context, double total, List<Map<String, dynamic>> items) {
+  Widget _buildCheckoutButton(
+    BuildContext context,
+    double total,
+    List<Map<String, dynamic>> items,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
@@ -1024,7 +1126,11 @@ class CartScreen extends ConsumerWidget {
   }
 
   // Proceed to checkout method
-  void _proceedToCheckout(BuildContext context, double total, List<Map<String, dynamic>> items) {
+  void _proceedToCheckout(
+    BuildContext context,
+    double total,
+    List<Map<String, dynamic>> items,
+  ) {
     log('Proceeding to checkout with total: ₹$total');
     // Navigate to checkout screen
     context.push('/checkout', extra: {'total': total, 'items': items});
