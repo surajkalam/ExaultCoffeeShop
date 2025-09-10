@@ -11,20 +11,21 @@ class EventScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-    
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context),
+      backgroundColor: colorScheme.onPrimary,
+      appBar: _buildAppBar(context, colorScheme, textTheme),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderSection(height, width),
+            _buildHeaderSection(height, width, colorScheme, textTheme),
             SizedBox(height: 24),
-            _buildFeaturesGrid(height, width),
+            _buildFeaturesGrid(height, width, colorScheme, textTheme),
             SizedBox(height: 24),
-            _buildSectionTitle("Our Event Services"),
+            _buildSectionTitle("Our Event Services", colorScheme, textTheme),
             SizedBox(height: 16),
             _buildEventCard(
               height,
@@ -33,6 +34,8 @@ class EventScreen extends ConsumerWidget {
               "Private Celebration",
               "Birthdays, anniversaries, bridal showers, baby showers — we make your moments unforgettable with delicious food, aromatic brews, and warm hospitality.",
               "🎉",
+              colorScheme,
+              textTheme,
             ),
             SizedBox(height: 16),
             _buildEventCard(
@@ -42,6 +45,8 @@ class EventScreen extends ConsumerWidget {
               "Live Music and Open Mic Night",
               "Barista classes, coffee brewing workshops, art jam sessions, book clubs, or photography meetups — our café is where creativity meets community.",
               "🎶",
+              colorScheme,
+              textTheme,
             ),
             SizedBox(height: 16),
             _buildEventCard(
@@ -51,6 +56,8 @@ class EventScreen extends ConsumerWidget {
               "Workshop & Community Meetup",
               "Hold team meetings, networking events, or product launches in a relaxed yet professional setting with custom catering options.",
               "👔",
+              colorScheme,
+              textTheme,
             ),
             SizedBox(height: 16),
             _buildEventCard(
@@ -60,9 +67,17 @@ class EventScreen extends ConsumerWidget {
               "Corporate & Team Events",
               "Perfect setting for corporate gatherings, team building activities, and business meetings with premium coffee and catering services.",
               "💼",
+              colorScheme,
+              textTheme,
             ),
             SizedBox(height: 32),
-            _buildBookEventButton(context, height, width),
+            _buildBookEventButton(
+              context,
+              height,
+              width,
+              colorScheme,
+              textTheme,
+            ),
             SizedBox(height: 24),
           ],
         ),
@@ -72,56 +87,50 @@ class EventScreen extends ConsumerWidget {
 
   // Build iOS-style app bar
   // ignore: strict_top_level_inference
-  PreferredSizeWidget _buildAppBar(context) {
+  PreferredSizeWidget _buildAppBar(context, colorscheme, texttheme) {
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorscheme.onSecondaryFixed,
       elevation: 0,
       centerTitle: true,
       title: Text(
         'Events',
-        style: GoogleFonts.dmSans(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primaryDark,
-        ),
-      ),
-      leading: IconButton(
-        icon: Icon(Iconsax.arrow_left, color: AppColors.primaryDark),
-        onPressed: () => Navigator.maybePop(context),
+        style: texttheme.titleLarge?.copyWith(color: colorscheme.primary),
       ),
     );
   }
 
   // Build header section
-  Widget _buildHeaderSection(double height, double width) {
+  Widget _buildHeaderSection(
+    double height,
+    double width,
+    ColorScheme colorscheme,
+    TextTheme textTheme,
+  ) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: colorscheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, 4),
-            blurRadius: 12,
+            color: colorscheme.shadow,
+            offset: Offset(4, 4),
+            blurRadius: 6,
+            spreadRadius: 1,
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: width*0.2,
-            height: height*0.08,
+            width: width * 0.2,
+            height: height * 0.08,
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: colorscheme.onPrimaryFixedVariant,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Iconsax.people,
-              size: 32,
-              color: Colors.white,
-            ),
+            child: Icon(Iconsax.people, size: 32, color: colorscheme.onPrimary),
           ),
           SizedBox(width: 16),
           Expanded(
@@ -130,18 +139,15 @@ class EventScreen extends ConsumerWidget {
               children: [
                 Text(
                   "Brew, Gather, Celebrate...",
-                  style: GoogleFonts.dmSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryDark,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorscheme.primary,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   "Create unforgettable moments with us",
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorscheme.secondary,
                   ),
                 ),
               ],
@@ -153,7 +159,12 @@ class EventScreen extends ConsumerWidget {
   }
 
   // Build features grid
-  Widget _buildFeaturesGrid(double height, double width) {
+  Widget _buildFeaturesGrid(
+    double height,
+    double width,
+    colorscheme,
+    texttheme,
+  ) {
     final features = [
       {"title": "Custom Menus", "icon": Iconsax.menu_board},
       {"title": "Cozy Ambience", "icon": Iconsax.home_hashtag},
@@ -172,41 +183,46 @@ class EventScreen extends ConsumerWidget {
       ),
       itemCount: features.length,
       itemBuilder: (context, index) {
-        return _buildFeatureCard(features[index]['title'] as String, features[index]['icon'] as IconData);
+        return _buildFeatureCard(
+          features[index]['title'] as String,
+          features[index]['icon'] as IconData,
+          colorscheme,
+          texttheme,
+        );
       },
     );
   }
 
   // Build feature card
-  Widget _buildFeatureCard(String title, IconData icon) {
+  Widget _buildFeatureCard(
+    String title,
+    IconData icon,
+    colorscheme,
+    texttheme,
+  ) {
     return Container(
       padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onPrimary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, 4),
-            blurRadius: 8,
+            color: colorscheme.shadow,
+            offset: Offset(4, 4),
+            blurRadius: 6,
+            spreadRadius: 1,
           ),
         ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 24,
-            color: AppColors.primary,
-          ),
+          Icon(icon, size: 24, color: colorscheme.secondaryFixed),
           SizedBox(height: 8),
           Text(
             title,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryDark,
+            style: texttheme.labelSmall?.copyWith(
+              color: colorscheme.primaryContainer,
             ),
             textAlign: TextAlign.center,
           ),
@@ -216,13 +232,11 @@ class EventScreen extends ConsumerWidget {
   }
 
   // Build section title
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, colorscheme, texttheme) {
     return Text(
       title,
-      style: GoogleFonts.dmSans(
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-        color: AppColors.primaryDark,
+      style: texttheme.bodyMedium?.copyWith(
+        color: colorscheme.primaryContainer,
       ),
     );
   }
@@ -235,16 +249,19 @@ class EventScreen extends ConsumerWidget {
     String title,
     String description,
     String emoji,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onSecondaryFixed,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, 6),
-            blurRadius: 12,
+            color: colorscheme.shadow,
+            offset: Offset(4, 4),
+            blurRadius: 6,
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -259,11 +276,12 @@ class EventScreen extends ConsumerWidget {
             child: Container(
               height: height * 0.2,
               width: double.infinity,
-              color: AppColors.primaryLight,
+              color: colorscheme.onSecondaryFixed,
               child: Image.asset(
                 imagePath,
                 fit: BoxFit.fill,
-                errorBuilder: (_, _, _) => _buildEventImagePlaceholder(emoji),
+                errorBuilder: (_, _, _) =>
+                    _buildEventImagePlaceholder(emoji, colorscheme, texttheme),
               ),
             ),
           ),
@@ -278,22 +296,17 @@ class EventScreen extends ConsumerWidget {
                     Container(
                       padding: EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
+                        color: colorscheme.onPrimary,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
-                        emoji,
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      child: Text(emoji, style: TextStyle(fontSize: 16)),
                     ),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         title,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primaryDark,
+                        style: texttheme.bodyMedium?.copyWith(
+                          color: colorscheme.primary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -304,10 +317,8 @@ class EventScreen extends ConsumerWidget {
                 SizedBox(height: 12),
                 Text(
                   description,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                    height: 1.5,
+                  style: texttheme.bodySmall?.copyWith(
+                    color: colorscheme.secondary,
                   ),
                 ),
               ],
@@ -319,21 +330,22 @@ class EventScreen extends ConsumerWidget {
   }
 
   // Build event image placeholder
-  Widget _buildEventImagePlaceholder(String emoji) {
+  Widget _buildEventImagePlaceholder(
+    String emoji,
+    ColorScheme colorscheme,
+    texttheme,
+  ) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            emoji,
-            style: TextStyle(fontSize: 40),
-          ),
+          Text(emoji, style: TextStyle(fontSize: 40)),
           SizedBox(height: 8),
           Text(
             "Event Image",
             style: GoogleFonts.dmSans(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: colorscheme.secondary,
             ),
           ),
         ],
@@ -342,7 +354,13 @@ class EventScreen extends ConsumerWidget {
   }
 
   // Build book event button
-  Widget _buildBookEventButton(BuildContext context, double height, double width) {
+  Widget _buildBookEventButton(
+    BuildContext context,
+    double height,
+    double width,
+    colorscheme,
+    texttheme,
+  ) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -350,15 +368,15 @@ class EventScreen extends ConsumerWidget {
           context.push('/eventform');
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: colorscheme.secondaryFixed,
+          foregroundColor: colorscheme.onPrimary,
           padding: EdgeInsets.symmetric(vertical: 18, horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 4,
           // ignore: deprecated_member_use
-          shadowColor: AppColors.primary.withOpacity(0.3),
+          shadowColor: colorscheme.secondaryFixed.withOpacity(0.3),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -380,13 +398,3 @@ class EventScreen extends ConsumerWidget {
 }
 
 // Define a color palette for the app
-class AppColors {
-  static const Color primary = Color(0xFFC67C4E);
-  static const Color primaryDark = Color(0xFF372213);
-  static const Color primaryLight = Color(0xFFFFF5EE);
-  static const Color accent = Color(0xFF36C07E);
-  static const Color background = Color(0xFFF9F9F9);
-  static const Color textPrimary = Color(0xFF2F2D2C);
-  static const Color textSecondary = Color(0xFF9B9B9B);
-  static const Color lightBorder = Color(0xFFEAEAEA);
-}

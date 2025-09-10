@@ -34,8 +34,12 @@ class MainApp extends StatelessWidget {
   const MainApp({super.key});
   @override
   Widget build(BuildContext context) {
+    final materialTheme = MaterialTheme(textTheme);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
+      theme:materialTheme.light(),
+      darkTheme: materialTheme.dark(),
+      themeMode: ThemeMode.system,
       routerConfig: approuter,
     );
   }

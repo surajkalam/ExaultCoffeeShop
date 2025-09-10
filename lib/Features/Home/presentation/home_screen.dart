@@ -107,12 +107,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final height = MediaQuery.of(context).size.height;
     final currentIndex = ref.watch(carouselIndexProvider);
     final bannerImages = ref.watch(carouselImagesProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.onSurface,
       body: CustomScrollView(
         slivers: [
-          _buildSliverAppBar(width, height),
+          _buildSliverAppBar(width, height, colorScheme, textTheme),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -127,37 +129,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     width,
                     bannerImages,
                     currentIndex,
+                    colorScheme,
+                    textTheme,
                   ),
                   SizedBox(height: height * 0.03),
 
                   Text(
                     'Voucher for you🎉',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primaryDark,
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.primaryContainer,
                     ),
                   ),
                   SizedBox(height: height * 0.03),
                   vouchersection(height, width, voucherlist),
                   SizedBox(height: height * 0.03),
-                  _buildCategoriesSection(height, width),
+                  _buildCategoriesSection(
+                    height,
+                    width,
+                    colorScheme,
+                    textTheme,
+                  ),
                   SizedBox(height: height * 0.03),
-                  _buildSectionTitle("Top 10 Bestsellers", "In Hyderabad"),
+                  _buildSectionTitle(
+                    "Top 10 Bestsellers",
+                    "In Hyderabad",
+                    colorScheme,
+                    textTheme,
+                  ),
                   SizedBox(height: height * 0.02),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildBestsellerSection(height, width),
-                        _buildBestsellerSection(height, width),
+                        _buildBestsellerSection(
+                          height,
+                          width,
+                          colorScheme,
+                          textTheme,
+                        ),
+                        _buildBestsellerSection(
+                          height,
+                          width,
+                          colorScheme,
+                          textTheme,
+                        ),
                       ],
                     ),
                   ),
                   SizedBox(height: height * 0.03),
-                  _buildSectionTitle("New Arrivals", "Seasonal specials"),
+                  _buildSectionTitle(
+                    "New Arrivals",
+                    "Seasonal specials",
+                    colorScheme,
+                    textTheme,
+                  ),
                   SizedBox(height: height * 0.02),
-                  _buildNewArrivalsSection(height, width),
+                  _buildNewArrivalsSection(
+                    height,
+                    width,
+                    colorScheme,
+                    textTheme,
+                  ),
                   SizedBox(height: height * 0.03),
                 ],
               ),
@@ -169,30 +201,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // Build a more professional app bar
-  Widget _buildSliverAppBar(double width, double height) {
+  Widget _buildSliverAppBar(
+    double width,
+    double height,
+    colorscheme,
+    textTheme,
+  ) {
     return SliverAppBar(
       key: Key('sliver_app_bar'),
-      leading: _buildLocationButton(width),
+      leading: _buildLocationButton(width, colorscheme),
       automaticallyImplyLeading: true,
       title: Text(
         "Exault Coffee",
-        style: GoogleFonts.dmSans(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primaryDark,
-        ),
+        style: textTheme.titleMedium?.copyWith(color: colorscheme.primary),
       ),
-      actions: _buildAppBarActions(),
-      flexibleSpace: _buildFlexibleSpace(height, width),
+      actions: _buildAppBarActions(colorscheme),
+      flexibleSpace: _buildFlexibleSpace(height, width, colorscheme, textTheme),
       elevation: 1,
       scrolledUnderElevation: 2,
       shadowColor: Colors.black12,
       surfaceTintColor: Colors.transparent,
       forceElevated: false,
-      backgroundColor: AppColors.background,
-      foregroundColor: AppColors.primaryDark,
-      iconTheme: IconThemeData(color: AppColors.primaryDark),
-      actionsIconTheme: IconThemeData(color: AppColors.primaryDark),
+      backgroundColor: colorscheme.onPrimaryFixed,
+      foregroundColor: colorscheme.primary,
+      iconTheme: IconThemeData(color: colorscheme.secondaryFixed),
+      actionsIconTheme: IconThemeData(color: colorscheme.primary),
       primary: true,
       centerTitle: true,
       excludeHeaderSemantics: false,
@@ -210,8 +243,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       },
       shape: ContinuousRectangleBorder(
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
+          bottomLeft: Radius.circular(55),
+          bottomRight: Radius.circular(55),
         ),
       ),
       toolbarHeight: kToolbarHeight,
@@ -219,12 +252,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       toolbarTextStyle: GoogleFonts.dmSans(
         fontSize: 14,
         fontWeight: FontWeight.w700,
-        color: AppColors.primaryDark,
+        color: colorscheme.primary,
       ),
       titleTextStyle: GoogleFonts.dmSans(
         fontSize: 14,
         fontWeight: FontWeight.w700,
-        color: AppColors.primaryDark,
+        color: colorscheme.primary,
       ),
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       forceMaterialTransparency: false,
@@ -234,13 +267,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildFlexibleSpace(double height, double width) {
+  Widget _buildFlexibleSpace(
+    double height,
+    double width,
+    colorscheme,
+    textTheme,
+  ) {
     return FlexibleSpaceBar(
       collapseMode: CollapseMode.parallax,
       stretchModes: [StretchMode.zoomBackground],
       background: Container(
         decoration: BoxDecoration(
-          color: Colors.amberAccent,
+          color: colorscheme.onPrimaryFixed,
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(25),
             bottomRight: Radius.circular(25),
@@ -253,21 +291,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               'Good morning',
-              style: GoogleFonts.dmSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryDark,
+              style: textTheme.titleMedium?.copyWith(
+                color: colorscheme.primary,
               ),
             ),
-            // SizedBox(height: 1),
             Row(
               children: [
                 Text(
                   'Suraj ☕☕',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryDark,
+                  style: textTheme.titleSmall?.copyWith(
+                    color: colorscheme.primary,
                   ),
                 ),
                 SizedBox(width: width * 0.5),
@@ -284,7 +317,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Icon(
                           Iconsax.search_normal,
                           size: 20,
-                          color: Colors.black,
+                          color: colorscheme.secondaryFixed,
                         ),
                       ),
                     ),
@@ -292,64 +325,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ],
             ),
-            // SizedBox(height: 2),
+
             Text(
               'What would you like to order today?',
-              style: GoogleFonts.dmSans(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
+
+              style: textTheme.bodySmall?.copyWith(
+                color: colorscheme.secondary,
               ),
             ),
-            //  SizedBox(height: 8),
-            // SizedBox(
-            //   height: 40,
-            //   child: TextField(
-            //         // controller: searchController,
-            //         decoration: InputDecoration(
-            //           hintText: "Search...",
-            //           prefixIcon:  Icon(Iconsax.search_normal,size: 18,), // 🔍 search icon
-            //           border: OutlineInputBorder(
-            //   borderRadius: BorderRadius.circular(12),
-            //   borderSide: BorderSide.none,
-            //           ),
-            //           filled: true,
-            //           fillColor: const Color.fromARGB(255, 245, 243, 243),
-            //           contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-            //         ),
-
-            //         onChanged: (value) {
-            //           // 🔑 Handle search query
-            //           debugPrint("User searching: $value");
-            //         },
-            //       ),
-            // ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLocationButton(double width) {
+  Widget _buildLocationButton(double width, colorscheme) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8.0),
+      padding: const EdgeInsets.only(left: 8.0, bottom: 8),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(width: 1, color: AppColors.lightBorder),
+          border: Border.all(width: 1.5, color: colorscheme.onPrimary),
         ),
         child: IconButton(
-          icon: Icon(Iconsax.location, color: AppColors.primaryDark, size: 20),
+          icon: Icon(
+            Iconsax.location,
+            color: colorscheme.secondaryFixed,
+            size: 25,
+          ),
           onPressed: _handleLocationPress,
         ),
       ),
     );
   }
 
-  List<Widget> _buildAppBarActions() {
+  List<Widget> _buildAppBarActions(ColorScheme colorscheme) {
     return [
       IconButton(
-        icon: Icon(Iconsax.calendar, color: AppColors.primaryDark, size: 20),
+        icon: Icon(
+          Iconsax.calendar,
+          color: colorscheme.secondaryFixed,
+          size: 25,
+        ),
         onPressed: () => context.push('/shophour'),
       ),
       Padding(
@@ -440,9 +457,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            margin: EdgeInsets.all(16),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            content: Text('Error: $e'),
+          ),
+        );
       }
     }
   }
@@ -453,6 +475,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     double width,
     List<String> bannerImages,
     int currentIndex,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
@@ -461,10 +485,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           Text(
             'Special offer ',
-            style: GoogleFonts.dmSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryDark,
+            style: textTheme.titleMedium?.copyWith(
+              color: colorscheme.primaryContainer,
             ),
           ),
           SizedBox(height: height * 0.02),
@@ -512,9 +534,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
                   color: currentIndex == entry.key
-                      ? AppColors.primary
+                      ? colorscheme.primary
                       // ignore: deprecated_member_use
-                      : AppColors.primary.withOpacity(0.3),
+                      : colorscheme.secondaryFixed,
                 ),
               );
             }).toList(),
@@ -591,7 +613,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  void navigateToCategoryScreen(String category) async {
+  void navigateToCategoryScreen(
+    String category,
+    ColorScheme colorscheme,
+    TextTheme textTheme,
+  ) async {
     try {
       showDialog(
         context: context,
@@ -624,14 +650,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Navigator.pop(context);
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(
+          // ignore: use_build_context_synchronously
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(
+          SnackBar(
+            backgroundColor: colorscheme.error,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16), // rounded corners
+            ),
+            margin: EdgeInsets.all(16),
+            content: Text(
+              'Error: $e',
+              style: textTheme.bodySmall?.copyWith(
+                color: colorscheme.onPrimary,
+              ),
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
   }
 
   // Build categories section
-  Widget _buildCategoriesSection(double height, double width) {
+  Widget _buildCategoriesSection(
+    double height,
+    double width,
+    ColorScheme colorscheme,
+    TextTheme textTheme,
+  ) {
     final categories = [
       'Coffee',
       'Tea',
@@ -673,7 +720,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onTap: () {
                           log('Category tapped: ${categories[index]}');
                           getProductsByCategory(categories[index]);
-                          navigateToCategoryScreen(categories[index]);
+                          navigateToCategoryScreen(
+                            categories[index],
+                            colorscheme,
+                            textTheme,
+                          );
                         },
                         child: Container(
                           padding: EdgeInsets.all(10),
@@ -684,12 +735,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 height: 50,
                                 decoration: BoxDecoration(
                                   color: isHovered
-                                      ? Colors.white
-                                      : AppColors.primaryLight,
+                                      ? colorscheme.surface
+                                      : colorscheme.surface,
                                   borderRadius: BorderRadius.circular(12),
                                   border: isHovered
                                       ? Border.all(
-                                          color: AppColors.accent,
+                                          color: colorscheme.onSecondary,
                                           width: 2,
                                         )
                                       : null,
@@ -697,9 +748,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ? [
                                           BoxShadow(
                                             // ignore: deprecated_member_use
-                                            color: AppColors.accent.withOpacity(
-                                              0.3,
-                                            ),
+                                            color: colorscheme.onSecondary,
                                             blurRadius: 8,
                                             spreadRadius: 1,
                                           ),
@@ -709,9 +758,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 child: Icon(
                                   icons[index],
                                   color: isHovered
-                                      ? AppColors.accent
-                                      : AppColors.primaryDark,
-                                  size: isHovered ? 24 : 20,
+                                      ? colorscheme.secondaryFixed
+                                      : colorscheme.tertiary,
+                                  size: isHovered ? 26 : 24,
                                 ),
                               ),
                               SizedBox(height: 4),
@@ -721,8 +770,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   fontSize: 10,
                                   fontWeight: FontWeight.w500,
                                   color: isHovered
-                                      ? AppColors.accent
-                                      : AppColors.primaryDark,
+                                      ? colorscheme.onSecondary
+                                      : colorscheme.primary,
                                 ),
                                 softWrap: true,
                                 overflow: TextOverflow.ellipsis,
@@ -743,33 +792,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // Build section title with subtitle
-  Widget _buildSectionTitle(String title, String subtitle) {
+  Widget _buildSectionTitle(
+    String title,
+    String subtitle,
+    ColorScheme colorscheme,
+    textTheme,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: GoogleFonts.dmSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: AppColors.primaryDark,
+          style: textTheme.titleMedium?.copyWith(
+            color: colorscheme.primaryContainer,
           ),
         ),
         SizedBox(height: 4),
         Text(
           subtitle,
-          style: GoogleFonts.dmSans(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
-          ),
+          style: textTheme.bodyMedium?.copyWith(color: colorscheme.secondary),
         ),
       ],
     );
   }
 
   // Build bestseller section
-  Widget _buildBestsellerSection(double height, double width) {
+  Widget _buildBestsellerSection(
+    double height,
+    double width,
+    colorscheme,
+    texttheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -862,7 +915,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Positioned(
               bottom: 16,
               right: 16,
-              child: _buildViewMoreButton(height, width),
+              child: _buildViewMoreButton(
+                height,
+                width,
+                colorscheme,
+                textTheme,
+              ),
             ),
           ],
         ),
@@ -871,7 +929,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // Build new arrivals section
-  Widget _buildNewArrivalsSection(double height, double width) {
+  Widget _buildNewArrivalsSection(
+    double height,
+    double width,
+    ColorScheme colorscheme,
+    TextTheme textTheme,
+  ) {
     return Column(
       children: [
         _buildNewArrivalItem(
@@ -881,6 +944,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           "Pumpkin Spice Latte",
           "A seasonal favorite with warm spices",
           "🌟 New Arrivals",
+          colorscheme,
+          textTheme,
         ),
         SizedBox(height: height * 0.02),
         _buildNewArrivalItem(
@@ -890,6 +955,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           "Strawberry Cream Frappe",
           "Creamy strawberry delight",
           "🌟 Seasonal Specials",
+          colorscheme,
+          textTheme,
         ),
       ],
     );
@@ -903,6 +970,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     String title,
     String description,
     String tag,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
       height: height * 0.2,
@@ -964,7 +1033,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Spacer(),
-                  _buildViewMoreButton(height, width, isSmall: true),
+                  _buildViewMoreButton(
+                    height,
+                    width,
+                    isSmall: true,
+                    colorscheme,
+                    texttheme,
+                  ),
                 ],
               ),
             ),
@@ -991,7 +1066,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Build view more button
   Widget _buildViewMoreButton(
     double height,
-    double width, {
+    double width,
+    ColorScheme colorscheme,
+    TextTheme textTheme, {
     bool isSmall = false,
   }) {
     return GestureDetector(

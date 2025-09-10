@@ -1,3 +1,5 @@
+import 'package:coffee_shop/Authentication/phone_auth.dart';
+import 'package:coffee_shop/Authentication/splash_screen.dart';
 import 'package:coffee_shop/Features/Home/Home.dart';
 import 'package:coffee_shop/Features/Login_Screen/Signupscreen.dart';
 import 'package:coffee_shop/Features/Login_Screen/login_screen.dart';
@@ -16,11 +18,11 @@ final  GoRouter approuter = GoRouter(
     debugLogDiagnostics: true,
     routes: [
       // GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
-      GoRoute(
-        path: '/signup',
-        builder: (context, state) => const SignupScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const MainAppere()),
+      // GoRoute(
+      //   path: '/signup',
+      //   builder: (context, state) => const SignupScreen(),
+      // ),
       GoRoute(path: '/navbar', builder: (context, state) => const MainAppere()),
 
       GoRoute(
