@@ -27,9 +27,9 @@ final carouselImagesProvider = Provider<List<String>>((ref) {
   ];
 });
 List voucherlist = [
-  'Assets/Images/banner.jpeg',
-  'Assets/Images/banner.jpeg',
-  'Assets/Images/banner.jpeg',
+  'Assets/Images/voucher2.png',
+  'Assets/Images/voucher2.png',
+  'Assets/Images/voucher2.png',
 ];
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -1180,6 +1180,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         // Show distance in a snackbar before navigating
         if (context.mounted) {
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(

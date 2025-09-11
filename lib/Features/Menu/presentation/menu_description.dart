@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffee_shop/core/core.dart';
 import 'package:coffee_shop/core/utils/app_theme.dart' show AppColors;
 import 'package:coffee_shop/core/widget/favoriteIcon.dart';
 import 'package:coffee_shop/DATABASE_HELPER/cart_data.dart';
@@ -111,7 +112,7 @@ class CategoryItemsScreen extends ConsumerWidget {
   }
 
   // Build product card with iOS design
-  Widget  _buildProductCard(
+  Widget _buildProductCard(
     BuildContext context,
     double height,
     double width,
@@ -313,24 +314,25 @@ class CategoryItemsScreen extends ConsumerWidget {
   ) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null || user.email == null) {
+      if (user == null) {
         throw Exception('User not logged in');
       }
 
-      // Sanitize email for Firestore path
-      final userEmail = user.email!.replaceAll('.', '_');
+      final userId = UserUtils.getUserIdentifier(user);
       final itemName = itemData['name'];
 
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(userEmail)
+          .doc(userId)
           .collection('cart')
           .doc(itemName)
           .set({
             ...itemData,
             'quantity': FieldValue.increment(1),
             'addedAt': FieldValue.serverTimestamp(),
+            'userId': userId, // Store user ID for querying
           }, SetOptions(merge: true));
+
       await DatabaseHelper.instance.insertCartItem({
         'product_id': itemData['id'] ?? itemData['name'],
         'name': itemData['name'],
@@ -344,17 +346,14 @@ class CategoryItemsScreen extends ConsumerWidget {
         final ref = ProviderScope.containerOf(context);
         ref.refresh(cartProvider);
       }
-      // Show success feedback
-      // ignore: use_build_context_synchronously
+
       _showAddToCartSuccess(context, itemData['name']);
 
-      // Refresh cart if needed
       if (context.mounted) {
         final ref = ProviderScope.containerOf(context);
         ref.refresh(cartProvider);
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
       _showAddToCartError(context, e.toString());
     }
   }
@@ -370,9 +369,6 @@ class CategoryItemsScreen extends ConsumerWidget {
         margin: EdgeInsets.all(16),
       ),
     );
-
-    // Optional: Add haptic feedback for iOS feel
-    // HapticFeedback.lightImpact();
   }
 
   // Show error feedback

@@ -19,14 +19,15 @@ class HelpSupportScreen extends ConsumerWidget {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.onPrimary,
       appBar: CustomAppBar(
         titleText: 'Help & Support',
         centerTitle: true,
-        backgroundColor: AppColors.primary,
-        // titleColor: Colors.white,
+        backgroundColor: colorScheme.surface,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -37,24 +38,31 @@ class HelpSupportScreen extends ConsumerWidget {
                 context: context,
                 title: "FAQ",
                 icon: Icons.help_outline,
-                child: FQAcontainer(height, width),
+                child: FQAcontainer(height, width,colorScheme,textTheme ),
                 isIOS: isIOS,
+                colorscheme :colorScheme,
+                texttheme: textTheme
+
               ),
               SizedBox(height: height * 0.02),
               _buildExpansionTile(
                 context: context,
                 title: "Contact Support",
                 icon: Icons.support_agent,
-                child: _buildContactSupport(context, height, width),
+                child: _buildContactSupport(context, height, width,colorScheme,textTheme),
                 isIOS: isIOS,
+                colorscheme :colorScheme,
+                texttheme: textTheme
               ),
               SizedBox(height: height * 0.02),
               _buildExpansionTile(
                 context: context,
                 title: "Order Support",
                 icon: Icons.shopping_bag,
-                child: ordersupport(height, width, context),
+                child: ordersupport(height, width, context,colorScheme,textTheme),
                 isIOS: isIOS,
+                 colorscheme :colorScheme,
+                texttheme: textTheme
               ),
               SizedBox(height: height * 0.02),
               _buildExpansionTile(
@@ -63,6 +71,8 @@ class HelpSupportScreen extends ConsumerWidget {
                 icon: Icons.store,
                 child: storeinfo(context, height, width, '8766866017'),
                 isIOS: isIOS,
+                 colorscheme :colorScheme,
+                texttheme: textTheme
               ),
               SizedBox(height: height * 0.02),
               _buildExpansionTile(
@@ -71,6 +81,8 @@ class HelpSupportScreen extends ConsumerWidget {
                 icon: Icons.feedback,
                 child: feedbacksuggestion(height, width, context),
                 isIOS: isIOS,
+                 colorscheme :colorScheme,
+                texttheme: textTheme
               ),
             ],
           ),
@@ -85,6 +97,8 @@ class HelpSupportScreen extends ConsumerWidget {
     required IconData icon,
     required Widget child,
     required bool isIOS,
+    required ColorScheme colorscheme,
+    required TextTheme texttheme,
   }) {
     final width = MediaQuery.of(context).size.width;
 
@@ -95,13 +109,12 @@ class HelpSupportScreen extends ConsumerWidget {
           CupertinoListTile(
             title: Text(
               title,
-              style: GoogleFonts.dmSans(
-                fontSize: width * 0.045,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorscheme.primaryContainer,
               ),
+              //color:colorscheme.primaryContainer,
             ),
-            leading: Icon(icon, color: AppColors.primary, size: 24),
+            leading: Icon(icon, color: colorscheme.secondaryFixed, size: 24),
             trailing: const Icon(CupertinoIcons.chevron_down, size: 18),
             onTap: () {
               _showIOSBottomSheet(context, title, child);
@@ -111,14 +124,18 @@ class HelpSupportScreen extends ConsumerWidget {
       );
     } else {
       return ExpansionTile(
-        leading: Icon(icon, color: AppColors.primary),
+        leading: Icon(icon, color: colorscheme.secondaryFixed),
+        backgroundColor: colorscheme.surface,
+        iconColor: colorscheme.secondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20),),),
+        collapsedShape:RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),) ,
+        collapsedIconColor:colorscheme.secondary ,
+        collapsedBackgroundColor: colorscheme.surface,
         title: Text(
           title,
-          style: GoogleFonts.dmSans(
-            fontSize: width * 0.045,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+          style: textTheme.bodyMedium?.copyWith(
+                color: colorscheme.primaryContainer,
+              ),
         ),
         children: [child],
       );
@@ -149,6 +166,8 @@ class HelpSupportScreen extends ConsumerWidget {
     BuildContext context,
     double height,
     double width,
+    ColorScheme colorscheme,
+     TextTheme texttheme 
   ) {
     return Padding(
       padding: EdgeInsets.all(width * 0.03),
@@ -160,6 +179,8 @@ class HelpSupportScreen extends ConsumerWidget {
             title: "Toll Free Customer Service",
             subtitle: "3746237467",
             onTap: () => _makePhoneCall('3746237467'),
+            colorscheme: colorscheme,
+             texttheme: textTheme,
           ),
           SizedBox(height: height * 0.02),
           _buildContactOption(
@@ -167,6 +188,8 @@ class HelpSupportScreen extends ConsumerWidget {
             title: "Email Support",
             subtitle: "support@coffeeshop.com",
             onTap: () => _launchEmail('support@coffeeshop.com'),
+             colorscheme: colorscheme,
+             texttheme: textTheme,
           ),
           SizedBox(height: height * 0.02),
           _buildContactOption(
@@ -174,6 +197,9 @@ class HelpSupportScreen extends ConsumerWidget {
             title: "Support Hours",
             subtitle: "Mon-Sun: 8AM - 10PM",
             onTap: () {},
+             colorscheme: colorscheme,
+             texttheme: textTheme,
+
           ),
         ],
       ),
@@ -185,18 +211,20 @@ class HelpSupportScreen extends ConsumerWidget {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    required ColorScheme  colorscheme,
+    required TextTheme texttheme
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color:colorscheme.onPrimary,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               // ignore: deprecated_member_use
-              color: Colors.black.withOpacity(0.05),
+              color:colorscheme.shadow.withOpacity(0.5),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -204,7 +232,7 @@ class HelpSupportScreen extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.primary, size: 24),
+            Icon(icon, color:colorscheme.secondaryFixed, size: 24),
             SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -212,18 +240,16 @@ class HelpSupportScreen extends ConsumerWidget {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.dmSans(
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
-                    ),
+                   style: texttheme.labelMedium?.copyWith(
+                    color:colorscheme.primaryContainer
+                   ),
                   ),
                   SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: GoogleFonts.dmSans(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                    ),
+                     style: texttheme.bodySmall?.copyWith(
+                    color:colorscheme.secondary
+                   ),
                   ),
                 ],
               ),
@@ -342,7 +368,7 @@ class HelpSupportScreen extends ConsumerWidget {
   // remain the same but with updated styling to match iOS aesthetics
 
   // ignore: non_constant_identifier_names
-  Widget FQAcontainer(double height, double width) {
+  Widget FQAcontainer(double height, double width,ColorScheme colorscheme,TextTheme texttheme) {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: width * 0.02,
@@ -355,33 +381,38 @@ class HelpSupportScreen extends ConsumerWidget {
             question: "How do I place an order?",
             answer:
                 "To place an order, simply browse our menu, select your items, customize them if needed, and proceed to checkout. You can pay using various methods including credit/debit cards, mobile wallets, or cash on delivery.",
+          colorscheme,texttheme,
           ),
           _buildFAQItem(
             question: "What payment methods do you accept?",
             answer:
                 "We accept all major credit and debit cards, PayPal, Google Pay, Apple Pay, and also offer cash on delivery option. All transactions are secure and encrypted for your safety.",
+           colorscheme,texttheme,
           ),
           _buildFAQItem(
             question: "Rewards Program Explanations",
             answer:
                 "For every purchase you make, you earn points that can be redeemed for free drinks and food items. You'll get 1 point for every dollar spent. Once you reach 100 points, you get a free drink of your choice!.",
+           colorscheme,texttheme,
           ),
           _buildFAQItem(
             question: "Do you offer seasonal drinks?",
             answer:
                 "Yes! We offer a rotating selection of seasonal drinks throughout the year. Our Pumpkin Spice Latte is available in the fall, Peppermint Mocha during winter, and refreshing fruit-infused iced drinks in the summer.",
+           colorscheme,texttheme,
           ),
           _buildFAQItem(
             question: "Do you have gluten-free and dairy-free options?",
             answer:
                 "Yes, we offer several gluten-free pastries and snacks. We also have dairy-free milk alternatives including almond milk, oat milk, and soy milk at no extra cost. Please inform our staff about any allergies so we can take extra precautions.",
+           colorscheme,texttheme,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFAQItem({required String question, required String answer}) {
+  Widget _buildFAQItem(ColorScheme colorscheme,TextTheme texttheme,{required String question, required String answer}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -389,23 +420,15 @@ class HelpSupportScreen extends ConsumerWidget {
         children: [
           Text(
             question,
-            style: GoogleFonts.dmSans(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: AppColors.textPrimary,
-            ),
+            style: texttheme.bodyLarge?.copyWith(color: colorscheme.primaryContainer),
           ),
           SizedBox(height: 8),
           Text(
             answer,
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.4,
-            ),
+             style: texttheme.bodySmall?.copyWith(color: colorscheme.secondary),
           ),
           SizedBox(height: 16),
-          Divider(height: 1, color: AppColors.lightBorder),
+          Divider(height: 1, color:colorscheme.shadow),
         ],
       ),
     );
@@ -658,7 +681,7 @@ class HelpSupportScreen extends ConsumerWidget {
     }
   }
 
-  Widget ordersupport(double height, double width, BuildContext context) {
+  Widget ordersupport(double height, double width, BuildContext context,ColorScheme colorscheme,TextTheme textTheme) {
     final List<Map<String, dynamic>> orderSupportOptions = [
       {'title': 'Missing item', 'icon': Icons.inventory_2_outlined},
       {
@@ -680,11 +703,9 @@ class HelpSupportScreen extends ConsumerWidget {
         children: [
           Text(
             "Select the issue you're facing with your order",
-            style: GoogleFonts.dmSans(
-              fontSize: width * 0.038,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
-            ),
+              style: textTheme.bodySmall?.copyWith(
+                    color:colorscheme.secondary
+              ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: height * 0.02),

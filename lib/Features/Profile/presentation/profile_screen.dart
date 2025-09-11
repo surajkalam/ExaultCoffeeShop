@@ -22,8 +22,7 @@ final List<String> assetImages = [
   "Assets/Icons/avtrars (9).png",
   "Assets/Icons/avtrars (11).png",
   "Assets/Icons/avtrars (14).png",
-  "Assets/Icons/avtrars (12).png"
-
+  "Assets/Icons/avtrars (12).png",
 ];
 
 final selectedImageProvider = StateProvider<String>((ref) {
@@ -37,46 +36,54 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
     final selectedImage = ref.watch(selectedImageProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context),
+      backgroundColor: colorScheme.onPrimary,
+      appBar: _buildAppBar(context, colorScheme, textTheme),
       body: authState.when(
         data: (user) {
           if (user == null) {
-            return _buildSignUpPrompt(context);
+            return _buildSignUpPrompt(context, colorScheme, textTheme);
           } else {
-            return _buildProfileContent(user, ref, context, selectedImage);
+            return _buildProfileContent(
+              user,
+              ref,
+              context,
+              selectedImage,
+              colorScheme,
+              textTheme,
+            );
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => _buildSignUpPrompt(context),
+        error: (error, stackTrace) =>
+            _buildSignUpPrompt(context, colorScheme, textTheme),
       ),
     );
   }
 
   // Build iOS-style app bar
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    colorscheme,
+    textTheme,
+  ) {
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorscheme.surface,
       elevation: 0,
       centerTitle: true,
       title: Text(
         'Profile',
-        style: GoogleFonts.dmSans(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primaryDark,
+        style: textTheme.titleLarge?.copyWith(
+          color: colorscheme.primaryContainer,
         ),
-      ),
-      leading: IconButton(
-        icon: Icon(Iconsax.arrow_left, color: AppColors.primaryDark),
-        onPressed: () => Navigator.maybePop(context),
       ),
     );
   }
 
-  Widget _buildSignUpPrompt(BuildContext context) {
+  Widget _buildSignUpPrompt(BuildContext context, colorscheme, texttheme) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Center(
@@ -86,7 +93,7 @@ class ProfileScreen extends ConsumerWidget {
             Icon(
               Iconsax.profile_circle,
               size: 80,
-              color: AppColors.textSecondary,
+              color: colorscheme.secondaryFixed,
             ),
             SizedBox(height: 16),
             Text(
@@ -149,14 +156,20 @@ class ProfileScreen extends ConsumerWidget {
     WidgetRef ref,
     BuildContext context,
     String selectedImage,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
-    final String email = user.email ?? 'Unknown User';
+    final String primaryContact =
+        user.phoneNumber != null && user.phoneNumber!.isNotEmpty
+        ? user.phoneNumber!
+        : user.email ?? 'Unknown User';
+    // final String email = user.email ?? 'Unknown User';
     final profile = ref.watch(profileProvider);
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     final paymentsAsync = ref.watch(userPaymentsProvider);
     int? totalPoints;
-     ref.watch(calculatedPointsProvider);
+    ref.watch(calculatedPointsProvider);
     return SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -164,26 +177,38 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           _buildProfileHeader(
             user,
-            email,
+            primaryContact,
             profile,
             selectedImage,
             height,
             width,
             context,
             ref,
+            colorscheme,
+            texttheme,
           ),
           SizedBox(height: 24),
           _buildAccountLevelSection(
             context,
+            primaryContact,
             ref,
             profile,
             paymentsAsync,
             totalPoints,
             height,
             width,
+            colorscheme,
+            texttheme,
           ),
           SizedBox(height: 24),
-          _buildAccountOptionsSection(height, width, context, ref),
+          _buildAccountOptionsSection(
+            height,
+            width,
+            context,
+            ref,
+            colorscheme,
+            texttheme,
+          ),
         ],
       ),
     );
@@ -192,27 +217,35 @@ class ProfileScreen extends ConsumerWidget {
   // Build profile header section
   Widget _buildProfileHeader(
     User user,
-    String email,
+    contact,
     profile,
     String selectedImage,
     double height,
     double width,
     BuildContext context,
     WidgetRef ref,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
+    final String displayContact =
+        user.phoneNumber != null && user.phoneNumber!.isNotEmpty
+        ? user.phoneNumber! // Show phone number if available
+        : user.email ?? 'Unknown User'; // Fall back to email
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
           padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorscheme.onPrimary,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black12,
-                offset: Offset(0, 4),
-                blurRadius: 12,
+                color: colorscheme.shadow,
+                offset: Offset(4, 4),
+                blurRadius: 6,
+                spreadRadius: 1,
               ),
             ],
           ),
@@ -223,20 +256,28 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: AppColors.primaryLight,
+                    backgroundColor: colorscheme.onPrimary,
                     backgroundImage: AssetImage(selectedImage),
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: GestureDetector(
-                      onTap: () => _showImagePickerBottomSheet(context, ref),
+                      onTap: () => _showImagePickerBottomSheet(
+                        context,
+                        ref,
+                        colorscheme,
+                        texttheme,
+                      ),
                       child: Container(
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          color: colorscheme.onPrimaryFixedVariant,
                           shape: BoxShape.circle,
+                          border: Border.all(
+                            color: colorscheme.primaryContainer,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black26,
@@ -248,7 +289,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: Icon(
                           Iconsax.edit,
                           size: 20,
-                          color: Colors.white,
+                          color: colorscheme.onSecondaryFixed,
                         ),
                       ),
                     ),
@@ -257,27 +298,23 @@ class ProfileScreen extends ConsumerWidget {
               ),
               SizedBox(height: 16),
               Text(
-                user.email?.split('@').first ?? 'User',
-                style: GoogleFonts.dmSans(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryDark,
+                user.displayName ?? user.email?.split('@').first ?? 'User',
+                style: texttheme.titleMedium?.copyWith(
+                  color: colorscheme.primaryContainer,
                 ),
               ),
               SizedBox(height: 4),
               Text(
-                email,
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
+                displayContact,
+                style: texttheme.bodyMedium?.copyWith(
+                  color: colorscheme.secondary,
                 ),
               ),
               SizedBox(height: 8),
               Text(
                 "Member since ${profile.joinDate}",
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
+                style: texttheme.bodySmall?.copyWith(
+                  color: colorscheme.secondary,
                 ),
               ),
             ],
@@ -290,17 +327,20 @@ class ProfileScreen extends ConsumerWidget {
   // Build account level section
   Widget _buildAccountLevelSection(
     BuildContext context,
+    contact,
     WidgetRef ref,
     profile,
     AsyncValue<List<Map<String, dynamic>>> paymentsAsync,
     int? totalPoints,
     double height,
     double width,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onPrimary,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -319,10 +359,8 @@ class ProfileScreen extends ConsumerWidget {
             },
             child: Text(
               "Account Level",
-              style: GoogleFonts.dmSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryDark,
+              style: texttheme.titleMedium?.copyWith(
+                color: colorscheme.primaryContainer,
               ),
             ),
           ),
@@ -335,13 +373,13 @@ class ProfileScreen extends ConsumerWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
+                    color: colorscheme.tertiaryFixed,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Iconsax.medal,
                     size: 28,
-                    color: AppColors.primary,
+                    color: colorscheme.secondaryFixed,
                   ),
                 ),
                 SizedBox(width: 16),
@@ -358,10 +396,8 @@ class ProfileScreen extends ConsumerWidget {
 
                           return Text(
                             currentLevel.name,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryDark,
+                            style: texttheme.labelLarge?.copyWith(
+                              color: colorscheme.primaryContainer,
                             ),
                           );
                         },
@@ -399,9 +435,9 @@ class ProfileScreen extends ConsumerWidget {
                                 children: [
                                   LinearProgressIndicator(
                                     value: progress,
-                                    backgroundColor: AppColors.primaryLight,
+                                    backgroundColor: colorscheme.tertiaryFixed,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.primary,
+                                      colorscheme.onPrimaryFixedVariant,
                                     ),
                                     borderRadius: BorderRadius.circular(8),
                                     minHeight: 8,
@@ -409,17 +445,15 @@ class ProfileScreen extends ConsumerWidget {
                                   SizedBox(height: 8),
                                   Text(
                                     '${(progress * 100).toStringAsFixed(0)}% to ${nextLevel.name}',
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
+                                    style: texttheme.bodySmall?.copyWith(
+                                      color: colorscheme.secondary,
                                     ),
                                   ),
                                   SizedBox(height: height * 0.01),
                                   Text(
                                     "$unlockedLevels of $totalLevels levels unlocked",
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 13,
-                                      color: AppColors.textSecondary,
+                                    style: texttheme.labelMedium?.copyWith(
+                                      color: colorscheme.primaryContainer,
                                     ),
                                   ),
                                 ],
@@ -428,14 +462,13 @@ class ProfileScreen extends ConsumerWidget {
                           );
                         },
                         loading: () => CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.primary,
+                          strokeWidth: 1,
+                          color: colorscheme.onPrimary,
                         ),
                         error: (error, stack) => Text(
                           'Error loading points',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
-                            color: Colors.red,
+                          style: texttheme.labelMedium?.copyWith(
+                            color: colorscheme.error,
                           ),
                         ),
                       ),
@@ -445,13 +478,13 @@ class ProfileScreen extends ConsumerWidget {
                 Icon(
                   Iconsax.arrow_right_3,
                   size: 20,
-                  color: AppColors.textSecondary,
+                  color: colorscheme.secondary,
                 ),
               ],
             ),
           ),
           SizedBox(height: 16),
-          Divider(height: 1, color: AppColors.lightBorder),
+          Divider(height: 1, color: colorscheme.shadow),
           SizedBox(height: 16),
           Center(
             child: Consumer(
@@ -465,27 +498,21 @@ class ProfileScreen extends ConsumerWidget {
 
                     return Text(
                       "$currentTotalPoints points",
-                      style: GoogleFonts.dmSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                      style: texttheme.titleMedium?.copyWith(
+                        color: colorscheme.onPrimaryFixedVariant,
                       ),
                     );
                   },
                   loading: () => Text(
                     "Loading points...",
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                    style: texttheme.titleMedium?.copyWith(
+                      color: colorscheme.onPrimaryFixedVariant,
                     ),
                   ),
                   error: (error, stack) => Text(
                     "Error loading points",
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.red,
+                    style: texttheme.titleMedium?.copyWith(
+                      color: colorscheme.error,
                     ),
                   ),
                 );
@@ -503,12 +530,15 @@ class ProfileScreen extends ConsumerWidget {
     double width,
     BuildContext context,
     WidgetRef ref,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     final options = [
       {
         'title': 'Edit Profile',
         'icon': Iconsax.profile_circle,
-        'onTap': () => _navigateToEditProfile(context, ref),
+        'onTap': () =>
+            _navigateToEditProfile(context, ref, colorscheme, texttheme),
       },
       {
         'title': 'Favorite Items',
@@ -528,7 +558,7 @@ class ProfileScreen extends ConsumerWidget {
       {
         'title': 'Recent Orders',
         'icon': Iconsax.receipt,
-        'onTap': () => context.push('/payment-method'),
+        'onTap': () => context.push('/Recent-order'),
       },
       {
         'title': 'Help & Support',
@@ -540,13 +570,14 @@ class ProfileScreen extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onPrimary,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, 4),
-            blurRadius: 12,
+            color: colorscheme.shadow,
+            offset: Offset(4, 4),
+            blurRadius: 6,
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -555,10 +586,8 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           Text(
             "Account",
-            style: GoogleFonts.dmSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryDark,
+            style: texttheme.titleMedium?.copyWith(
+              color: colorscheme.primaryContainer,
             ),
           ),
           SizedBox(height: 16),
@@ -567,7 +596,7 @@ class ProfileScreen extends ConsumerWidget {
             physics: NeverScrollableScrollPhysics(),
             itemCount: options.length,
             separatorBuilder: (context, index) =>
-                Divider(height: 1, color: AppColors.lightBorder),
+                Divider(height: 1, color: colorscheme.shadow),
             itemBuilder: (context, index) {
               final option = options[index];
               return ListTile(
@@ -575,20 +604,18 @@ class ProfileScreen extends ConsumerWidget {
                 leading: Icon(
                   option['icon'] as IconData,
                   size: 24,
-                  color: AppColors.primary,
+                  color: colorscheme.secondaryFixed,
                 ),
                 title: Text(
                   option['title'] as String,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.primaryDark,
+                  style: texttheme.labelMedium?.copyWith(
+                    color: colorscheme.primaryContainer,
                   ),
                 ),
                 trailing: Icon(
                   Iconsax.arrow_right_3,
                   size: 20,
-                  color: AppColors.textSecondary,
+                  color: colorscheme.secondary,
                 ),
                 onTap: option['onTap'] as VoidCallback?,
               );
@@ -599,7 +626,12 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showImagePickerBottomSheet(BuildContext context, WidgetRef ref) {
+  void _showImagePickerBottomSheet(
+    BuildContext context,
+    WidgetRef ref,
+    colorscheme,
+    texttheme,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -608,7 +640,7 @@ class ProfileScreen extends ConsumerWidget {
         return Container(
           height: MediaQuery.of(context).size.height * 0.6,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorscheme.onPrimary,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
@@ -617,13 +649,12 @@ class ProfileScreen extends ConsumerWidget {
           child: Consumer(
             builder: (context, ref, child) {
               final selectedImage = ref.watch(selectedImageProvider);
-
               return Column(
                 children: [
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorscheme.onPrimary,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(20),
                         topRight: Radius.circular(20),
@@ -634,16 +665,14 @@ class ProfileScreen extends ConsumerWidget {
                       children: [
                         Text(
                           'Choose Profile Image',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primaryDark,
+                          style: texttheme.titleMedium?.copyWith(
+                            color: colorscheme.primaryContainer,
                           ),
                         ),
                         IconButton(
                           icon: Icon(
                             Iconsax.close_circle,
-                            color: AppColors.textSecondary,
+                            color: colorscheme.primaryContainer,
                           ),
                           onPressed: () => Navigator.pop(context),
                         ),
@@ -672,8 +701,8 @@ class ProfileScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: selectedImage == assetImages[index]
-                                      ? AppColors.primary
-                                      : AppColors.lightBorder,
+                                      ? colorscheme.onPrimaryFixedVariant
+                                      : colorscheme.shadow,
                                   width: selectedImage == assetImages[index]
                                       ? 3
                                       : 1,
@@ -686,10 +715,10 @@ class ProfileScreen extends ConsumerWidget {
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return Container(
-                                      color: AppColors.primaryLight,
+                                      color: colorscheme.onPrimary,
                                       child: Icon(
                                         Iconsax.gallery_slash,
-                                        color: AppColors.textSecondary,
+                                        color: colorscheme.secondary,
                                       ),
                                     );
                                   },
@@ -710,10 +739,15 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _navigateToEditProfile(BuildContext context, WidgetRef ref) {
+  void _navigateToEditProfile(
+    BuildContext context,
+    WidgetRef ref,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: colorscheme.onPrimary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
@@ -733,10 +767,8 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               Text(
                 'Edit Profile',
-                style: GoogleFonts.dmSans(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryDark,
+                style: texttheme.titleMedium?.copyWith(
+                  color: colorscheme.primaryContainer,
                 ),
               ),
               SizedBox(height: 20),
@@ -747,7 +779,10 @@ class ProfileScreen extends ConsumerWidget {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  prefixIcon: Icon(Iconsax.user, color: AppColors.primary),
+                  prefixIcon: Icon(
+                    Iconsax.user,
+                    color: colorscheme.secondaryFixed,
+                  ),
                 ),
               ),
               SizedBox(height: 20),
@@ -761,14 +796,19 @@ class ProfileScreen extends ConsumerWidget {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorscheme.onPrimaryFixedVariant,
+                    foregroundColor: colorscheme.onSecondaryFixed,
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text('Save Changes'),
+                  child: Text(
+                    'Save Changes',
+                    style: texttheme.labelLarge?.copyWith(
+                      color: colorscheme.onSecondaryFixed,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: 16),
@@ -779,4 +819,3 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 }
-

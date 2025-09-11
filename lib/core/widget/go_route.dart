@@ -4,6 +4,7 @@ import 'package:coffee_shop/Features/Home/Home.dart';
 import 'package:coffee_shop/Features/Login_Screen/Signupscreen.dart';
 import 'package:coffee_shop/Features/Login_Screen/login_screen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/datastore.dart';
+import 'package:coffee_shop/Features/payment/paymentmethods.dart';
 import 'package:coffee_shop/core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -17,14 +18,9 @@ import '../../Features/Profile/profile.dart';
 final  GoRouter approuter = GoRouter(
     debugLogDiagnostics: true,
     routes: [
-      // GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/', builder: (context, state) => const MainAppere()),
-      // GoRoute(
-      //   path: '/signup',
-      //   builder: (context, state) => const SignupScreen(),
-      // ),
-      GoRoute(path: '/navbar', builder: (context, state) => const MainAppere()),
+      GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
 
+      GoRoute(path: '/navbar', builder: (context, state) => const MainAppere()),
       GoRoute(
         path: '/menu/:category',
         builder: (context, state) {
@@ -47,7 +43,7 @@ final  GoRouter approuter = GoRouter(
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(
         path: '/reward',
-        builder: (context, state) => const RewarsScreens(),
+        builder: (context, state) => RewarsScreens(),
       ),
       GoRoute(
         path: '/notification',
@@ -99,12 +95,12 @@ final  GoRouter approuter = GoRouter(
       //   path: '/recent-location',
       //   builder: (context, state) => const RecentOrderScreen(),
       // ),
-      // GoRoute(
-      //   path: '/payment-method',
-      //   builder: (context, state) => const PaymentMethodScreen(),
-      // ),
       GoRoute(
         path: '/payment-method',
+        builder: (context, state) => const PaymentMethodScreen(),
+      ),
+      GoRoute(
+        path: '/Recent-order',
         builder: (context, state) => const RecentOrderScreen(),
       ),
       GoRoute(

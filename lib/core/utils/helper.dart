@@ -1,5 +1,6 @@
 
 import 'package:coffee_shop/core/utils/utils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 // Widget addbutton(double height, double width) {
@@ -144,4 +145,27 @@ Widget addtextcartbutton(double height, double width, String text, {Icon? icon})
       ),
     ),
   );
+}
+class UserUtils {
+  static String getUserIdentifier(User user) {
+    // Always use UID as it's the most reliable identifier
+    return user.uid;
+  }
+
+  static String getUserDocumentPath(User user) {
+    return 'users/${getUserIdentifier(user)}';
+  }
+
+  static String getSanitizedIdentifier(User user) {
+    // For cases where you need a sanitized version (like for storage paths)
+    if (user.phoneNumber != null) {
+      return user.phoneNumber!
+          .replaceAll('+', '_plus_')
+          .replaceAll(' ', '_')
+          .replaceAll('(', '')
+          .replaceAll(')', '')
+          .replaceAll('-', '');
+    }
+    return user.uid;
+  }
 }

@@ -20,6 +20,7 @@ class MaterialTheme {
       primaryFixed: Color(0xFF96CEB4), // (accent-secondary)
       primaryFixedDim: Color(0xFFF1F5F9),
       onPrimaryFixed: Color(0xFFFFD93D),
+      tertiaryFixed:Color(0xFFFFF5EE),//indicator light browm profile
       onSecondaryFixed: Color(0xFFF8FAFC),//(fix white -container)
       outlineVariant: Color(0xFFE2E8F0), // (border-color)
       onSurface: Colors.white,
@@ -45,6 +46,7 @@ class MaterialTheme {
       primaryFixed: Color(0xFF96CEB4), // (accent-secondary)
       primaryFixedDim: Color(0xFFF1F5F9),
       onPrimaryFixed:Color(0xFFFFD93D) ,
+      tertiaryFixed:Color(0xFFFFF5EE),//indicator light browm profile
       onSecondaryFixed: Color(0xFFF8FAFC),//(fix white -container)
       outlineVariant: Color(0xFF475569), // (border-color)
       onSurface: Colors.black,

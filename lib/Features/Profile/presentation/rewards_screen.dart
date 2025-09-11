@@ -3,6 +3,7 @@
 import 'dart:developer';
 
 import 'package:coffee_shop/core/widget/appbar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,10 +12,12 @@ import '../../../core/utils/utils.dart';
 
 
 class RewarsScreens extends ConsumerWidget {
-  const RewarsScreens({super.key});
-
+   RewarsScreens({super.key});
+  final user = FirebaseAuth.instance.currentUser;
+  late final phoneNumber = user?.phoneNumber; 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    log('user : $user');
     log("Welcome to rewards screen");
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
@@ -120,7 +123,7 @@ class RewarsScreens extends ConsumerWidget {
             ),
             SizedBox(height: height * 0.015),
             Text(
-              "suraj@gmail.com",
+              "$phoneNumber",
               style: GoogleFonts.dmSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

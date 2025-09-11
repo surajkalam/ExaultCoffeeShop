@@ -158,7 +158,7 @@ class MenuScreen extends ConsumerWidget {
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: AppColors.primaryLight,
                       borderRadius: BorderRadius.circular(16),
@@ -214,7 +214,7 @@ class MenuScreen extends ConsumerWidget {
                               color: AppColors.primaryDark,
                             ),
                             textAlign: TextAlign.center,
-                            maxLines: 2,
+                            // maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

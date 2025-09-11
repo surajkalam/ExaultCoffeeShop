@@ -31,12 +31,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    // final textTheme = Theme.of(context).textTheme;
     return AppBar(
       leading: leadingWidget ?? (icon != null ? IconButton(
         icon: Icon(icon),
         onPressed: () => Navigator.of(context).pop(),
       ) : null),
-      title: titleWidget ?? (titleText != null ? Text(titleText!) : null
+      title: titleWidget 
+      ?? (titleText != null 
+      ? Text(titleText!,style: textTheme.titleLarge?.copyWith(color: colorScheme.primaryContainer, ),) 
+      : null
       ),
       
       actions: actions,
@@ -44,7 +49,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: elevation ?? Theme.of(context).appBarTheme.elevation,
       centerTitle: centerTitle,
       toolbarHeight: toolbarHeight,
-      foregroundColor: Colorclass.whitecolor,
+      foregroundColor: colorScheme.primary,
     );
   }
 

@@ -487,8 +487,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () =>
-            _handleCheckout(context, ref, product, quantity, price, totalPrice),
+        onPressed: () {
+          context.push('/payment-method');
+            // _handleCheckout(context, ref, product, quantity, price, totalPrice);
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
