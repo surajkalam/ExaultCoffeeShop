@@ -89,7 +89,7 @@ class EventScreen extends ConsumerWidget {
   // ignore: strict_top_level_inference
   PreferredSizeWidget _buildAppBar(context, colorscheme, texttheme) {
     return AppBar(
-      backgroundColor: colorscheme.onSecondaryFixed,
+      backgroundColor: colorscheme.surface,
       elevation: 0,
       centerTitle: true,
       title: Text(
@@ -370,7 +370,7 @@ class EventScreen extends ConsumerWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: colorscheme.secondaryFixed,
           foregroundColor: colorscheme.onPrimary,
-          padding: EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+          padding: EdgeInsets.symmetric(vertical: 14, horizontal: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -385,10 +385,9 @@ class EventScreen extends ConsumerWidget {
             SizedBox(width: 12),
             Text(
               "Book Your Event",
-              style: GoogleFonts.dmSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+               style: texttheme.bodyMedium?.copyWith(
+              color: colorscheme.onSecondaryFixed,
+            ),
             ),
           ],
         ),

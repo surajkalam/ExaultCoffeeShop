@@ -1,14 +1,10 @@
-
 import 'package:coffee_shop/core/widget/appbar.dart';
 import 'package:coffee_shop/Features/Profile/Provider/levelprovider.dart';
 import 'package:coffee_shop/Features/Profile/Provider/profile_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../core/utils/app_theme.dart';
-
 class LevelScreen extends ConsumerWidget {
   const LevelScreen({super.key});
 
@@ -27,14 +23,14 @@ class LevelScreen extends ConsumerWidget {
     final progress = ref
         .read(levelProvider.notifier)
         .getProgressPercentage(totalPoints, nextLevel);
-
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.onPrimary,
       appBar: CustomAppBar(
-        titleText: 'Reward Levels',
+        titleText: 'Levels ',
         centerTitle: true,
-        backgroundColor: AppColors.primary,
-        // titleColor: Colors.white,
+        backgroundColor: colorScheme.surface,
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
@@ -44,7 +40,15 @@ class LevelScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProgressHeader(context, width, height, progress, nextLevel),
+            _buildProgressHeader(
+              context,
+              width,
+              height,
+              progress,
+              nextLevel,
+              colorScheme,
+              textTheme,
+            ),
             SizedBox(height: height * 0.03),
             Expanded(
               child: ListView(
@@ -60,6 +64,8 @@ class LevelScreen extends ConsumerWidget {
                     progress: 1.0,
                     height: height,
                     width: width,
+                    colorscheme: colorScheme,
+                    texttheme: textTheme,
                   ),
                   _buildLevelCard(
                     context: context,
@@ -72,6 +78,8 @@ class LevelScreen extends ConsumerWidget {
                     progress: 0.8,
                     height: height,
                     width: width,
+                    colorscheme: colorScheme,
+                    texttheme: textTheme,
                   ),
                   _buildLevelCard(
                     context: context,
@@ -84,28 +92,34 @@ class LevelScreen extends ConsumerWidget {
                     progress: 0.4,
                     height: height,
                     width: width,
+                    colorscheme: colorScheme,
+                    texttheme: textTheme,
                   ),
                   _buildLevelCard(
                     context: context,
-                    title: 'Cappuccino Connoisseur',
+                    title: 'Cappuccino Lover',
                     description:
                         "Refine your palate and appreciate the finer details of coffee.",
-                    imagePath: "Assets/Icons/BONUS_ICON-removebg-preview.png",
+                    imagePath: "Assets/Icons/level4.png",
                     isUnlocked: false,
                     progress: 0.0,
                     height: height,
                     width: width,
-                  ),
+                    colorscheme: colorScheme,
+                    texttheme: textTheme,
+                  ), //Assets/Icons/level4.png
                   _buildLevelCard(
                     context: context,
                     title: 'Espresso Elite',
                     description:
                         "Reach the pinnacle of espresso mastery and exclusive rewards.",
-                    imagePath: "Assets/Icons/Fractured_Fruit_Data.jpg",
+                    imagePath: "Assets/Icons/BONUS_ICON-removebg-preview.png",
                     isUnlocked: false,
                     progress: 0.0,
                     height: height,
                     width: width,
+                    colorscheme: colorScheme,
+                    texttheme: textTheme,
                   ),
                   _buildLevelCard(
                     context: context,
@@ -118,6 +132,8 @@ class LevelScreen extends ConsumerWidget {
                     progress: 0.0,
                     height: height,
                     width: width,
+                    colorscheme: colorScheme,
+                    texttheme: textTheme,
                   ),
                 ],
               ),
@@ -134,16 +150,18 @@ class LevelScreen extends ConsumerWidget {
     double height,
     double progress,
     nextLevel,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
       padding: EdgeInsets.all(width * 0.04),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onPrimary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.08),
+            color: colorscheme.shadow.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -154,34 +172,38 @@ class LevelScreen extends ConsumerWidget {
         children: [
           Text(
             "Your Progress",
-            style: GoogleFonts.dmSans(
-              fontSize: width * 0.045,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+            style: texttheme.bodyLarge?.copyWith(
+              color: colorscheme.primaryContainer,
+              fontSize: 14,
             ),
           ),
           SizedBox(height: height * 0.015),
           SizedBox(
             width: width - 30,
             child: LinearProgressIndicator(
-              // value: 0.6,
               value: progress,
               borderRadius: BorderRadius.circular(10),
               minHeight: 12,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              backgroundColor: AppColors.primaryLight,
+              valueColor: AlwaysStoppedAnimation<Color>(colorscheme.primary),
+              backgroundColor: colorscheme.surface,
             ),
           ),
-          SizedBox(height: height * 0.01),
-          Text('${(progress * 100).toStringAsFixed(0)}% to ${nextLevel.name}'),
           SizedBox(height: height * 0.01),
           Text(
-            "2 of 6 levels unlocked",
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              color: AppColors.textSecondary,
+            '${(progress * 100).toStringAsFixed(0)}% to ${nextLevel.name}',
+            style: texttheme.bodyMedium?.copyWith(
+              color: colorscheme.secondary,
+              fontSize: 11,
             ),
           ),
+          SizedBox(height: height * 0.01),
+          // Text(
+          //   "2 of 6 levels unlocked",
+          //   style: GoogleFonts.dmSans(
+          //     fontSize: 13,
+          //     color: AppColors.textSecondary,
+          //   ),
+          // ),
         ],
       ),
     );
@@ -196,16 +218,18 @@ class LevelScreen extends ConsumerWidget {
     required double progress,
     required double height,
     required double width,
+    required ColorScheme colorscheme,
+    required TextTheme texttheme,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: height * 0.02),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onPrimary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.08),
+            color: colorscheme.shadow.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -224,23 +248,28 @@ class LevelScreen extends ConsumerWidget {
                   height: width * 0.18,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: isUnlocked
-                        ? AppColors.primaryLight
-                        : Colors.grey[200],
+                    color: isUnlocked ? colorscheme.surface : Colors.grey[200],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(imagePath, fit: BoxFit.cover),
+                  child: Padding(
+                    padding: EdgeInsets.all(2.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(imagePath, fit: BoxFit.contain),
+                    ),
                   ),
                 ),
                 if (isUnlocked)
                   Container(
                     padding: EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: AppColors.accent,
+                      color: colorscheme.onSecondary,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.check, size: 12, color: Colors.white),
+                    child: Icon(
+                      Icons.check,
+                      size: 12,
+                      color: colorscheme.onSecondaryFixed,
+                    ),
                   ),
               ],
             ),
@@ -255,31 +284,30 @@ class LevelScreen extends ConsumerWidget {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.lora(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        style: texttheme.labelMedium?.copyWith(
                           color: isUnlocked
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
+                              ? colorscheme.primaryContainer
+                              : colorscheme.secondary,
+                          fontSize: 13,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(width: width * 0.02),
+                      Spacer(),
+                      // SizedBox(width: width * 0.01),
                       if (!isUnlocked)
                         Icon(
                           Icons.lock_outline,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: colorscheme.secondary,
                         ),
                     ],
                   ),
                   SizedBox(height: height * 0.008),
                   Text(
                     description,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
-                      height: 1.4,
+                    style: texttheme.bodySmall?.copyWith(
+                      color: colorscheme.secondary,
+                      fontSize: 10,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -291,10 +319,9 @@ class LevelScreen extends ConsumerWidget {
                       children: [
                         Text(
                           "Progress to unlock:",
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
+                          style: texttheme.bodySmall?.copyWith(
+                            color: colorscheme.onPrimaryFixedVariant,
+                            fontSize: 10,
                           ),
                         ),
                         SizedBox(height: height * 0.006),
@@ -303,9 +330,9 @@ class LevelScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(4),
                           minHeight: 6,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.primary,
+                            colorscheme.onPrimaryFixedVariant,
                           ),
-                          backgroundColor: AppColors.lightBorder,
+                          backgroundColor: colorscheme.surface,
                         ),
                       ],
                     ),
@@ -318,19 +345,19 @@ class LevelScreen extends ConsumerWidget {
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 minSize: 0,
-                onPressed: () => _viewLevelBenefits(context, title),
+                onPressed: () =>
+                    _viewLevelBenefits(context, title, colorscheme, texttheme),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: colorscheme.onPrimaryFixedVariant,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     "View",
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                    style: texttheme.labelMedium?.copyWith(
+                      color: colorscheme.onSecondaryFixed,
+                      fontSize: 10,
                     ),
                   ),
                 ),
@@ -347,29 +374,50 @@ class LevelScreen extends ConsumerWidget {
     );
   }
 
-  void _viewLevelBenefits(BuildContext context, String levelName) {
+  void _viewLevelBenefits(
+    BuildContext context,
+    String levelName,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     showCupertinoModalPopup(
       context: context,
       builder: (BuildContext context) => CupertinoActionSheet(
         title: Text(
           "$levelName Benefits",
-          style: GoogleFonts.dmSans(fontWeight: FontWeight.w600),
+          style: texttheme.bodyMedium?.copyWith(
+            color: colorscheme.secondary,
+            // fontSize: 10
+          ),
         ),
         message: Text(
           _getLevelBenefits(levelName),
-          style: GoogleFonts.dmSans(),
+          style: texttheme.bodyMedium?.copyWith(
+            color: colorscheme.secondary,
+            fontSize: 10,
+          ),
         ),
         actions: [
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(context);
-              _shareAchievement(context, levelName);
+              _shareAchievement(context, levelName, colorscheme, texttheme);
             },
-            child: Text("Share Achievement"),
+            child: Text(
+              "Share Achievement",
+              style: texttheme.bodyMedium?.copyWith(
+                color: colorscheme.primaryContainer,
+              ),
+            ),
           ),
           CupertinoActionSheetAction(
             onPressed: () => Navigator.pop(context),
-            child: Text("Close"),
+            child: Text(
+              "Close",
+              style: texttheme.bodyMedium?.copyWith(
+                color: colorscheme.primaryContainer,
+              ),
+            ),
           ),
         ],
       ),
@@ -395,14 +443,22 @@ class LevelScreen extends ConsumerWidget {
     }
   }
 
-  void _shareAchievement(BuildContext context, String levelName) {
+  void _shareAchievement(
+    BuildContext context,
+    String levelName,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     // Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text("Shared $levelName achievement!"),
-        backgroundColor: AppColors.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(14)),
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: colorscheme.onSecondary,
       ),
     );
   }
 }
-

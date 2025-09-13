@@ -3,7 +3,6 @@ import 'package:coffee_shop/core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
 class MenuScreen extends ConsumerWidget {
@@ -14,10 +13,25 @@ class MenuScreen extends ConsumerWidget {
     final menuCategories = ref.watch(menuCategoriesProvider);
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context),
+      backgroundColor: colorScheme.onPrimary,
+      // appBar: _buildAppBar(context),
+      appBar: CustomAppBar(
+        titleText: 'Menu',
+        centerTitle: true,
+        backgroundColor: colorScheme.surface,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Iconsax.search_normal,
+              color: colorScheme.secondaryFixed,
+            ),
+            onPressed: () {},
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Padding(
@@ -25,18 +39,43 @@ class MenuScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCategoryGrid(height, width, menuCategories),
+              _buildCategoryGrid(
+                height,
+                width,
+                menuCategories,
+                colorScheme,
+                textTheme,
+              ),
               SizedBox(height: height * 0.03),
               _buildSectionTitle(
                 "Buy For Home",
                 "Perfect for your home brewing",
+                colorScheme,
+                textTheme,
               ),
               SizedBox(height: height * 0.02),
-              _buildHorizontalScrollSection(height, width, "home"),
+              _buildHorizontalScrollSection(
+                height,
+                width,
+                "home",
+                colorScheme,
+                textTheme,
+              ),
               SizedBox(height: height * 0.03),
-              _buildSectionTitle("Seasonal Specials", "Limited time offerings"),
+              _buildSectionTitle(
+                "Seasonal Specials",
+                "Limited time offerings",
+                colorScheme,
+                textTheme,
+              ),
               SizedBox(height: height * 0.02),
-              _buildHorizontalScrollSection(height, width, "seasonal"),
+              _buildHorizontalScrollSection(
+                height,
+                width,
+                "seasonal",
+                colorScheme,
+                textTheme,
+              ),
             ],
           ),
         ),
@@ -44,35 +83,13 @@ class MenuScreen extends ConsumerWidget {
     );
   }
 
-  // Build a professional app bar
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      centerTitle: true,
-      title: Text(
-        "Menu",
-        style: GoogleFonts.dmSans(
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primaryDark,
-        ),
-      ),
-      leading: IconButton(
-        icon: Icon(Iconsax.arrow_left, color: AppColors.primaryDark),
-        onPressed: () => Navigator.maybePop(context),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Iconsax.search_normal, color: AppColors.primaryDark),
-          onPressed: () {},
-        ),
-      ],
-    );
-  }
-
   // Build section title with subtitle
-  Widget _buildSectionTitle(String title, String subtitle) {
+  Widget _buildSectionTitle(
+    String title,
+    String subtitle,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
       child: Column(
@@ -80,19 +97,19 @@ class MenuScreen extends ConsumerWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.dmSans(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryDark,
+            style: textTheme.labelLarge?.copyWith(
+              color: colorscheme.primaryContainer,
+              // fontWeight: FontWeight.w400,
+              // fontSize: 10,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+            style: textTheme.bodySmall?.copyWith(
+              color: colorscheme.secondary,
+              fontWeight: FontWeight.w400,
+              fontSize: 10,
             ),
           ),
         ],
@@ -105,30 +122,32 @@ class MenuScreen extends ConsumerWidget {
     double height,
     double width,
     Map<String, List<Map<String, dynamic>>> menuCategories,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onPrimary,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: colorscheme.shadow,
             offset: Offset(0, 4),
             blurRadius: 10,
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(bottom: 1, top: 16, left: 16, right: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               "Categories",
-              style: GoogleFonts.dmSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryDark,
+              style: textTheme.labelMedium?.copyWith(
+                color: colorscheme.primaryContainer,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
               ),
             ),
             const SizedBox(height: 16),
@@ -160,11 +179,11 @@ class MenuScreen extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
+                      color: colorscheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [
+                      boxShadow: [
                         BoxShadow(
-                          color: Colors.black12,
+                          color: colorscheme.shadow,
                           offset: Offset(0, 2),
                           blurRadius: 6,
                         ),
@@ -178,9 +197,9 @@ class MenuScreen extends ConsumerWidget {
                           height: 60,
                           width: 60,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: colorscheme.onPrimary,
                             borderRadius: BorderRadius.circular(50),
-                            border: BoxBorder.all(color: Colorclass.shadowcolor)
+                            border: BoxBorder.all(color: colorscheme.shadow),
                           ),
                           child: Center(
                             child: ClipRRect(
@@ -193,10 +212,16 @@ class MenuScreen extends ConsumerWidget {
                                         firstItem['image'],
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, _, _) =>
-                                            _buildFallbackIcon(categoryName),
+                                            _buildFallbackIcon(
+                                              categoryName,
+                                              colorscheme,
+                                            ),
                                       ),
                                     )
-                                  : _buildFallbackIcon(categoryName),
+                                  : _buildFallbackIcon(
+                                      categoryName,
+                                      colorscheme,
+                                    ),
                             ),
                           ),
                         ),
@@ -208,10 +233,10 @@ class MenuScreen extends ConsumerWidget {
                           ),
                           child: Text(
                             categoryName,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.primaryDark,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorscheme.primary,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 8,
                             ),
                             textAlign: TextAlign.center,
                             // maxLines: 2,
@@ -235,6 +260,8 @@ class MenuScreen extends ConsumerWidget {
     double height,
     double width,
     String type,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     final isHomeSection = type == "home";
     final imagePath = isHomeSection
@@ -259,6 +286,8 @@ class MenuScreen extends ConsumerWidget {
             title,
             description,
             isHomeSection,
+            colorscheme,
+            texttheme,
           ),
           const SizedBox(width: 16),
           _buildProductCard(
@@ -268,6 +297,8 @@ class MenuScreen extends ConsumerWidget {
             title,
             description,
             isHomeSection,
+            colorscheme,
+            texttheme,
           ),
           const SizedBox(width: 8),
         ],
@@ -283,15 +314,18 @@ class MenuScreen extends ConsumerWidget {
     String itemName,
     String itemDescription,
     bool isHomeSection,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
+      margin: EdgeInsets.only(bottom: 10, top: 2),
       width: width * 0.7,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onSecondaryFixed,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: colorscheme.shadow,
             offset: Offset(0, 4),
             blurRadius: 10,
           ),
@@ -324,20 +358,24 @@ class MenuScreen extends ConsumerWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.accent,
+                    color: colorscheme.onSecondary,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Iconsax.star1, size: 14, color: Colors.white),
+                      Icon(
+                        Iconsax.star1,
+                        size: 14,
+                        color: colorscheme.onSecondaryFixed,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         "4.5",
-                        style: GoogleFonts.dmSans(
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorscheme.onSecondaryFixed,
+                          fontWeight: FontWeight.w400,
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -354,15 +392,15 @@ class MenuScreen extends ConsumerWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: colorscheme.onPrimaryFixedVariant,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       "Home Brew",
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorscheme.onSecondaryFixed,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 11,
                       ),
                     ),
                   ),
@@ -378,10 +416,9 @@ class MenuScreen extends ConsumerWidget {
               children: [
                 Text(
                   itemName,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryDark,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorscheme.primary,
+                    fontSize: 14,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -389,24 +426,22 @@ class MenuScreen extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   itemDescription,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorscheme.secondary,
+                    fontSize: 10,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "₹456",
-                      style: GoogleFonts.dmSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                      style: textTheme.titleSmall?.copyWith(
+                        color: colorscheme.onPrimaryFixedVariant,
+                        fontSize: 16,
                       ),
                     ),
                     Container(
@@ -415,15 +450,14 @@ class MenuScreen extends ConsumerWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        color: colorscheme.onPrimaryFixedVariant,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         "Order Now",
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                        style: textTheme.titleSmall?.copyWith(
+                          color: colorscheme.onSecondaryFixed,
+                          fontSize: 11,
                         ),
                       ),
                     ),
@@ -437,11 +471,11 @@ class MenuScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFallbackIcon(String categoryName) {
+  Widget _buildFallbackIcon(String categoryName, ColorScheme colorscheme) {
     return Icon(
       _getIconForCategory(categoryName),
       size: 24,
-      color: AppColors.primary,
+      color: colorscheme.secondaryFixed,
     );
   }
 
@@ -462,13 +496,3 @@ class MenuScreen extends ConsumerWidget {
 }
 
 // Define a color palette for the app
-class AppColors {
-  static const Color primary = Color(0xFFC67C4E);
-  static const Color primaryDark = Color(0xFF372213);
-  static const Color primaryLight = Color(0xFFFFF5EE);
-  static const Color accent = Color(0xFF36C07E);
-  static const Color background = Color(0xFFF9F9F9);
-  static const Color textPrimary = Color(0xFF2F2D2C);
-  static const Color textSecondary = Color(0xFF9B9B9B);
-  static const Color lightBorder = Color(0xFFEAEAEA);
-}

@@ -1,35 +1,28 @@
-
 // ignore_for_file: deprecated_member_use
 import 'dart:developer';
-
-import 'package:coffee_shop/core/widget/appbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import '../../../core/utils/utils.dart';
-
+import '../../../core/core.dart';
 
 class RewarsScreens extends ConsumerWidget {
-   RewarsScreens({super.key});
+  RewarsScreens({super.key});
   final user = FirebaseAuth.instance.currentUser;
-  late final phoneNumber = user?.phoneNumber; 
+  late final phoneNumber = user?.phoneNumber;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     log('user : $user');
     log("Welcome to rewards screen");
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.onPrimary,
       appBar: CustomAppBar(
-        titleText: "Rewards",
+        titleText: 'Reward',
         centerTitle: true,
-        backgroundColor: AppColors.primary,
-        // foregroundColor: AppColors.textPrimary,
-        elevation: 0.5,
+        backgroundColor: colorScheme.surface,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(
@@ -39,9 +32,9 @@ class RewarsScreens extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildUserProfileSection(height, width),
+            _buildUserProfileSection(height, width, colorScheme, textTheme),
             SizedBox(height: height * 0.03),
-            _buildSectionTitle("How to Earn"),
+            _buildSectionTitle("How to Earn", colorScheme, textTheme),
             SizedBox(height: height * 0.02),
             _buildEarnRewardTile(
               context: context,
@@ -53,6 +46,8 @@ class RewarsScreens extends ConsumerWidget {
               onTap: () {
                 // context.push('/offer');
               },
+              colorscheme: colorScheme,
+              texttheme: textTheme,
             ),
             SizedBox(height: height * 0.02),
             _buildEarnRewardTile(
@@ -62,9 +57,11 @@ class RewarsScreens extends ConsumerWidget {
               iconPath: "Assets/Icons/shopping-bag_9002748.png",
               height: height,
               width: width,
+              colorscheme: colorScheme,
+              texttheme: textTheme,
             ),
             SizedBox(height: height * 0.03),
-            _buildSectionTitle("Rewards"),
+            _buildSectionTitle("Rewards", colorScheme, textTheme),
             SizedBox(height: height * 0.02),
             _buildRewardTile(
               context: context,
@@ -74,6 +71,8 @@ class RewarsScreens extends ConsumerWidget {
               height: height,
               width: width,
               requiredCoins: 100,
+              colorscheme: colorScheme,
+              texttheme: textTheme,
             ),
             SizedBox(height: height * 0.02),
             _buildRewardTile(
@@ -84,6 +83,8 @@ class RewarsScreens extends ConsumerWidget {
               height: height,
               width: width,
               requiredCoins: 200,
+              colorscheme: colorScheme,
+              texttheme: textTheme,
             ),
           ],
         ),
@@ -91,17 +92,22 @@ class RewarsScreens extends ConsumerWidget {
     );
   }
 
-  Widget _buildUserProfileSection(double height, double width) {
+  Widget _buildUserProfileSection(
+    double height,
+    double width,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     return Center(
       child: Container(
         width: width * 0.9,
         padding: EdgeInsets.all(width * 0.06),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorscheme.onPrimary,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: colorscheme.shadow.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -113,36 +119,35 @@ class RewarsScreens extends ConsumerWidget {
               padding: EdgeInsets.all(width * 0.02),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primaryLight, width: 2),
+                border: Border.all(color: colorscheme.surface, width: 2),
               ),
               child: CircleAvatar(
                 backgroundImage: const AssetImage("Assets/Icons/avtar2.png"),
                 radius: width * 0.12,
-                backgroundColor: Colors.white,
+                backgroundColor: colorscheme.onSecondaryFixed,
               ),
             ),
             SizedBox(height: height * 0.015),
             Text(
               "$phoneNumber",
-              style: GoogleFonts.dmSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+              style: texttheme.bodyLarge?.copyWith(
+                color: colorscheme.primaryContainer,
+                fontSize: 14,
               ),
             ),
             SizedBox(height: height * 0.005),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: colorscheme.onPrimaryFixedVariant.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colorscheme.onPrimaryFixedVariant),
               ),
               child: Text(
                 "150 Points",
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.primary,
+                style: texttheme.bodyLarge?.copyWith(
+                  color: colorscheme.onPrimaryFixedVariant,
+                  fontSize: 12,
                 ),
               ),
             ),
@@ -152,15 +157,18 @@ class RewarsScreens extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(
+    String title,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
       child: Text(
         title,
-        style: GoogleFonts.dmSans(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+        style: texttheme.bodyMedium?.copyWith(
+          color: colorscheme.primaryContainer,
+          // fontSize: 12,
         ),
       ),
     );
@@ -174,17 +182,19 @@ class RewarsScreens extends ConsumerWidget {
     required double height,
     required double width,
     VoidCallback? onTap,
+    required ColorScheme colorscheme,
+    required TextTheme texttheme,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.all(width * 0.04),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorscheme.onPrimary,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: colorscheme.shadow.withOpacity(0.05),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -197,14 +207,14 @@ class RewarsScreens extends ConsumerWidget {
               width: width * 0.12,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: AppColors.primaryLight,
+                color: colorscheme.surface,
               ),
               child: Center(
                 child: Image(
                   image: AssetImage(iconPath),
                   height: height * 0.03,
                   width: width * 0.06,
-                  color: AppColors.primary,
+                  color: colorscheme.secondaryFixed,
                 ),
               ),
             ),
@@ -215,19 +225,17 @@ class RewarsScreens extends ConsumerWidget {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                    style: texttheme.bodyMedium?.copyWith(
+                      color: colorscheme.primaryContainer,
+                      fontSize: 13,
                     ),
                   ),
                   SizedBox(height: height * 0.005),
                   Text(
                     subtitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
+                    style: texttheme.bodyMedium?.copyWith(
+                      color: colorscheme.secondary,
+                      fontSize: 10,
                     ),
                     softWrap: true,
                     maxLines: 2,
@@ -238,7 +246,7 @@ class RewarsScreens extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
+              color: colorscheme.secondary,
               size: 24,
             ),
           ],
@@ -255,19 +263,21 @@ class RewarsScreens extends ConsumerWidget {
     required double height,
     required double width,
     required int requiredCoins,
+    required ColorScheme colorscheme,
+    required TextTheme texttheme,
   }) {
     return GestureDetector(
       onTap: () {
-        _showRewardSnackbar(context, requiredCoins);
+        _showRewardSnackbar(context, requiredCoins, colorscheme, texttheme);
       },
       child: Container(
         padding: EdgeInsets.all(width * 0.04),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorscheme.onPrimary,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: colorscheme.shadow.withOpacity(0.05),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -280,14 +290,14 @@ class RewarsScreens extends ConsumerWidget {
               width: width * 0.12,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: AppColors.accent.withOpacity(0.2),
+                color: colorscheme.onSecondary.withOpacity(0.2),
               ),
               child: Center(
                 child: Image(
                   image: AssetImage(iconPath),
                   height: height * 0.03,
                   width: width * 0.06,
-                  color: AppColors.accent,
+                  color: colorscheme.onSecondary,
                 ),
               ),
             ),
@@ -298,19 +308,17 @@ class RewarsScreens extends ConsumerWidget {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                    style: texttheme.bodyMedium?.copyWith(
+                      color: colorscheme.primaryContainer,
+                      fontSize: 13,
                     ),
                   ),
                   SizedBox(height: height * 0.005),
                   Text(
                     subtitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
+                    style: texttheme.bodyMedium?.copyWith(
+                      color: colorscheme.secondary,
+                      fontSize: 10,
                     ),
                   ),
                 ],
@@ -319,15 +327,14 @@ class RewarsScreens extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.1),
+                color: colorscheme.onSecondary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 "$requiredCoins coins",
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.accent,
+                style: texttheme.bodyMedium?.copyWith(
+                  color: colorscheme.onSecondary,
+                  fontSize: 10,
                 ),
               ),
             ),
@@ -337,18 +344,22 @@ class RewarsScreens extends ConsumerWidget {
     );
   }
 
-  void _showRewardSnackbar(BuildContext context, int requiredCoins) {
+  void _showRewardSnackbar(
+    BuildContext context,
+    int requiredCoins,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           "Complete $requiredCoins coins to apply",
-          style: GoogleFonts.dmSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
+          style: texttheme.labelMedium?.copyWith(
+            color: colorscheme.onSecondaryFixed,
+            fontSize: 11,
           ),
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: colorscheme.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         margin: const EdgeInsets.all(16),

@@ -1,11 +1,12 @@
 import 'package:coffee_shop/Features/Event/provider/eventprovider.dart';
 import 'package:coffee_shop/Features/Login_Screen/authenticationService.dart';
-import 'package:coffee_shop/core/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:lottie/lottie.dart';
+import '../../core/core.dart';
 
 class EventbookingScreen extends ConsumerWidget {
   const EventbookingScreen({super.key});
@@ -15,70 +16,58 @@ class EventbookingScreen extends ConsumerWidget {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     final authState = ref.watch(authNotifierProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context),
+      backgroundColor: colorScheme.onPrimary,
+      appBar: CustomAppBar(
+        titleText: 'Event Booking',
+        centerTitle: true,
+        backgroundColor: colorScheme.surface,
+      ),
       body: authState.when(
         data: (user) {
           if (user == null) {
-            return _buildSignUpPrompt(context);
+            return _buildSignUpPrompt(context,colorScheme,textTheme);
           } else {
-            return _buildBookingContent(height, width, user);
+            return _buildBookingContent(height, width, user,colorScheme,textTheme);
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => _buildSignUpPrompt(context),
+        error: (error, stackTrace) => _buildSignUpPrompt(context,colorScheme,textTheme),
       ),
     );
   }
-
-  // Build iOS-style app bar
-  // ignore: strict_top_level_inference
-  PreferredSizeWidget _buildAppBar(context) {
-    return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      centerTitle: true,
-      title: Text(
-        'Event Booking',
-        style: GoogleFonts.dmSans(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primaryDark,
-        ),
-      ),
-    );
-  }
-
   // Build sign up prompt
-  Widget _buildSignUpPrompt(BuildContext context) {
+  Widget _buildSignUpPrompt(BuildContext context,ColorScheme colorscheme,TextTheme texttheme) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 25),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Iconsax.calendar_remove,
-              size: 80,
-              color: AppColors.textSecondary,
-            ),
+          Lottie.asset('Assets/Icons/404 error. oops page not found.json',
+          height: 200,
+          width:280 ,
+          fit: BoxFit.fill
+          ),
             SizedBox(height: 16),
             Text(
               'Sign In to Book Events',
-              style: GoogleFonts.dmSans(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryDark,
-              ),
+              style: textTheme.titleMedium?.copyWith(
+              color: colorscheme.primaryContainer,
+            ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
             Text(
               'Create an account or sign in to book events and make reservations',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+               style: textTheme.bodyMedium?.copyWith(
+              color: colorscheme.secondary,
+              fontSize: 11
+            ),
             ),
             SizedBox(height: 32),
             SizedBox(
@@ -88,13 +77,18 @@ class EventbookingScreen extends ConsumerWidget {
                 onPressed: () =>
                     context.go('/phone-auth'), // Redirect to phone auth
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor:colorscheme.onPrimaryFixedVariant,
+                  foregroundColor: colorscheme. onSecondaryFixed,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('Sign Up / Sign In'),
+                child: Text('Sign Up / Sign In',
+               style: textTheme.bodyMedium?.copyWith(
+              color: colorscheme.onSecondaryFixed,
+              fontSize: 11
+            ),
+                ),
               ),
             ),
             SizedBox(height: 16),
@@ -102,16 +96,16 @@ class EventbookingScreen extends ConsumerWidget {
               width: double.infinity,
               height: 50,
               child: OutlinedButton(
-                onPressed: () => context.go('/navbar'), // Go to home
+                onPressed: () => context.go('/navbar'),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  side: BorderSide(color: AppColors.primary),
+                  side: BorderSide(color: colorscheme.onPrimaryFixedVariant),
                 ),
                 child: Text(
                   'Continue as Guest',
-                  style: TextStyle(color: AppColors.primary),
+                  style: TextStyle(color: colorscheme.onPrimaryFixedVariant),
                 ),
               ),
             ),
@@ -122,7 +116,7 @@ class EventbookingScreen extends ConsumerWidget {
   }
 
   // Build booking content for authenticated users
-  Widget _buildBookingContent(double height, double width, user) {
+  Widget _buildBookingContent(double height, double width, user ,ColorScheme colorscheme,TextTheme texttheme) {
     // final String primaryContact =
     //     user.phoneNumber != null && user.phoneNumber!.isNotEmpty
     //     ? user.phoneNumber!
@@ -131,11 +125,11 @@ class EventbookingScreen extends ConsumerWidget {
       padding: EdgeInsets.all(16),
       child: Column(
         children: [
-          _buildWelcomeCard(user, height, width),
+          _buildWelcomeCard(user, height, width,colorscheme,textTheme),
           SizedBox(height: 24),
-          _buildContactSection(height, width),
+          _buildContactSection(height, width,colorscheme,textTheme),
           SizedBox(height: 24),
-          _buildBookingSection(height, width),
+          _buildBookingSection(height, width,colorscheme,textTheme),
           SizedBox(height: 24),
         ],
       ),
@@ -144,15 +138,15 @@ class EventbookingScreen extends ConsumerWidget {
 
   // Build welcome card
   // ignore: strict_top_level_inference
-  Widget _buildWelcomeCard(user, double height, double width) {
+  Widget _buildWelcomeCard(user, double height, double width,ColorScheme colorscheme,TextTheme texttheme) {
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: colorscheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: colorscheme.shadow,
             offset: Offset(0, 4),
             blurRadius: 12,
           ),
@@ -164,10 +158,10 @@ class EventbookingScreen extends ConsumerWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: colorscheme.onPrimaryFixedVariant,
               borderRadius: BorderRadius.circular(30),
             ),
-            child: Icon(Iconsax.calendar_add, size: 32, color: Colors.white),
+            child: Icon(Iconsax.calendar_add, size: 32, color:colorscheme.onSecondaryFixed),
           ),
           SizedBox(width: 16),
           Expanded(
@@ -176,19 +170,17 @@ class EventbookingScreen extends ConsumerWidget {
               children: [
                 Text(
                   "Welcome, ${user.email?.split('@').first ?? 'Guest'}!",
-                  style: GoogleFonts.dmSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryDark,
-                  ),
+                 style: texttheme.bodyLarge?.copyWith(
+                 color:colorscheme.primary,
+                 ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   "Book your perfect event experience",
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: texttheme.bodySmall?.copyWith(
+                 color:colorscheme.secondary,
+                 fontSize: 10,
+                 ),
                 ),
               ],
             ),
@@ -199,7 +191,7 @@ class EventbookingScreen extends ConsumerWidget {
   }
 
   // Build contact section
-  Widget _buildContactSection(double height, double width) {
+  Widget _buildContactSection(double height, double width,ColorScheme colorscheme,TextTheme texttheme) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -208,19 +200,18 @@ class EventbookingScreen extends ConsumerWidget {
         tilePadding: EdgeInsets.symmetric(horizontal: 16),
         title: Text(
           "Contact Us",
-          style: GoogleFonts.dmSans(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.primaryDark,
+          style: texttheme.labelMedium?.copyWith(
+            color: colorscheme.primary,
+            fontSize: 14,
           ),
         ),
-        children: [_buildContactForm(height, width)],
+        children: [_buildContactForm(height, width,colorscheme,texttheme)],
       ),
     );
   }
 
   // Build contact form
-  Widget _buildContactForm(double height, double width) {
+  Widget _buildContactForm(double height, double width,ColorScheme colorscheme,TextTheme texttheme) {
     TextEditingController nameController = TextEditingController();
     TextEditingController emailController = TextEditingController();
     TextEditingController suggestionController = TextEditingController();
@@ -233,6 +224,8 @@ class EventbookingScreen extends ConsumerWidget {
             controller: nameController,
             hintText: "Enter your name",
             icon: Iconsax.user,
+            colorscheme:  colorscheme,
+             texttheme:   texttheme,
           ),
           SizedBox(height: 16),
           _buildTextField(
@@ -240,6 +233,8 @@ class EventbookingScreen extends ConsumerWidget {
             hintText: "Enter your email",
             icon: Iconsax.sms,
             keyboardType: TextInputType.emailAddress,
+            colorscheme:  colorscheme,
+             texttheme:   texttheme,
           ),
           SizedBox(height: 16),
           _buildTextField(
@@ -247,6 +242,8 @@ class EventbookingScreen extends ConsumerWidget {
             hintText: "Your suggestions or questions",
             icon: Iconsax.message,
             maxLines: 4,
+            colorscheme:  colorscheme,
+             texttheme:   texttheme,
           ),
           SizedBox(height: 24),
           _buildSubmitButton(
@@ -256,6 +253,8 @@ class EventbookingScreen extends ConsumerWidget {
             onPressed: () {
               // Handle form submission
             },
+             colorscheme:  colorscheme,
+             texttheme:   texttheme,
           ),
         ],
       ),
@@ -263,7 +262,7 @@ class EventbookingScreen extends ConsumerWidget {
   }
 
   // Build booking section
-  Widget _buildBookingSection(double height, double width) {
+  Widget _buildBookingSection(double height, double width,ColorScheme colorscheme,TextTheme texttheme) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -272,19 +271,18 @@ class EventbookingScreen extends ConsumerWidget {
         tilePadding: EdgeInsets.symmetric(horizontal: 16),
         title: Text(
           "Book a Table",
-          style: GoogleFonts.dmSans(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.primaryDark,
+           style: texttheme.bodyMedium?.copyWith(
+            color: colorscheme.primary,
+            // fontSize: 14,
           ),
         ),
-        children: [_buildBookingForm(height, width)],
+        children: [_buildBookingForm(height, width,colorscheme,texttheme)],
       ),
     );
   }
 
   // Build booking form
-  Widget _buildBookingForm(double height, double width) {
+  Widget _buildBookingForm(double height, double width, ColorScheme colorscheme,TextTheme texttheme) {
     TextEditingController nameController = TextEditingController();
     TextEditingController emailController = TextEditingController();
     TextEditingController reservationDate = TextEditingController();
@@ -299,16 +297,18 @@ class EventbookingScreen extends ConsumerWidget {
         children: [
           Text(
             "Planning a visit? Skip the wait and reserve your favorite seat in advance. Quick, easy, and confirmed in minutes!",
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: texttheme.bodySmall?.copyWith(
+            color: colorscheme.secondary,
+            fontSize: 11
+          ),
           ),
           SizedBox(height: 16),
           _buildTextField(
             controller: nameController,
             hintText: "Enter your name",
             icon: Iconsax.user,
+            colorscheme: colorscheme,
+            texttheme: texttheme
           ),
           SizedBox(height: 16),
           _buildTextField(
@@ -316,6 +316,8 @@ class EventbookingScreen extends ConsumerWidget {
             hintText: "Enter your email",
             icon: Iconsax.sms,
             keyboardType: TextInputType.emailAddress,
+             colorscheme: colorscheme,
+            texttheme: texttheme
           ),
           SizedBox(height: 16),
           _buildTextField(
@@ -323,21 +325,27 @@ class EventbookingScreen extends ConsumerWidget {
             hintText: "Enter phone number",
             icon: Iconsax.call,
             keyboardType: TextInputType.phone,
+             colorscheme: colorscheme,
+            texttheme: texttheme
           ),
           SizedBox(height: 16),
           _buildTextField(
             controller: reservationDate,
             hintText: "Date of reservation",
             icon: Iconsax.calendar,
+             colorscheme: colorscheme,
+            texttheme: texttheme
           ),
           SizedBox(height: 16),
-          _buildTimeSlotSection(height, width),
+          _buildTimeSlotSection(height, width,colorscheme,texttheme),
           SizedBox(height: 16),
           _buildTextField(
             controller: guestnumberController,
             hintText: "Number of guests",
             icon: Iconsax.people,
             keyboardType: TextInputType.number,
+             colorscheme: colorscheme,
+            texttheme: texttheme
           ),
           SizedBox(height: 16),
           _buildTextField(
@@ -345,6 +353,8 @@ class EventbookingScreen extends ConsumerWidget {
             hintText: "Special requests",
             icon: Iconsax.note,
             maxLines: 3,
+             colorscheme: colorscheme,
+            texttheme: texttheme
           ),
           SizedBox(height: 24),
           _buildSubmitButton(
@@ -354,6 +364,8 @@ class EventbookingScreen extends ConsumerWidget {
             onPressed: () {
               // Handle booking submission
             },
+            colorscheme: colorscheme,
+            texttheme: texttheme
           ),
         ],
       ),
@@ -367,25 +379,28 @@ class EventbookingScreen extends ConsumerWidget {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    required ColorScheme colorscheme,
+    required TextTheme texttheme
+
   }) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: GoogleFonts.dmSans(color: AppColors.textSecondary),
+        hintStyle: texttheme.bodySmall?.copyWith(color: colorscheme.secondary,fontSize: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.lightBorder),
+          borderSide: BorderSide(color:colorscheme.shadow),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.lightBorder),
+          borderSide: BorderSide(color: colorscheme.shadow),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary),
+          borderSide: BorderSide(color:colorscheme.onPrimaryFixedVariant),
         ),
-        prefixIcon: Icon(icon, color: AppColors.primary),
+        prefixIcon: Icon(icon, color: colorscheme.secondaryFixed),
         contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       ),
       keyboardType: keyboardType,
@@ -394,7 +409,7 @@ class EventbookingScreen extends ConsumerWidget {
   }
 
   // Build time slot section
-  Widget _buildTimeSlotSection(double height, double width) {
+  Widget _buildTimeSlotSection(double height, double width,ColorScheme colorscheme,TextTheme texttheme) {
     final List<Map<String, String>> timeSlots = [
       {'label': 'Morning', 'time': '8:00 AM - 12:00 PM'},
       {'label': 'Afternoon', 'time': '12:00 PM - 4:00 PM'},
@@ -412,11 +427,10 @@ class EventbookingScreen extends ConsumerWidget {
           children: [
             Text(
               'Preferred Time Slot',
-              style: GoogleFonts.dmSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryDark,
-              ),
+            style: texttheme.bodyMedium?.copyWith(
+            color: colorscheme.primary,
+            fontSize: 13,
+          ),
             ),
             SizedBox(height: 8),
             Wrap(
@@ -427,9 +441,8 @@ class EventbookingScreen extends ConsumerWidget {
                 return ChoiceChip(
                   label: Text(
                     '${slot['label']}\n${slot['time']}',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      color: isSelected ? Colors.white : AppColors.primaryDark,
+                    style: texttheme.bodySmall?.copyWith(
+                      color: isSelected ? colorscheme.onSecondaryFixed : colorscheme.primary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -439,8 +452,10 @@ class EventbookingScreen extends ConsumerWidget {
                       selected ? slot['time'] : null,
                     );
                   },
-                  selectedColor: AppColors.primary,
-                  backgroundColor: AppColors.primaryLight,
+                  // ignore: deprecated_member_use
+                  selectedColor: colorscheme.onPrimaryFixedVariant.withOpacity(0.6),
+                  // ignore: deprecated_member_use
+                  backgroundColor:colorscheme.primary.withOpacity(0.1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -451,11 +466,10 @@ class EventbookingScreen extends ConsumerWidget {
               SizedBox(height: 8),
               Text(
                 'Selected: $selectedTimeSlot',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
+            style: texttheme.bodySmall?.copyWith(
+            color: colorscheme.secondaryFixed,
+            fontSize: 11,
+          ),
               ),
             ],
           ],
@@ -470,14 +484,16 @@ class EventbookingScreen extends ConsumerWidget {
     required double width,
     required String text,
     required VoidCallback onPressed,
+    required ColorScheme colorscheme,
+    required TextTheme texttheme ,
   }) {
     return SizedBox(
       width: width,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: colorscheme.onPrimaryFixedVariant,
+          foregroundColor: colorscheme.onSecondaryFixed,
           padding: EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -486,7 +502,10 @@ class EventbookingScreen extends ConsumerWidget {
         ),
         child: Text(
           text,
-          style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
+        style: texttheme.bodyMedium?.copyWith(
+            color: colorscheme.onSecondaryFixed,
+            fontSize: 12,
+          ),
         ),
       ),
     );

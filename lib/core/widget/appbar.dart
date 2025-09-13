@@ -35,15 +35,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     // final textTheme = Theme.of(context).textTheme;
     return AppBar(
       leading: leadingWidget ?? (icon != null ? IconButton(
-        icon: Icon(icon),
+        icon: Icon(icon,color: colorScheme.secondaryFixed,),
         onPressed: () => Navigator.of(context).pop(),
       ) : null),
       title: titleWidget 
       ?? (titleText != null 
-      ? Text(titleText!,style: textTheme.titleLarge?.copyWith(color: colorScheme.primaryContainer, ),) 
+      ? Text(titleText!,style: textTheme.titleLarge?.copyWith(color: colorScheme.primaryContainer, fontWeight: FontWeight.w400,fontSize: 14),) 
       : null
       ),
-      
       actions: actions,
       backgroundColor: backgroundColor ?? const Color.fromARGB(255, 81, 140, 240),
       elevation: elevation ?? Theme.of(context).appBarTheme.elevation,

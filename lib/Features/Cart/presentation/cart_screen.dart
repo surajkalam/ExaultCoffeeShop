@@ -1,4 +1,3 @@
-
 import 'dart:developer';
 
 import 'package:coffee_shop/Features/Cart/provider/cart_provider.dart';
@@ -7,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:lottie/lottie.dart';
+
+import '../../../core/core.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
@@ -18,7 +20,9 @@ class CartScreen extends ConsumerWidget {
     // final height = MediaQuery.of(context).size.height;
     // final width = MediaQuery.of(context).size.width;
     log('🔄 Cart provider state: ${cartAsync.toString()}');
-    
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     List couponlist = [
       'Assets/Images/Coffee lovers _ Voucher for a free cappuccino - Maria Palienko (1).jpg',
       'Assets/Images/Coupon (1).jpg',
@@ -36,16 +40,42 @@ class CartScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
-      appBar: _buildAppBar(context, ref), // Updated to pass ref
+      backgroundColor: colorScheme.onPrimary,
+      appBar: CustomAppBar(
+        titleText: 'My Cart ',
+        centerTitle: true,
+        backgroundColor: colorScheme.surface,
+        actions: [
+          Consumer(
+            builder: (context, ref, child) {
+              final cartState = ref.watch(cartProvider);
+              return cartState.maybeWhen(
+                data: (items) => items.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Iconsax.trash, color: Colors.black),
+                        onPressed: () => _showClearCartDialog(
+                          context,
+                          ref,
+                          colorScheme,
+                          textTheme,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+                orElse: () => const SizedBox.shrink(),
+              );
+            },
+          ),
+        ],
+      ),
       body: cartAsync.when(
-        loading: () => _buildLoadingState(),
-        error: (error, stack) => _buildErrorState(error),
+        loading: () => _buildLoadingState(colorScheme, textTheme),
+        error: (error, stack) =>
+            _buildErrorState(error, colorScheme, textTheme),
         data: (items) {
           log('✅ Cart data received: ${items.length} items');
           if (items.isEmpty) {
             log('📭 Cart is empty');
-            return _buildEmptyState();
+            return _buildEmptyState(colorScheme, textTheme);
           }
 
           // Calculate total price
@@ -91,90 +121,106 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
-  // Build iOS-style app bar (updated to accept ref)
-  PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: true,
-      title: Text(
-        'My Cart',
-        style: GoogleFonts.dmSans(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: Colors.black,
-        ),
-      ),
-      leading: IconButton(
-        icon: const Icon(Iconsax.arrow_left, color: Colors.black),
-        onPressed: () => Navigator.maybePop(context),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Iconsax.trash, color: Colors.black),
-          onPressed: () => _showClearCartDialog(context, ref),
-        ),
-      ],
-    );
-  }
-
   // Show confirmation dialog for clearing cart
-  void _showClearCartDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Cart'),
-        content: const Text('Are you sure you want to remove all items from your cart?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await ref.read(cartProvider.notifier).removeAllItems();
-                // ignore: use_build_context_synchronously
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Cart cleared successfully'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error clearing cart: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            child: const Text(
-              'Clear All',
-              style: TextStyle(color: Colors.red),
+  void _showClearCartDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
+    // Get current cart state
+    final cartState = ref.read(cartProvider);
+
+    cartState.maybeWhen(
+      data: (items) {
+        if (items.isEmpty) {
+          // Show message that cart is already empty
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Your cart is already empty'),
+              backgroundColor: colorscheme.secondary,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: const EdgeInsets.all(16),
             ),
+          );
+          return;
+        }
+
+        // Show confirmation dialog for non-empty cart
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(
+              'Clear Cart',
+              style: texttheme.bodyLarge?.copyWith(color: colorscheme.primary),
+            ),
+            content: Text(
+              'Are you sure you want to remove all ${items.length} items from your cart?',
+              style: texttheme.bodySmall?.copyWith(
+                color: colorscheme.secondary,
+                fontSize: 11,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: texttheme.labelMedium?.copyWith(
+                    color: colorscheme.primary,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await ref.read(cartProvider.notifier).removeAllItems();
+                  // ignore: use_build_context_synchronously
+                  context.pop();
+                },
+                child: Text(
+                  'Clear All',
+                  style: texttheme.labelMedium?.copyWith(
+                    color: colorscheme.error,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
+      orElse: () {
+        // Handle loading or error states
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Cannot clear cart at this time'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      },
     );
   }
 
   // ... rest of your methods remain the same (loadingState, errorState, emptyState, etc.)
   // Build loading state
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(ColorScheme colorscheme, TextTheme texttheme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: Color(0xFFC67C4E)),
+          CircularProgressIndicator(color: colorscheme.secondaryFixed),
           const SizedBox(height: 16),
           Text(
             'Loading your cart...',
-            style: GoogleFonts.dmSans(
-              fontSize: 16,
-              color: const Color(0xFF9B9B9B),
+            style: texttheme.labelLarge?.copyWith(
+              color: colorscheme.primaryContainer,
             ),
           ),
         ],
@@ -183,27 +229,22 @@ class CartScreen extends ConsumerWidget {
   }
 
   // Build error state
-  Widget _buildErrorState(error) {
+  Widget _buildErrorState(error, ColorScheme colorscheme, TextTheme texttheme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Iconsax.warning_2, size: 48, color: Colors.orange),
+          Icon(Iconsax.warning_2, size: 48, color: colorscheme.secondaryFixed),
           const SizedBox(height: 16),
           Text(
             'Error loading cart items',
-            style: GoogleFonts.dmSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
-            ),
+            style: texttheme.bodySmall?.copyWith(color: colorscheme.error),
           ),
           const SizedBox(height: 8),
           Text(
             'Please try again later',
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
-              color: const Color(0xFF9B9B9B),
+            style: texttheme.bodySmall?.copyWith(
+              color: colorscheme.primaryContainer,
             ),
           ),
         ],
@@ -212,28 +253,24 @@ class CartScreen extends ConsumerWidget {
   }
 
   // Build empty state
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ColorScheme colorscheme, TextTheme texttheme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Iconsax.shopping_cart, size: 64, color: Color(0xFF9B9B9B)),
+          //  Icon(Iconsax.shopping_cart, size: 64, color: colorscheme.secondaryFixed),
+          Lottie.asset('Assets/Icons/Empty Cart.json', height: 200, width: 200),
           const SizedBox(height: 16),
           Text(
             'Your cart is empty',
-            style: GoogleFonts.dmSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
+            style: texttheme.bodyMedium?.copyWith(
+              color: colorscheme.primaryContainer,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Add some delicious items to get started',
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
-              color: const Color(0xFF9B9B9B),
-            ),
+            style: texttheme.bodySmall?.copyWith(color: colorscheme.secondary),
           ),
         ],
       ),
@@ -296,7 +333,7 @@ class CartScreen extends ConsumerWidget {
                         ),
                 ),
                 const SizedBox(width: 16),
-          
+
                 // Product Details
                 Expanded(
                   child: Column(
@@ -321,7 +358,7 @@ class CartScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-          
+
                       // Price and Quantity Controls
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -484,6 +521,7 @@ class CartScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.05),
             offset: const Offset(0, 4),
             blurRadius: 10,

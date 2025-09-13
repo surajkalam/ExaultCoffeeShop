@@ -5,6 +5,7 @@ import 'package:coffee_shop/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
@@ -27,9 +28,11 @@ void main() async {
   // );
   runApp(ProviderScope(child: MainApp()));
 }
+
 void _setupLogging() {
   log('Setting up logging filters...');
 }
+
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
   @override
@@ -37,7 +40,7 @@ class MainApp extends StatelessWidget {
     final materialTheme = MaterialTheme(textTheme);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      theme:materialTheme.light(),
+      theme: materialTheme.light(),
       darkTheme: materialTheme.dark(),
       themeMode: ThemeMode.system,
       routerConfig: approuter,

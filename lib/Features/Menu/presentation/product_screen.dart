@@ -1,11 +1,8 @@
 import 'dart:developer';
 import 'package:coffee_shop/Features/Menu/Provider/paymentProvider.dart';
-import 'package:coffee_shop/core/utils/app_theme.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:scratcher/widgets.dart';
 
@@ -34,19 +31,22 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         log('paymentdata : $paymentData');
         log('Navigating to success screen');
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted){
-           showScratchCardDialog(context );
-            context.push('/payment-success', extra: paymentData);
-            ref.read(paymentProvider.notifier).clearSuccess();
-          }
-        });
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        //   if (mounted) {
+        //     showScratchCardDialog(context);
+        //     context.push('/payment-success', extra: paymentData);
+        //     ref.read(paymentProvider.notifier).clearSuccess();
+        //   }
+        // });
       }
     });
 
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     final quantity = ref.watch(quantityProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     final product = widget.product;
     final price = product['price'] != null
         ? (product['price'] is num
@@ -54,19 +54,30 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               : (double.tryParse(product['price'].toString()) ?? 0.0))
         : 0.0;
     final totalPrice = price * quantity;
-
     log('starting product :$product');
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context, product['name'] ?? 'Product Details'),
+      backgroundColor: colorScheme.onPrimary,
+      appBar: _buildAppBar(
+        context,
+        product['name'] ?? 'Product Details',
+        colorScheme,
+        textTheme,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product Image with iOS-style design
-            _buildProductImage(height, width, ref, product),
+            _buildProductImage(
+              height,
+              width,
+              ref,
+              product,
+              colorScheme,
+              textTheme,
+            ),
             const SizedBox(height: 24),
 
             // Product Name and Rating
@@ -78,16 +89,18 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               quantity,
               price,
               product,
+              colorScheme,
+              textTheme,
             ),
             SizedBox(height: height * 0.02),
 
             // Price Section
-            _buildPriceSection(price, totalPrice),
+            _buildPriceSection(price, totalPrice, colorScheme, textTheme),
             SizedBox(height: height * 0.03),
 
             // Description (if available)
             if (product['description'] != null)
-              _buildDescriptionSection(height, product),
+              _buildDescriptionSection(height, product, colorScheme, textTheme),
 
             // Add to Cart Button
             SizedBox(height: height * 0.04),
@@ -98,14 +111,17 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               quantity,
               price,
               totalPrice,
+              colorScheme,
+              textTheme,
             ),
           ],
         ),
       ),
     );
   }
+
   // Method to show scratch card dialog
-  Future <void> showScratchCardDialog(BuildContext context) async{
+  Future<void> showScratchCardDialog(BuildContext context) async {
     showDialog(
       context: context,
       barrierDismissible: false, // Prevent closing by tapping outside
@@ -117,7 +133,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-               Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 16.0),
                   child: Text(
                     'Scratch to reveal your reward!',
@@ -127,8 +143,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
-                    height: 200,  // Fixed card height
-                    width: 300,   // Fixed card width
+                    height: 200, // Fixed card height
+                    width: 300, // Fixed card width
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       color: Colors.amber,
@@ -144,21 +160,23 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
                       child: Scratcher(
-                        brushSize: 70,  // Size of the scratch brush
-                        threshold: 50,   // 50% scratched to trigger completion
-                        color: Colors.pink,  // Scratch layer color
+                        brushSize: 70, // Size of the scratch brush
+                        threshold: 50, // 50% scratched to trigger completion
+                        color: Colors.pink, // Scratch layer color
                         // onScratchComplete: () {
                         //   // When scratching is complete:
                         //   Navigator.pop(context);
                         //   Navigator.pushReplacementNamed(context, '/paymentSuccess');
                         // },
                         child: Center(
-                          child: Image(image: AssetImage('Assets/Images/scratch1.jpg')),
+                          child: Image(
+                            image: AssetImage('Assets/Images/scratch1.jpg'),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  ),
+                ),
               ],
             ),
           ),
@@ -166,27 +184,34 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       },
     );
   }
+
   // Build iOS-style app bar
-  PreferredSizeWidget _buildAppBar(BuildContext context, String title) {
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    String title,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorscheme.surface,
       elevation: 0,
       centerTitle: true,
       title: Text(
         title,
-        style: GoogleFonts.dmSans(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primaryDark,
+        style: texttheme.titleLarge?.copyWith(
+          color: colorscheme.primaryContainer,
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
         ),
+        // color: colorScheme.primaryContainer, fontWeight: FontWeight.w400,fontSize: 14
       ),
       leading: IconButton(
-        icon: Icon(Iconsax.arrow_left, color: AppColors.primaryDark),
+        icon: Icon(Iconsax.arrow_left, color: colorscheme.primary),
         onPressed: () => Navigator.maybePop(context),
       ),
       actions: [
         IconButton(
-          icon: Icon(Iconsax.heart, color: AppColors.primaryDark),
+          icon: Icon(Iconsax.heart, color: colorscheme.secondaryFixed),
           onPressed: () {},
         ),
       ],
@@ -199,16 +224,18 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     double width,
     ref,
     Map<String, dynamic> product,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
       height: height * 0.32,
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: AppColors.primaryLight,
+        color: colorscheme.onSecondaryFixed,
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: colorscheme.shadow,
             offset: Offset(0, 6),
             blurRadius: 12,
           ),
@@ -220,21 +247,21 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ? Image.asset(
                 product['image'],
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _buildImagePlaceholder(),
+                errorBuilder: (_, _, _) => _buildImagePlaceholder(colorscheme),
               )
-            : _buildImagePlaceholder(),
+            : _buildImagePlaceholder(colorscheme),
       ),
     );
   }
 
   // Build image placeholder
-  Widget _buildImagePlaceholder() {
+  Widget _buildImagePlaceholder(ColorScheme colorscheme) {
     return Center(
       child: Icon(
         Iconsax.coffee,
         size: 60,
         // ignore: deprecated_member_use
-        color: AppColors.primary.withOpacity(0.3),
+        color: colorscheme.secondaryFixed.withOpacity(0.3),
       ),
     );
   }
@@ -248,6 +275,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     int quantity,
     num price,
     Map<String, dynamic> product,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,10 +284,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         // Product Name
         Text(
           product['name'] ?? 'No Name',
-          style: GoogleFonts.dmSans(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: AppColors.primaryDark,
+          style: texttheme.bodyLarge?.copyWith(
+            color: colorscheme.primaryContainer,
           ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -269,20 +296,24 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         Row(
           children: [
             // Rating
-            _buildRatingStars(product),
+            _buildRatingStars(product, colorscheme, texttheme),
             SizedBox(width: 8),
             Text(
               (product['rating']?.toStringAsFixed(1) ?? '0.0'),
-              style: GoogleFonts.dmSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+              style: texttheme.titleMedium?.copyWith(
+                color: colorscheme.secondary,
               ),
             ),
             Spacer(),
-
             // Quantity Controls
-            _buildQuantityControls(ref, height, width, quantity),
+            _buildQuantityControls(
+              ref,
+              height,
+              width,
+              quantity,
+              colorscheme,
+              texttheme,
+            ),
           ],
         ),
       ],
@@ -290,7 +321,11 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   }
 
   // Build rating stars
-  Widget _buildRatingStars(Map<String, dynamic> product) {
+  Widget _buildRatingStars(
+    Map<String, dynamic> product,
+    colorscheme,
+    texttheme,
+  ) {
     return Row(
       children: List.generate(5, (index) {
         IconData icon;
@@ -302,7 +337,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         } else {
           icon = Iconsax.star;
         }
-        return Icon(icon, color: Colors.amber, size: 20);
+        return Icon(icon, color: colorscheme.onPrimaryFixed, size: 20);
       }),
     );
   }
@@ -313,12 +348,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     double height,
     double width,
     int quantity,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: colorscheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.lightBorder),
+        border: Border.all(color: colorscheme.shadow),
       ),
       child: Row(
         children: [
@@ -333,7 +370,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             icon: Icon(
               Iconsax.minus,
               size: 20,
-              color: quantity > 1 ? AppColors.primary : AppColors.textSecondary,
+              color: quantity > 1
+                  ? colorscheme.secondaryFixed
+                  : colorscheme.secondary,
             ),
             splashRadius: 20,
           ),
@@ -344,10 +383,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             child: Center(
               child: Text(
                 "$quantity",
-                style: GoogleFonts.dmSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryDark,
+                style: texttheme.labelMedium?.copyWith(
+                  color: colorscheme.primaryContainer,
                 ),
               ),
             ),
@@ -359,7 +396,11 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               ref.read(quantityProvider.notifier).state++;
               log('Item count: ${quantity + 1}');
             },
-            icon: Icon(Iconsax.add, size: 20, color: AppColors.primary),
+            icon: Icon(
+              Iconsax.add,
+              size: 20,
+              color: colorscheme.secondaryFixed,
+            ),
             splashRadius: 20,
           ),
         ],
@@ -368,14 +409,23 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   }
 
   // Build price section
-  Widget _buildPriceSection(num price, num totalPrice) {
+  Widget _buildPriceSection(
+    num price,
+    num totalPrice,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onSecondaryFixed,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black12, offset: Offset(0, 4), blurRadius: 8),
+          BoxShadow(
+            color: colorscheme.shadow,
+            offset: Offset(0, 4),
+            blurRadius: 8,
+          ),
         ],
       ),
       child: Column(
@@ -383,10 +433,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         children: [
           Text(
             'Pricing Details',
-            style: GoogleFonts.dmSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryDark,
+            style: texttheme.bodyMedium?.copyWith(
+              color: colorscheme.primary,
+              fontSize: 13,
             ),
           ),
           SizedBox(height: 12),
@@ -395,41 +444,36 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             children: [
               Text(
                 'Unit Price:',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
+                style: texttheme.bodySmall?.copyWith(
+                  color: colorscheme.secondary,
+                  fontSize: 12,
                 ),
               ),
               Text(
                 '₹${price.toStringAsFixed(2)}',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryDark,
+                style: texttheme.bodyMedium?.copyWith(
+                  color: colorscheme.primary,
                 ),
               ),
             ],
           ),
           SizedBox(height: 8),
-          Divider(height: 1, color: AppColors.lightBorder),
+          Divider(height: 1, color: colorscheme.shadow),
           SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Total:',
-                style: GoogleFonts.dmSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryDark,
+                style: texttheme.bodySmall?.copyWith(
+                  color: colorscheme.primary,
+                  fontSize: 11,
                 ),
               ),
               Text(
                 '₹${totalPrice.toStringAsFixed(2)}',
-                style: GoogleFonts.dmSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                style: texttheme.bodyMedium?.copyWith(
+                  color: colorscheme.secondaryFixed,
                 ),
               ),
             ],
@@ -440,14 +484,23 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   }
 
   // Build description section
-  Widget _buildDescriptionSection(double height, Map<String, dynamic> product) {
+  Widget _buildDescriptionSection(
+    double height,
+    Map<String, dynamic> product,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onSecondaryFixed,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black12, offset: Offset(0, 4), blurRadius: 8),
+          BoxShadow(
+            color: colorscheme.shadow,
+            offset: Offset(0, 4),
+            blurRadius: 8,
+          ),
         ],
       ),
       child: Column(
@@ -455,19 +508,17 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         children: [
           Text(
             'Description',
-            style: GoogleFonts.dmSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryDark,
+            style: texttheme.bodyMedium?.copyWith(
+              color: colorscheme.primary,
+              fontSize: 13,
             ),
           ),
           SizedBox(height: height * 0.01),
           Text(
             product['description'],
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.5,
+            style: texttheme.bodySmall?.copyWith(
+              color: colorscheme.secondary,
+              fontSize: 11,
             ),
           ),
         ],
@@ -483,35 +534,41 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     int quantity,
     num price,
     num totalPrice,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          context.push('/payment-method');
-            // _handleCheckout(context, ref, product, quantity, price, totalPrice);
+          // context.push('/payment-method');
+          _handleCheckout(context, ref, product, quantity, price, totalPrice);
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: colorscheme.onPrimaryFixedVariant,
+          foregroundColor: colorscheme.onSecondaryFixed,
           padding: EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 4,
           // ignore: deprecated_member_use
-          shadowColor: AppColors.primary.withOpacity(0.3),
+          shadowColor: colorscheme.shadow.withOpacity(0.3),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Iconsax.shopping_cart, size: 20),
+            Icon(
+              Iconsax.shopping_cart,
+              size: 20,
+              color: colorscheme.onSecondaryFixed,
+            ),
             SizedBox(width: 8),
             Text(
               'Proceed to Checkout ($quantity items)',
-              style: GoogleFonts.dmSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+              style: texttheme.bodySmall?.copyWith(
+                color: colorscheme.onSecondaryFixed,
+                fontSize: 12,
               ),
             ),
           ],
@@ -567,4 +624,3 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 }
 
 // Define a color palette for the app
-

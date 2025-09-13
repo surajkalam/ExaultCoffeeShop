@@ -219,10 +219,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       flexibleSpace: _buildFlexibleSpace(height, width, colorscheme, textTheme),
       elevation: 1,
       scrolledUnderElevation: 2,
-      shadowColor: Colors.black12,
+      shadowColor:colorscheme.shadow,
       surfaceTintColor: Colors.transparent,
       forceElevated: false,
-      backgroundColor: colorscheme.onPrimaryFixed,
+      backgroundColor: colorscheme.tertiaryFixed,
       foregroundColor: colorscheme.primary,
       iconTheme: IconThemeData(color: colorscheme.secondaryFixed),
       actionsIconTheme: IconThemeData(color: colorscheme.primary),
@@ -278,7 +278,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       stretchModes: [StretchMode.zoomBackground],
       background: Container(
         decoration: BoxDecoration(
-          color: colorscheme.onPrimaryFixed,
+          color: colorscheme.tertiaryFixed,
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(25),
             bottomRight: Radius.circular(25),
@@ -298,12 +298,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Row(
               children: [
                 Text(
-                  'Suraj ☕☕',
-                  style: textTheme.titleSmall?.copyWith(
-                    color: colorscheme.primary,
-                  ),
-                ),
-                SizedBox(width: width * 0.5),
+              'What would you like to order today?',
+
+              style: textTheme.bodySmall?.copyWith(
+                color: colorscheme.secondary,
+              ),
+            ),
+            Spacer(),
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -326,13 +327,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
 
-            Text(
-              'What would you like to order today?',
-
-              style: textTheme.bodySmall?.copyWith(
-                color: colorscheme.secondary,
-              ),
-            ),
           ],
         ),
       ),

@@ -1,8 +1,6 @@
 import 'package:coffee_shop/Authentication/phone_auth.dart';
 import 'package:coffee_shop/Authentication/splash_screen.dart';
 import 'package:coffee_shop/Features/Home/Home.dart';
-import 'package:coffee_shop/Features/Login_Screen/Signupscreen.dart';
-import 'package:coffee_shop/Features/Login_Screen/login_screen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/datastore.dart';
 import 'package:coffee_shop/Features/payment/paymentmethods.dart';
 import 'package:coffee_shop/core/core.dart';
@@ -18,9 +16,13 @@ import '../../Features/Profile/profile.dart';
 final  GoRouter approuter = GoRouter(
     debugLogDiagnostics: true,
     routes: [
+      // GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
+      GoRoute(path: '/login-screen', builder: (context, state) => const PhoneAuth()),
 
       GoRoute(path: '/navbar', builder: (context, state) => const MainAppere()),
+      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+
       GoRoute(
         path: '/menu/:category',
         builder: (context, state) {

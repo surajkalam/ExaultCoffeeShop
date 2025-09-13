@@ -1,15 +1,12 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop/core/core.dart';
-import 'package:coffee_shop/core/utils/app_theme.dart' show AppColors;
-import 'package:coffee_shop/core/widget/favoriteIcon.dart';
 import 'package:coffee_shop/DATABASE_HELPER/cart_data.dart';
 import 'package:coffee_shop/Features/Cart/provider/cart_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
 class CategoryItemsScreen extends ConsumerWidget {
@@ -24,33 +21,37 @@ class CategoryItemsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    log('categoryName : $categoryName');
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
-
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     if (items.isEmpty) {
       return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: _buildAppBar(categoryName, context),
+        backgroundColor: colorScheme.onPrimary,
+        // appBar: _buildAppBar(categoryName, context),
+        appBar: CustomAppBar(
+          titleText: categoryName,
+          centerTitle: true,
+          backgroundColor: colorScheme.surface,
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Iconsax.coffee, size: 60, color: AppColors.textSecondary),
+              Icon(Iconsax.coffee, size: 60, color: colorScheme.secondaryFixed),
               SizedBox(height: 16),
               Text(
                 'No items available',
-                style: GoogleFonts.dmSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                style: textTheme.labelMedium?.copyWith(
+                  color: colorScheme.primaryContainer,
                 ),
               ),
               SizedBox(height: 8),
               Text(
                 'Check back later for new additions',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.secondary,
                 ),
               ),
             ],
@@ -60,8 +61,13 @@ class CategoryItemsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(categoryName, context),
+      backgroundColor: colorScheme.onPrimary,
+      // appBar: _buildAppBar(categoryName, context),
+      appBar: CustomAppBar(
+        titleText: categoryName,
+        centerTitle: true,
+        backgroundColor: colorScheme.surface,
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: GridView.builder(
@@ -77,37 +83,18 @@ class CategoryItemsScreen extends ConsumerWidget {
             log('$item');
             final hasImage = item['image'] != null;
 
-            return _buildProductCard(context, height, width, item, hasImage);
+            return _buildProductCard(
+              context,
+              height,
+              width,
+              item,
+              hasImage,
+              colorScheme,
+              textTheme,
+            );
           },
         ),
       ),
-    );
-  }
-
-  // Build iOS-style app bar
-  PreferredSizeWidget _buildAppBar(String title, context) {
-    return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      centerTitle: true,
-      title: Text(
-        title,
-        style: GoogleFonts.dmSans(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primaryDark,
-        ),
-      ),
-      leading: IconButton(
-        icon: Icon(Iconsax.arrow_left, color: AppColors.primaryDark),
-        onPressed: () => Navigator.maybePop(context),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Iconsax.search_normal, color: AppColors.primaryDark),
-          onPressed: () {},
-        ),
-      ],
     );
   }
 
@@ -118,14 +105,16 @@ class CategoryItemsScreen extends ConsumerWidget {
     double width,
     Map<String, dynamic> item,
     bool hasImage,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorscheme.onSecondaryFixed,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: colorscheme.shadow,
             offset: Offset(0, 4),
             blurRadius: 10,
           ),
@@ -145,7 +134,7 @@ class CategoryItemsScreen extends ConsumerWidget {
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
-                  color: AppColors.primaryLight,
+                  color: colorscheme.onSecondaryFixed,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(
@@ -156,14 +145,15 @@ class CategoryItemsScreen extends ConsumerWidget {
                       ? Image.asset(
                           item['image'],
                           fit: BoxFit.fill,
-                          errorBuilder: (_, _, _) => _buildImagePlaceholder(),
+                          errorBuilder: (_, _, _) =>
+                              _buildImagePlaceholder(colorscheme),
                         )
-                      : _buildImagePlaceholder(),
+                      : _buildImagePlaceholder(colorscheme),
                 ),
               ),
               Positioned(
-                top: 8,
-                right: 8,
+                top: 1,
+                right: 1,
                 child: FavoriteIcon(
                   itemData: {
                     'name': item['name'] ?? '',
@@ -178,7 +168,11 @@ class CategoryItemsScreen extends ConsumerWidget {
               Positioned(
                 bottom: 8,
                 left: 8,
-                child: _buildRatingBadge(item['rating'] ?? 0),
+                child: _buildRatingBadge(
+                  item['rating'] ?? 0,
+                  colorscheme,
+                  texttheme,
+                ),
               ),
             ],
           ),
@@ -192,10 +186,9 @@ class CategoryItemsScreen extends ConsumerWidget {
                 // Product Name
                 Text(
                   item['name'] ?? 'No Name',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryDark,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorscheme.primaryContainer,
+                    fontSize: 14,
                   ),
                   // maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -205,15 +198,15 @@ class CategoryItemsScreen extends ConsumerWidget {
                     item['description'].isNotEmpty)
                   Text(
                     item['description'],
-                    style: GoogleFonts.dmSans(
-                      fontSize: 10,
-                      color: AppColors.textSecondary,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorscheme.secondary,
+                      fontSize: 9,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                SizedBox(height: 3),
+                SizedBox(height: 6),
 
                 // Price and Add to Cart Button
                 Padding(
@@ -223,15 +216,14 @@ class CategoryItemsScreen extends ConsumerWidget {
                     children: [
                       Text(
                         '₹${item['price'] ?? '0'}',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorscheme.onPrimaryFixedVariant,
+                          fontSize: 16,
                         ),
                       ),
                       InkWell(
                         onTap: () async {
-                          await _addToCart(context, item);
+                          await _addToCart(context, item, colorscheme);
                           if (context.mounted) {
                             context.pushNamed(
                               'product',
@@ -240,7 +232,7 @@ class CategoryItemsScreen extends ConsumerWidget {
                             );
                           }
                         },
-                        child: _buildAddToCartButton(),
+                        child: _buildAddToCartButton(colorscheme, texttheme),
                       ),
                     ],
                   ),
@@ -254,29 +246,33 @@ class CategoryItemsScreen extends ConsumerWidget {
   }
 
   // Build rating badge
-  Widget _buildRatingBadge(double rating) {
+  Widget _buildRatingBadge(
+    double rating,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         // ignore: deprecated_member_use
-        color: Colors.white.withOpacity(0.9),
+        color: colorscheme.onSecondaryFixed.withOpacity(0.9),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black12, offset: Offset(0, 2), blurRadius: 4),
+          BoxShadow(
+            color: colorscheme.shadow,
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Iconsax.star1, size: 14, color: Colors.amber),
+          Icon(Iconsax.star1, size: 14, color: colorscheme.secondaryFixed),
           SizedBox(width: 4),
           Text(
             rating.toStringAsFixed(1),
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryDark,
-            ),
+            style: textTheme.labelMedium?.copyWith(color: colorscheme.primary),
           ),
         ],
       ),
@@ -284,25 +280,25 @@ class CategoryItemsScreen extends ConsumerWidget {
   }
 
   // Build add to cart button
-  Widget _buildAddToCartButton() {
+  Widget _buildAddToCartButton(ColorScheme colorscheme, TextTheme texttheme) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: colorscheme.onPrimaryFixedVariant,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Icon(Iconsax.add, size: 18, color: Colors.white),
+      child: Icon(Iconsax.add, size: 18, color: colorscheme.onSecondaryFixed),
     );
   }
 
   // Build image placeholder
-  Widget _buildImagePlaceholder() {
+  Widget _buildImagePlaceholder(ColorScheme colorscheme) {
     return Center(
       child: Icon(
         Iconsax.coffee,
         size: 40,
         // ignore: deprecated_member_use
-        color: AppColors.primary.withOpacity(0.5),
+        color: colorscheme.onPrimaryFixedVariant.withOpacity(0.5),
       ),
     );
   }
@@ -311,6 +307,7 @@ class CategoryItemsScreen extends ConsumerWidget {
   Future<void> _addToCart(
     BuildContext context,
     Map<String, dynamic> itemData,
+    ColorScheme colorscheme,
   ) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -347,23 +344,29 @@ class CategoryItemsScreen extends ConsumerWidget {
         ref.refresh(cartProvider);
       }
 
-      _showAddToCartSuccess(context, itemData['name']);
+      // ignore: use_build_context_synchronously
+      _showAddToCartSuccess(context, itemData['name'], colorscheme);
 
       if (context.mounted) {
         final ref = ProviderScope.containerOf(context);
         ref.refresh(cartProvider);
       }
     } catch (e) {
-      _showAddToCartError(context, e.toString());
+      // ignore: use_build_context_synchronously
+      _showAddToCartError(context, e.toString(), colorscheme);
     }
   }
 
   // Show success feedback with iOS-style animation
-  void _showAddToCartSuccess(BuildContext context, String itemName) {
+  void _showAddToCartSuccess(
+    BuildContext context,
+    String itemName,
+    ColorScheme colorscheme,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$itemName added to cart'),
-        backgroundColor: AppColors.accent,
+        backgroundColor: colorscheme.onSecondary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: EdgeInsets.all(16),
@@ -372,11 +375,15 @@ class CategoryItemsScreen extends ConsumerWidget {
   }
 
   // Show error feedback
-  void _showAddToCartError(BuildContext context, String error) {
+  void _showAddToCartError(
+    BuildContext context,
+    String error,
+    ColorScheme colorscheme,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Failed to add to cart: $error'),
-        backgroundColor: Colors.red,
+        backgroundColor: colorscheme.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: EdgeInsets.all(16),
@@ -384,5 +391,3 @@ class CategoryItemsScreen extends ConsumerWidget {
     );
   }
 }
-
-// Define a color palette for the app

@@ -13,7 +13,7 @@ class MaterialTheme {
       secondary: Color(0xFF94A3B8),  // (text-secondary)
       surface: Color(0xFFF6F1E9), //  (bg-secondary, bg-card)
       error: Colors.red,
-      onSecondary: Color(0xFF77B254), //  (accent-primary)
+      onSecondary: Color(0xFF36C07E), //  (accent-primary)
       onPrimaryFixedVariant: Color(0xFFC67C4E),//(button)
       secondaryFixed: Color(0xFFFF7D29),//(orange)
       tertiary: Color(0xFF372213) ,//(category -icons)

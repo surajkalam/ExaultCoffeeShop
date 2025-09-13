@@ -6,11 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
-
-import '../../../core/utils/app_theme.dart';
-
+import 'package:lottie/lottie.dart';
 // List of available asset images
 final List<String> assetImages = [
   "Assets/Icons/avtar2.png",
@@ -22,6 +19,7 @@ final List<String> assetImages = [
   "Assets/Icons/avtrars (9).png",
   "Assets/Icons/avtrars (11).png",
   "Assets/Icons/avtrars (14).png",
+  
   "Assets/Icons/avtrars (12).png",
 ];
 
@@ -76,8 +74,9 @@ class ProfileScreen extends ConsumerWidget {
       centerTitle: true,
       title: Text(
         'Profile',
-        style: textTheme.titleLarge?.copyWith(
+        style: textTheme.titleSmall?.copyWith(
           color: colorscheme.primaryContainer,
+          fontWeight: FontWeight.w400,
         ),
       ),
     );
@@ -90,41 +89,48 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Iconsax.profile_circle,
-              size: 80,
-              color: colorscheme.secondaryFixed,
-            ),
+           Lottie.asset('Assets/Icons/404 error. oops page not found.json',
+          height: 200,
+          width:280 ,
+          fit: BoxFit.fill
+          ),
             SizedBox(height: 16),
             Text(
               'Sign In to View Profile',
-              style: GoogleFonts.dmSans(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryDark,
-              ),
+            style: texttheme.titleMedium?.copyWith(
+              color: colorscheme.primaryContainer,
+            ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
             Text(
               'Create an account or sign in to access your profile information',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+                style: texttheme.labelSmall?.copyWith(
+              color: colorscheme.secondary,
+             
+              
+            ),
             ),
             SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () => context.go('/signup'),
+                onPressed: () => context.go('/'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorscheme.onPrimaryFixedVariant,
+                  foregroundColor: colorscheme.onSecondaryFixed,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('Sign Up'),
+                child: Text('Login',
+                style: texttheme.bodyMedium?.copyWith(
+              color: colorscheme.onSecondaryFixed,
+            
+            ),
+                ),
               ),
             ),
             SizedBox(height: 16),
@@ -132,16 +138,18 @@ class ProfileScreen extends ConsumerWidget {
               width: double.infinity,
               height: 50,
               child: OutlinedButton(
-                onPressed: () => context.go('/'),
+                onPressed: () => context.go('/navbar'),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  side: BorderSide(color: AppColors.primary),
+                  side: BorderSide(color: colorscheme.onPrimaryFixedVariant),
                 ),
                 child: Text(
-                  'Sign In',
-                  style: TextStyle(color: AppColors.primary),
+                  'Go To Home',
+                  style: texttheme.bodyMedium?.copyWith(
+              color: colorscheme.onPrimaryFixedVariant,
+            ),
                 ),
               ),
             ),
@@ -344,9 +352,10 @@ class ProfileScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, 4),
-            blurRadius: 12,
+            color: colorscheme.shadow,
+            offset: Offset(4, 4),
+            blurRadius: 6,
+            spreadRadius: 1,
           ),
         ],
       ),
