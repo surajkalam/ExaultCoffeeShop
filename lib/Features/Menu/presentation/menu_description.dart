@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 
+import '../data/data.dart';
+
 class CategoryItemsScreen extends ConsumerWidget {
   final String categoryName;
   final List<Map<String, dynamic>> items;
@@ -97,6 +99,42 @@ class CategoryItemsScreen extends ConsumerWidget {
       ),
     );
   }
+ Future<List<Product>> getProductsByCategory(String category) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    try {
+      log('Fetching products for category: $category');
+
+      final QuerySnapshot categorySnapshot = await firestore
+          .collection('items')
+          .doc('1757264051191711')
+          .collection(category)
+          .get();
+
+      log('Total products found in $category: ${categorySnapshot.docs.length}');
+
+      // Print each product's data to console
+      for (final doc in categorySnapshot.docs) {
+        log('Product ID: ${doc.id}');
+        log('Product data: ${doc.data()}');
+        log('-----------------------------');
+      }
+
+      final List<Product> allProducts = categorySnapshot.docs.map((productDoc) {
+        final data = productDoc.data() as Map<String, dynamic>;
+        // Include the document ID in the data
+        data['id'] = productDoc.id;
+        return Product.fromMap(data);
+      }).toList();
+
+      log(
+        'Successfully fetched ${allProducts.length} products from category $category',
+      );
+      return allProducts;
+    } catch (e) {
+      log('Error getting products: $e');
+      rethrow;
+    }
+  }
 
   // Build product card with iOS design
   Widget _buildProductCard(
@@ -142,7 +180,7 @@ class CategoryItemsScreen extends ConsumerWidget {
                     topRight: Radius.circular(20),
                   ),
                   child: hasImage
-                      ? Image.asset(
+                      ? Image.network(
                           item['image'],
                           fit: BoxFit.fill,
                           errorBuilder: (_, _, _) =>

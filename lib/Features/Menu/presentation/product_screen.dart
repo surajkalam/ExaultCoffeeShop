@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:coffee_shop/Features/Menu/Provider/paymentProvider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,19 +26,19 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       log('Next: ${next.paymentSuccess}');
 
       if (next.paymentSuccess && mounted) {
+        // Use getLastPaymentData() instead of next.paymentData
         final paymentData = ref
             .read(paymentProvider.notifier)
             .getLastPaymentData();
         log('paymentdata : $paymentData');
         log('Navigating to success screen');
 
-        // WidgetsBinding.instance.addPostFrameCallback((_) {
-        //   if (mounted) {
-        //     showScratchCardDialog(context);
-        //     context.push('/payment-success', extra: paymentData);
-        //     ref.read(paymentProvider.notifier).clearSuccess();
-        //   }
-        // });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.push('/payment-success', extra: paymentData);
+            ref.read(paymentProvider.notifier).clearSuccess();
+          }
+        });
       }
     });
 
@@ -244,7 +245,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: product['image'] != null
-            ? Image.asset(
+            ? Image.network(
                 product['image'],
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => _buildImagePlaceholder(colorscheme),
@@ -585,6 +586,25 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     num price,
     num totalPrice,
   ) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    log('User: ${user?.uid}');
+    log('Phone: ${user?.phoneNumber}');
+
+    if (user == null || user.phoneNumber == null) {
+      log('User not authenticated with phone number');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please login with your phone number before making a payment.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      context.push('/login-screen');
+      return;
+    }
+
     final orderId = 'ORD_${DateTime.now().millisecondsSinceEpoch}';
 
     log('=== Checkout Details ===');
@@ -592,6 +612,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     log('Quantity: $quantity');
     log('Unit Price: ₹${price.toStringAsFixed(2)}');
     log('Total Price: ₹${totalPrice.toStringAsFixed(2)}');
+
     try {
       log('Initiating payment...');
 
@@ -603,6 +624,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             quantity: quantity,
             orderId: orderId,
           );
+
       log('Payment initiated successfully');
     } catch (e) {
       log('Payment initiation error: $e');

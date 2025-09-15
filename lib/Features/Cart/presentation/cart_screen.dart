@@ -229,6 +229,7 @@ class CartScreen extends ConsumerWidget {
   }
 
   // Build error state
+  // ignore: strict_top_level_inference
   Widget _buildErrorState(error, ColorScheme colorscheme, TextTheme texttheme) {
     return Center(
       child: Column(
@@ -325,7 +326,7 @@ class CartScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: item['image'] != null
-                      ? Image.asset(item['image'], fit: BoxFit.cover)
+                      ? Image.network(item['image'], fit: BoxFit.cover)
                       : const Icon(
                           Iconsax.coffee,
                           color: Color(0xFFC67C4E),
@@ -614,7 +615,7 @@ class CartScreen extends ConsumerWidget {
     List<Map<String, dynamic>> items,
   ) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding:  EdgeInsets.only(bottom:60,left: 20,right: 20,top: 10),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFEAEAEA))),

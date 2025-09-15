@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:coffee_shop/Features/Menu/Provider/paymentSuccessModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +14,18 @@ class PaymentSuccessScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Convert map to model
     final payment = PaymentSuccessModel.fromMap(paymentData);
+    log('welcome in payment success ');
+    //  WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   // Your initState logic here
+    //   log('Payment screen mounted');
 
+    //   // Auto navigate after 3 seconds
+    //   Future.delayed(Duration(seconds: 3), () {
+    //     if (context.mounted) {
+    //       context.go('/navbar');
+    //     }
+    //   });
+    // });
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment Successful'),
@@ -37,7 +50,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                context.go('/');
+                context.go('/navbar');
               },
               child: const Text('Continue Shopping'),
             ),
@@ -53,15 +66,9 @@ class PaymentSuccessScreen extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[700]),
-            ),
+            child: Text(value, style: TextStyle(color: Colors.grey[700])),
           ),
         ],
       ),
@@ -74,8 +81,18 @@ class PaymentSuccessScreen extends ConsumerWidget {
 
   String _getMonthName(int month) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return months[month - 1];
   }

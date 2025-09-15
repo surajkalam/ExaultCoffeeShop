@@ -1,4 +1,5 @@
 // All Menu in one list
+import 'package:coffee_shop/Features/Menu/Provider/firebase_menu_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
@@ -19,8 +20,6 @@ final List offerlist = [
     "image": 'Assets/Images/newarrives4.png',
     "description": "Flavored with aromatic cardamom for a refreshing twist.",
     "price": '450',
-    
-    
   },
   {
     "name": "Elaichi Tea",
@@ -29,11 +28,26 @@ final List offerlist = [
     "image": 'Assets/Images/newarrives4.png',
     "description": "Flavored with aromatic cardamom for a refreshing twist.",
     "price": '450',
-  }
+  },
 ];
-final menuCategoriesProvider = Provider<Map<String, List<Map<String, dynamic>>>>((
-  ref,
-) {
+
+final  menuCategoriesProvider = FutureProvider<Map<String, List<Map<String, dynamic>>>>((ref) async {
+  final firebaseService = FirebaseMenuService();
+  try {
+    return await firebaseService.getMenuItems();
+  } catch (e) {
+    // return getLocalMenuData();
+    return {
+      'Coffee': [],
+      'Tea': [],
+      'Cooler': [],
+      'crisspyDeliciousMenu': [],
+      'frozenFuelsMenu': []
+    };
+  }
+});
+ Map<String, List<Map<String, dynamic>>> getLocalMenuData()
+{
   return {
   'Coffee': [
       {
@@ -444,4 +458,4 @@ final menuCategoriesProvider = Provider<Map<String, List<Map<String, dynamic>>>>
     //   },
     // ],
 };
-});
+}

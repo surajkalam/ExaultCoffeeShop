@@ -1,4 +1,4 @@
-
+// ignore: file_names
 import 'dart:developer';
 import 'package:coffee_shop/Services/Razorpay_Service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,12 +27,14 @@ class PaymentState {
   final String? error;
   final String? successMessage;
   final bool paymentSuccess;
+  final Map<String, dynamic>? paymentData;
 
   PaymentState({
     this.isLoading = false,
     this.error,
     this.successMessage,
     this.paymentSuccess = false,
+    this.paymentData,
   });
 
   PaymentState copyWith({
@@ -40,12 +42,14 @@ class PaymentState {
     String? error,
     String? successMessage,
     bool? paymentSuccess,
+    Map<String, dynamic>? paymentData,
   }) {
     return PaymentState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
       successMessage: successMessage ?? this.successMessage,
       paymentSuccess: paymentSuccess ?? this.paymentSuccess,
+      paymentData: paymentData ?? this.paymentData,
     );
   }
 }
@@ -57,8 +61,6 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
   // ignore: unused_field
   late String _currentUserEmail;
   late Map<String, dynamic> _paymentData;
-  
-
 
   PaymentNotifier(this._razorpayService, this._firestore, this._auth)
     : super(PaymentState()) {
@@ -72,7 +74,6 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     required String orderId,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-
 
     // Store payment data for later use
     _paymentData = {
@@ -105,35 +106,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     }
   }
 
-  // Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
-  //   try {
-  //     // Update payment data with success info
-  //     final paymentDetails = {
-  //       ..._paymentData,
-  //       'paymentId': response.paymentId,
-  //       'orderId': response.orderId,
-  //       'signature': response.signature,
-  //       'status': 'completed',
-  //       'completedAt': DateTime.now(),
-  //     };
-
-  //     // Save to Firebase
-  //     await _savePaymentToFirebase(paymentDetails);
-
-  //     state = state.copyWith(
-  //       paymentSuccess: true,
-  //       successMessage: 'Payment successful! Order ID: ${response.orderId}',
-  //     );
-
-  //   } catch (e) {
-  //     state = state.copyWith(
-  //       error: 'Payment successful but failed to save details: $e',
-  //     );
-  //   }
-  // }
-  // In your payment_provider.dart
-  Future<Map<String, dynamic>> _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    //  log('Payment response: ${response.toJson()}');
+  Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
     log('Stored payment data: $_paymentData');
     try {
       final orderId =
@@ -142,76 +115,55 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
       final now = DateTime.now();
 
       final completedPaymentData = {
-      'amount': _paymentData['amount']?.toDouble() ?? 0.0,
-      'productName': _paymentData['productName']?.toString() ?? 'Unknown Product',
-      'quantity': _paymentData['quantity']?.toInt() ?? 1,
-      'orderId': orderId,
-      'paymentId': response.paymentId ?? 'N/A',
-      'signature': response.signature,
-      'status': 'completed', // ← CHANGED FROM 'initiated' to 'completed'
-      'completedAt': now,
-      'product':_paymentData['product' ] ?? Null,
-      'timestamp': _paymentData['timestamp'] is DateTime 
-          ? _paymentData['timestamp'] as DateTime 
-          : now,
-    };
+        'amount': _paymentData['amount']?.toDouble() ?? 0.0,
+        'productName':
+            _paymentData['productName']?.toString() ?? 'Unknown Product',
+        'quantity': _paymentData['quantity']?.toInt() ?? 1,
+        'orderId': orderId,
+        'paymentId': response.paymentId ?? 'N/A',
+        'signature': response.signature,
+        'status': 'completed',
+        'completedAt': now,
+        'timestamp': _paymentData['timestamp'] is DateTime
+            ? _paymentData['timestamp'] as DateTime
+            : now,
+      };
 
       await _savePaymentToFirebase(completedPaymentData);
 
       state = state.copyWith(
         paymentSuccess: true,
+        paymentData: completedPaymentData, // SET paymentData HERE
         successMessage: 'Payment successful! Order ID: $orderId',
       );
-       return completedPaymentData;
     } catch (e, stackTrace) {
       log('Error: $e');
       log('Stack trace: $stackTrace');
       state = state.copyWith(
         error: 'Payment successful but failed to save details: $e',
+        paymentSuccess: false,
       );
-      rethrow;
     }
   }
 
   Future<void> _savePaymentToFirebase(
     Map<String, dynamic> paymentDetails,
   ) async {
-    // try {
-    //   final user = _auth.currentUser;
-
-    //   if (user == null) {
-    //     // User not logged in - navigate to login screen
-    //     _navigateToLogin();
-    //     return;
-    //   }
-    final user = FirebaseAuth.instance.currentUser;
-    try {
-      if (user == null || user.email == null) {
-        _navigateToLogin();
-        throw Exception('User not logged in');
-      }
-      // Sanitize email for Firestore path
-      final userEmail = user.email!.replaceAll('.', '_');
-
-      // Use the existing user document
-      await _firestore
-          .collection('users')
-          .doc(userEmail)
-          .collection('payments')
-          .doc(paymentDetails['orderId'])
-          .set(paymentDetails);
-
-      log('Payment details saved to Firebase successfully');
-    } catch (e) {
-      log('Error saving to Firebase: $e');
-      rethrow;
+    final user = _auth.currentUser;
+    if (user == null || user.phoneNumber == null) {
+      throw Exception('User not logged in');
     }
-  }
 
-  void _navigateToLogin() {
-    // You'll need to pass context or use a navigator key
-    // For now, we'll handle this in the UI layer
-    throw Exception('User not authenticated. Please login first.');
+    final phoneNumber = user.phoneNumber!;
+
+    await _firestore
+        .collection('users')
+        .doc(phoneNumber) // Use phone number as doc ID
+        .collection('payments')
+        .doc(paymentDetails['orderId'])
+        .set(paymentDetails);
+
+    log('Payment details saved to Firebase successfully');
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -225,8 +177,15 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     state = state.copyWith(error: null);
   }
 
+  // void clearSuccess() {
+  //   state = state.copyWith(successMessage: null, paymentSuccess: false);
+  // }
   void clearSuccess() {
-    state = state.copyWith(successMessage: null, paymentSuccess: false);
+    state = state.copyWith(
+      successMessage: null,
+      paymentSuccess: false,
+      paymentData: null,
+    );
   }
 
   // In your PaymentNotifier class

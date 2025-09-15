@@ -1,5 +1,4 @@
 import 'package:coffee_shop/Authentication/phone_auth.dart';
-import 'package:coffee_shop/Authentication/splash_screen.dart';
 import 'package:coffee_shop/Features/Home/Home.dart';
 import 'package:coffee_shop/Features/firebasestoredata/datastore.dart';
 import 'package:coffee_shop/Features/payment/paymentmethods.dart';
@@ -13,10 +12,12 @@ import '../../Features/Map/Map.dart';
 import '../../Features/Menu/Menu.dart';
 import '../../Features/Profile/profile.dart';
 
+
+
 final  GoRouter approuter = GoRouter(
     debugLogDiagnostics: true,
     routes: [
-      // GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+      // GoRoute(path: '/', builder: (context, state) => const Datadstore()),
       GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
       GoRoute(path: '/login-screen', builder: (context, state) => const PhoneAuth()),
 
@@ -26,6 +27,7 @@ final  GoRouter approuter = GoRouter(
       GoRoute(
         path: '/menu/:category',
         builder: (context, state) {
+
           final categoryName = state.pathParameters['category']!;
           final items = state.extra as List<Map<String, dynamic>>;
           return CategoryItemsScreen(categoryName: categoryName, items: items);
@@ -69,14 +71,22 @@ final  GoRouter approuter = GoRouter(
           return ProductDetailsScreen(product: product);
         },
       ),
+      // GoRoute(
+      //   path: '/payment-success',
+      //   builder: (context, state) {
+      //     return PaymentSuccessScreen(
+      //       paymentData: state.extra as Map<String, dynamic>? ?? {},
+      //     );
+      //   },
+      // ),
       GoRoute(
-        path: '/payment-success',
-        builder: (context, state) {
-          return PaymentSuccessScreen(
-            paymentData: state.extra as Map<String, dynamic>? ?? {},
-          );
-        },
-      ),
+  path: '/payment-success',
+  name: 'payment-success',
+  builder: (context, state) {
+    final paymentData = state.extra as Map<String, dynamic>?;
+    return PaymentSuccessScreen(paymentData: paymentData ?? {});
+  },
+),
       GoRoute(
         path: '/billing-info',
         builder: (context, state) => const BillingInfoScreen(),
