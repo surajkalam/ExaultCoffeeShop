@@ -1,5 +1,6 @@
 import 'package:coffee_shop/Authentication/phone_auth.dart';
 import 'package:coffee_shop/Features/Home/Home.dart';
+import 'package:coffee_shop/Features/Home/presentation/topbestseller_screen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/datastore.dart';
 import 'package:coffee_shop/Features/payment/paymentmethods.dart';
 import 'package:coffee_shop/core/core.dart';
@@ -90,6 +91,10 @@ final  GoRouter approuter = GoRouter(
       GoRoute(
         path: '/billing-info',
         builder: (context, state) => const BillingInfoScreen(),
+      ),
+      GoRoute(
+        path: '/best-seller',
+        builder: (context, state) => const TopBestsellersScreen(),
       ),
       GoRoute(
         path: '/help-support',

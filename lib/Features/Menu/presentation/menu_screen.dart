@@ -41,7 +41,8 @@ class MenuScreen extends ConsumerWidget {
             children: [
               menuCategoriesAsync.when(
                 loading: () => _buildLoadingState(height, width, colorScheme),
-                error: (error, stack) => _buildErrorState(error, height, width, colorScheme,ref),
+                error: (error, stack) =>
+                    _buildErrorState(error, height, width, colorScheme, ref),
                 data: (menuCategories) => _buildCategoryGrid(
                   height,
                   width,
@@ -86,35 +87,38 @@ class MenuScreen extends ConsumerWidget {
       ),
     );
   }
-   Widget _buildLoadingState(double height, double width, ColorScheme colorScheme) {
+
+  Widget _buildLoadingState(
+    double height,
+    double width,
+    ColorScheme colorScheme,
+  ) {
     return SizedBox(
       height: height * 0.6,
       child: Center(
-        child: CircularProgressIndicator(
-          color: colorScheme.primary,
-        ),
+        child: CircularProgressIndicator(color: colorScheme.primary),
       ),
     );
   }
-  Widget _buildErrorState(Object error, double height, double width, ColorScheme colorScheme, WidgetRef ref) {
+
+  Widget _buildErrorState(
+    Object error,
+    double height,
+    double width,
+    ColorScheme colorScheme,
+    WidgetRef ref,
+  ) {
     return SizedBox(
       height: height * 0.6,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              color: colorScheme.error,
-              size: 48,
-            ),
+            Icon(Icons.error_outline, color: colorScheme.error, size: 48),
             SizedBox(height: 16),
             Text(
               'Error loading menu: $error',
-              style: TextStyle(
-                color: colorScheme.error,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: colorScheme.error, fontSize: 16),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 16),
@@ -164,151 +168,150 @@ class MenuScreen extends ConsumerWidget {
 
   // Build category grid
   Widget _buildCategoryGrid(
-  double height,
-  double width,
-  Map<String, List<Map<String, dynamic>>> menuCategories,
-  ColorScheme colorscheme,
-  TextTheme texttheme,
-) {
-  // Filter out empty categories to avoid errors
-  final nonEmptyCategories = menuCategories.entries
-      .where((entry) => entry.value.isNotEmpty)
-      .toList();
+    double height,
+    double width,
+    Map<String, List<Map<String, dynamic>>> menuCategories,
+    ColorScheme colorscheme,
+    TextTheme texttheme,
+  ) {
+    // Filter out empty categories to avoid errors
+    final nonEmptyCategories = menuCategories.entries
+        .where((entry) => entry.value.isNotEmpty)
+        .toList();
 
-  return Container(
-    decoration: BoxDecoration(
-      color: colorscheme.onPrimary,
-      borderRadius: BorderRadius.circular(20),
-      boxShadow: [
-        BoxShadow(
-          color: colorscheme.shadow,
-          offset: Offset(0, 4),
-          blurRadius: 10,
-        ),
-      ],
-    ),
-    child: Padding(
-      padding: const EdgeInsets.only(bottom: 1, top: 16, left: 16, right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Categories",
-            style: texttheme.labelMedium?.copyWith(
-              color: colorscheme.primaryContainer,
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 16),
-          GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.9,
-            ),
-            itemCount: nonEmptyCategories.length,
-            itemBuilder: (context, categoryIndex) {
-              final categoryEntry = nonEmptyCategories[categoryIndex];
-              final categoryName = categoryEntry.key;
-              final categoryItems = categoryEntry.value;
-              
-              // Safe access to first item with fallback
-              final firstItem = categoryItems.isNotEmpty ? categoryItems.first : {};
-              final hasImage = firstItem['image'] != null;
-
-              return InkWell(
-                onTap: () {
-                  if (categoryItems.isNotEmpty) {
-                    context.push(
-                      '/menu/$categoryName',
-                      extra: categoryItems,
-                    );
-                  }
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: colorscheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorscheme.shadow,
-                        offset: Offset(0, 2),
-                        blurRadius: 6,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        height: 60,
-                        width: 60,
-                        decoration: BoxDecoration(
-                          color: colorscheme.onPrimary,
-                          borderRadius: BorderRadius.circular(50),
-                          border: Border.all(color: colorscheme.shadow),
-                        ),
-                        child: Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: hasImage
-                                ? SizedBox(
-                                    height: 50,
-                                    width: 50,
-                                    child: Image.network(
-                                      firstItem['image'] ?? '',
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, _, __) =>
-                                          _buildFallbackIcon(
-                                        categoryName,
-                                        colorscheme,
-                                      ),
-                                    ),
-                                  )
-                                : _buildFallbackIcon(
-                                    categoryName,
-                                    colorscheme,
-                                  ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Container(
-                        constraints: const BoxConstraints(
-                          maxWidth: 60,
-                          maxHeight: 32,
-                        ),
-                        child: Text(
-                          categoryName,
-                          style: texttheme.bodySmall?.copyWith(
-                            color: categoryItems.isNotEmpty 
-                                ? colorscheme.primary 
-                                : colorscheme.onSurface.withOpacity(0.5),
-                            fontWeight: FontWeight.w400,
-                            fontSize: 8,
-                          ),
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+    return Container(
+      decoration: BoxDecoration(
+        color: colorscheme.onPrimary,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: colorscheme.shadow,
+            offset: Offset(0, 4),
+            blurRadius: 10,
           ),
         ],
       ),
-    ),
-  );
-}
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 1, top: 16, left: 16, right: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Categories",
+              style: texttheme.labelMedium?.copyWith(
+                color: colorscheme.primaryContainer,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.9,
+              ),
+              itemCount: nonEmptyCategories.length,
+              itemBuilder: (context, categoryIndex) {
+                final categoryEntry = nonEmptyCategories[categoryIndex];
+                final categoryName = categoryEntry.key;
+                final categoryItems = categoryEntry.value;
+
+                // Safe access to first item with fallback
+                final firstItem = categoryItems.isNotEmpty
+                    ? categoryItems.first
+                    : {};
+                final hasImage = firstItem['image'] != null;
+
+                return InkWell(
+                  onTap: () {
+                    if (categoryItems.isNotEmpty) {
+                      context.push('/menu/$categoryName', extra: categoryItems);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: colorscheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorscheme.shadow,
+                          offset: Offset(0, 2),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          height: 60,
+                          width: 60,
+                          decoration: BoxDecoration(
+                            color: colorscheme.onPrimary,
+                            borderRadius: BorderRadius.circular(50),
+                            border: Border.all(color: colorscheme.shadow),
+                          ),
+                          child: Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: hasImage
+                                  ? SizedBox(
+                                      height: 50,
+                                      width: 50,
+                                      child: Image.network(
+                                        firstItem['image'] ?? '',
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, __) =>
+                                            _buildFallbackIcon(
+                                              categoryName,
+                                              colorscheme,
+                                            ),
+                                      ),
+                                    )
+                                  : _buildFallbackIcon(
+                                      categoryName,
+                                      colorscheme,
+                                    ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Container(
+                          constraints: const BoxConstraints(
+                            maxWidth: 60,
+                            maxHeight: 32,
+                          ),
+                          child: Text(
+                            categoryName,
+                            style: texttheme.bodySmall?.copyWith(
+                              color: categoryItems.isNotEmpty
+                                  ? colorscheme.primary
+                                  : colorscheme.onSurface.withOpacity(0.5),
+                              fontWeight: FontWeight.w400,
+                              fontSize: 8,
+                            ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   // Build horizontal scroll section
   Widget _buildHorizontalScrollSection(
@@ -321,7 +324,7 @@ class MenuScreen extends ConsumerWidget {
     final isHomeSection = type == "home";
     final imagePath = isHomeSection
         ? "Assets/Images/coffee-powder.png"
-        : "Assets/Images/Strawberry-Cream-Frappe.png";
+        : "Assets/Images/cappucino.jpg";
     final title = isHomeSection ? 'Blich Berry' : 'Strawberry cream coffee';
     final description = isHomeSection
         ? 'You try this for your health'

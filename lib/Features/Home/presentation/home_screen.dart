@@ -161,11 +161,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildBestsellerSection(
-                          height,
-                          width,
-                          colorScheme,
-                          textTheme,
+                        InkWell(
+                          onTap: (){
+                            context.push('/best-seller');
+                          },
+                          child: _buildBestsellerSection(
+                            height,
+                            width,
+                            colorScheme,
+                            textTheme,
+                          ),
                         ),
                         _buildBestsellerSection(
                           height,
@@ -899,10 +904,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   bottomLeft: Radius.circular(20),
                 ),
                 child: Image.asset(
-                  "Assets/Images/Pumpkin-Spice-Latte.png",
+                  "Assets/Images/cappucino.jpg",
                   height: height * 0.2,
                   width: width - 20,
-                  fit: BoxFit.fill,
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -934,7 +939,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _buildNewArrivalItem(
           height,
           width,
-          "Assets/Images/Pumpkin-Spice-Latte.png",
+          "Assets/Images/cappucino.jpg",
           "Pumpkin Spice Latte",
           "A seasonal favorite with warm spices",
           "🌟 New Arrivals",
@@ -945,7 +950,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _buildNewArrivalItem(
           height,
           width,
-          "Assets/Images/Strawberry-Cream-Frappe.png",
+          "Assets/Images/cappucino.jpg",
           "Strawberry Cream Frappe",
           "Creamy strawberry delight",
           "🌟 Seasonal Specials",
