@@ -1,54 +1,3 @@
-// // // auth_notifier.dart
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// final authNotifierProvider = NotifierProvider<AuthNotifier, AsyncValue<User?>>(
-//   AuthNotifier.new,
-// );
-
-// class AuthNotifier extends Notifier<AsyncValue<User?>> {
-//   @override
-//   AsyncValue<User?> build() {
-//     // Start with data(null) instead of loading to prevent initial spinner
-//     return const AsyncValue.data(null);
-//   }
-
-//   Future<void> initialize() async {
-//     // Listen to auth state changes
-//     FirebaseAuth.instance.authStateChanges().listen((user) {
-//       state = AsyncValue.data(user);
-//     });
-//   }
-
-//   Future<void> signInWithEmailAndPassword(String email, String password) async {
-//     state = const AsyncValue.loading();
-//     try {
-//       final userCredential = await FirebaseAuth.instance
-//           .signInWithEmailAndPassword(email: email, password: password);
-//       state = AsyncValue.data(userCredential.user);
-//     } catch (e, st) {
-//       state = AsyncValue.error(e, st);
-//       rethrow;
-//     }
-//   }
-
-//   Future<void> signUpWithEmailAndPassword(String email, String password) async {
-//     state = const AsyncValue.loading();
-//     try {
-//       final userCredential = await FirebaseAuth.instance
-//           .createUserWithEmailAndPassword(email: email, password: password);
-//       state = AsyncValue.data(userCredential.user);
-//     } catch (e, st) {
-//       state = AsyncValue.error(e, st);
-//     }
-//   }
-
-//   Future<void> signOut() async {
-//     await FirebaseAuth.instance.signOut();
-//   }
-// }
-// auth_notifier.dart
-// auth_notifier.dart
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,7 +7,9 @@ final authNotifierProvider = NotifierProvider<AuthNotifier, AsyncValue<User?>>(
 );
 
 class AuthNotifier extends Notifier<AsyncValue<User?>> {
+  // ignore: unused_field
   String? _verificationId;
+  // ignore: unused_field
   String? _phoneNumber;
 
   @override
@@ -68,85 +19,117 @@ class AuthNotifier extends Notifier<AsyncValue<User?>> {
 
   Future<void> initialize() async {
     FirebaseAuth.instance.authStateChanges().listen((user) {
+      log("🔄 Auth state changed → ${user?.phoneNumber ?? "No user"}");
       state = AsyncValue.data(user);
     });
   }
- 
-  // Existing email methods
+
+  // Email login
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     state = const AsyncValue.loading();
     try {
+      log("📩 Signing in with email: $email");
       final userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
+      log("✅ Email login success → ${userCredential.user?.uid}");
       state = AsyncValue.data(userCredential.user);
     } catch (e, st) {
+      log("❌ Email login failed: $e");
       state = AsyncValue.error(e, st);
       rethrow;
     }
   }
 
+  // Email signup
   Future<void> signUpWithEmailAndPassword(String email, String password) async {
     state = const AsyncValue.loading();
     try {
+      log("🆕 Signing up with email: $email");
       final userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
+      log("✅ Email signup success → ${userCredential.user?.uid}");
       state = AsyncValue.data(userCredential.user);
     } catch (e, st) {
+      log("❌ Email signup failed: $e");
       state = AsyncValue.error(e, st);
       rethrow;
     }
   }
 
-  // Phone authentication methods - FIXED
+  // Phone authentication
   Future<void> verifyPhoneNumber(String phoneNumber, {Function(String)? onCodeSent}) async {
     state = const AsyncValue.loading();
     try {
       _phoneNumber = phoneNumber;
+      log("📲 Sending OTP to $phoneNumber");
+
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: phoneNumber,
+        timeout: const Duration(seconds: 60),
+
         verificationCompleted: (PhoneAuthCredential credential) async {
-          await FirebaseAuth.instance.signInWithCredential(credential);
+          log("✅ Auto verification completed");
+          try {
+            final userCred = await FirebaseAuth.instance.signInWithCredential(credential);
+            log("🔑 Auto login success → ${userCred.user?.phoneNumber}");
+            state = AsyncValue.data(userCred.user);
+          } catch (e) {
+            log("❌ Auto verification failed: $e");
+            state = const AsyncValue.data(null);
+          }
         },
+
         verificationFailed: (FirebaseAuthException e) {
+          log("❌ Verification failed: ${e.code} - ${e.message}");
           state = AsyncValue.error(e, StackTrace.current);
-          log('Verification failed: $e');
         },
+
         codeSent: (String verificationId, int? resendToken) {
           _verificationId = verificationId;
+          log("📨 Code sent! verificationId saved.");
           if (onCodeSent != null) {
-            onCodeSent(verificationId); // Call the callback
+            onCodeSent(verificationId);
           }
-          state = const AsyncValue.data(null); // Reset to allow code input
+          state = const AsyncValue.data(null); // reset to idle so UI allows OTP entry
         },
+
         codeAutoRetrievalTimeout: (String verificationId) {
           _verificationId = verificationId;
+          log("⏳ Auto retrieval timeout");
         },
-        timeout: const Duration(seconds: 60),
       );
     } catch (e, st) {
+      log("❌ verifyPhoneNumber error: $e");
       state = AsyncValue.error(e, st);
       rethrow;
     }
   }
 
-  // FIXED: Removed duplicate parameter
+  // Verify OTP
   Future<void> signInWithPhoneNumber(String verificationId, String smsCode) async {
     state = const AsyncValue.loading();
     try {
+      log("🔑 Verifying OTP with verificationId: $verificationId and smsCode: $smsCode");
+
       final credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: smsCode,
       );
 
       final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      log("✅ Phone login success → ${userCredential.user?.phoneNumber}");
       state = AsyncValue.data(userCredential.user);
-    } catch (e, st) {
+    } on FirebaseAuthException catch (e, st) {
+      log("❌ OTP verification failed: ${e.code} - ${e.message}");
       state = AsyncValue.error(e, st);
       rethrow;
     }
   }
 
+  // Sign out
   Future<void> signOut() async {
+    log("🚪 Signing out user: ${FirebaseAuth.instance.currentUser?.phoneNumber}");
     await FirebaseAuth.instance.signOut();
+    state = const AsyncValue.data(null);
   }
 }

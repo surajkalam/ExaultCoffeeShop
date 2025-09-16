@@ -1,5 +1,7 @@
 import 'dart:developer';
 import 'package:coffee_shop/Features/Menu/Provider/paymentProvider.dart';
+import 'package:coffee_shop/Features/Profile/Provider/scratch_provider.dart';
+import 'package:coffee_shop/Features/Profile/data/scratch_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:scratcher/widgets.dart';
 
 final quantityProvider = StateProvider<int>((ref) => 1);
+
 
 class ProductDetailsScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> product;
@@ -20,30 +23,38 @@ class ProductDetailsScreen extends ConsumerStatefulWidget {
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   @override
   Widget build(BuildContext context) {
+    
+    final user = FirebaseAuth.instance.currentUser;
+    log('${user?.phoneNumber}');
     ref.listen<PaymentState>(paymentProvider, (previous, next) {
       log('Payment State Changed:');
       log('Previous: ${previous?.paymentSuccess}');
       log('Next: ${next.paymentSuccess}');
-
       if (next.paymentSuccess && mounted) {
-        // Use getLastPaymentData() instead of next.paymentData
         final paymentData = ref
             .read(paymentProvider.notifier)
             .getLastPaymentData();
         log('paymentdata : $paymentData');
-        log('Navigating to success screen');
+        log('Showing scratch card first');
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (mounted) {
-            context.push('/payment-success', extra: paymentData);
-            ref.read(paymentProvider.notifier).clearSuccess();
+            // Show scratch card and wait for completion
+            final scratchCompleted = await showScratchCardDialog(context);
+            if (scratchCompleted && mounted) {
+              log('Scratch completed, navigating to success screen');
+              // ignore: use_build_context_synchronously
+              context.push('/payment-success', extra: paymentData);
+              ref.read(paymentProvider.notifier).clearSuccess();
+            } else if (mounted) {
+              log('Scratch was cancelled');
+              ref.read(paymentProvider.notifier).clearSuccess();
+            }
           }
         });
       }
     });
 
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
     final quantity = ref.watch(quantityProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -72,8 +83,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           children: [
             // Product Image with iOS-style design
             _buildProductImage(
-              height,
-              width,
+              MediaQuery.of(context).size.height,
+              MediaQuery.of(context).size.width,
               ref,
               product,
               colorScheme,
@@ -85,26 +96,31 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             _buildProductHeader(
               context,
               ref,
-              height,
-              width,
+              MediaQuery.of(context).size.height,
+              MediaQuery.of(context).size.width,
               quantity,
               price,
               product,
               colorScheme,
               textTheme,
             ),
-            SizedBox(height: height * 0.02),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
 
             // Price Section
             _buildPriceSection(price, totalPrice, colorScheme, textTheme),
-            SizedBox(height: height * 0.03),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.03),
 
             // Description (if available)
             if (product['description'] != null)
-              _buildDescriptionSection(height, product, colorScheme, textTheme),
+              _buildDescriptionSection(
+                MediaQuery.of(context).size.height,
+                product,
+                colorScheme,
+                textTheme,
+              ),
 
             // Add to Cart Button
-            SizedBox(height: height * 0.04),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.04),
             _buildCheckoutButton(
               context,
               ref,
@@ -121,69 +137,96 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     );
   }
 
-  // Method to show scratch card dialog
-  Future<void> showScratchCardDialog(BuildContext context) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Prevent closing by tapping outside
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.zero, // Remove default padding
-          content: SizedBox(
-            height: 220, // Slightly larger than card to accommodate padding
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(top: 16.0),
-                  child: Text(
-                    'Scratch to reveal your reward!',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    height: 200, // Fixed card height
-                    width: 300, // Fixed card width
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.amber,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
+  Future<bool> showScratchCardDialog(BuildContext context) async {
+     final scratchCardsNotifier = ref.read(scratchCardsProvider.notifier);
+  
+  // Create a new scratch card
+  final newScratchCard = ScratchCardModel(
+    isScratched: false,
+    createdAt: DateTime.now(),
+    reward: 'Special Discount',
+    imagePath: 'Assets/Images/scratch1.jpg',
+     // You can customize this
+  );
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext dialogContext) {
+            log('in scratch cart');
+            return AlertDialog(
+              contentPadding: EdgeInsets.zero,
+              content: SizedBox(
+                height: 300,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 16.0),
+                      child: Text(
+                        'Scratch to reveal your reward!',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ],
+                      ),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Scratcher(
-                        brushSize: 70, // Size of the scratch brush
-                        threshold: 50, // 50% scratched to trigger completion
-                        color: Colors.pink, // Scratch layer color
-                        // onScratchComplete: () {
-                        //   // When scratching is complete:
-                        //   Navigator.pop(context);
-                        //   Navigator.pushReplacementNamed(context, '/paymentSuccess');
-                        // },
-                        child: Center(
-                          child: Image(
-                            image: AssetImage('Assets/Images/scratch1.jpg'),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        height: 180,
+                        width: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.amber,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Scratcher(
+                            brushSize: 70,
+                            threshold: 50,
+                            color: Colors.pink,
+                            onScratchEnd: () async {
+                          log("✅ Scratch finished!");
+                        final updatedCard = newScratchCard.copyWith(
+                          isScratched: true,
+                        );
+                        await scratchCardsNotifier.addScratchCard(updatedCard);
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(dialogContext).pop(true);
+                            },
+                            child: Center(
+                              child: Image(
+                                image: AssetImage('Assets/Images/scratch1.jpg'),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                    TextButton(
+                      onPressed: ()async {
+                      log("⏩ Skip tapped.");
+                  await scratchCardsNotifier.addScratchCard(newScratchCard);
+                  Navigator.of(dialogContext).pop(true);
+                      },
+                      child: Text('Skip'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+              ),
+            );
+          },
+        ) ??
+        false;
   }
 
   // Build iOS-style app bar
@@ -542,8 +585,25 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
+          final user = FirebaseAuth.instance.currentUser;
+          log('phone number suru :$user.phoneNumber');
+          if (user == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Please log in before making a payment"),
+                margin: EdgeInsets.all(16),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+              ),
+            );
+            return;
+          } else {
+            _handleCheckout(context, ref, product, quantity, price, totalPrice);
+          }
           // context.push('/payment-method');
-          _handleCheckout(context, ref, product, quantity, price, totalPrice);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: colorscheme.onPrimaryFixedVariant,

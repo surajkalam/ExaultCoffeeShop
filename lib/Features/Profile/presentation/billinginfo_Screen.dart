@@ -1,8 +1,10 @@
-
 // screens/billing_info_screen.dart
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop/core/widget/appbar.dart';
 import 'package:coffee_shop/Features/Profile/Provider/fetchpaymentdata.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -24,20 +26,82 @@ class BillingInfoScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final paymentsAsync = ref.watch(userPaymentsProvider);
-
+    final user = FirebaseAuth.instance.currentUser;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(
         titleText: 'Billing Information',
         centerTitle: true,
-        backgroundColor:  AppColors.primary,
+        backgroundColor: AppColors.primary,
         // foregroundColor: AppColors.primaryDark,
         elevation: 0.5,
       ),
-      body: paymentsAsync.when(
-        loading: () => _buildLoadingState(),
-        error: (error, stack) => _buildErrorState(error),
-        data: (payments) => _buildPaymentList(payments),
+      body: Column(
+        children: [
+          paymentsAsync.when(
+            loading: () => _buildLoadingState(),
+            error: (error, stack) => _buildErrorState(error),
+            data: (payments) => _buildPaymentList(payments),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final user = FirebaseAuth.instance.currentUser;
+              if (user?.phoneNumber != null) {
+                final phone = user!.phoneNumber!.replaceAll(
+                  RegExp(r'[^0-9]'),
+                  '',
+                );
+                log('Trying to access document at path: users/$phone');
+
+                FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(phone)
+                    .get()
+                    .then((doc) {
+                      log('Firestore document exists: ${doc.exists}');
+                      if (doc.exists) {
+                        log('Document data: ${doc.data()}');
+
+                        // Also check if payments subcollection exists
+                        doc.reference.collection('payments').get().then((
+                          paymentsSnapshot,
+                        ) {
+                          log(
+                            'Number of payment documents: ${paymentsSnapshot.docs.length}',
+                          );
+                          paymentsSnapshot.docs.forEach((paymentDoc) {
+                            log(
+                              'Payment doc: ${paymentDoc.id} - ${paymentDoc.data()}',
+                            );
+                          });
+                        });
+                      } else {
+                        log('Document does not exist at path: users/$phone');
+                        log('Available collections:');
+
+                        // Check what collections actually exist
+                        FirebaseFirestore.instance.collection('users').get().then((
+                          usersSnapshot,
+                        ) {
+                          log(
+                            'Total users documents: ${usersSnapshot.docs.length}',
+                          );
+                          usersSnapshot.docs.forEach((userDoc) {
+                            log('User document ID: ${userDoc.id}');
+                          });
+                        });
+                      }
+                    })
+                    .catchError((error) {
+                      log('Error accessing document: $error');
+                    });
+              } else {
+                log('User phone number is null');
+              }
+            },
+            child: Text('Check Firestore'),
+          ),
+        ],
       ),
     );
   }
@@ -58,10 +122,7 @@ class BillingInfoScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Loading payments...',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
           ),
         ],
       ),
@@ -94,10 +155,7 @@ class BillingInfoScreen extends ConsumerWidget {
             Text(
               'Error: $error',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 20),
             _buildRetryButton(),
@@ -130,22 +188,20 @@ class BillingInfoScreen extends ConsumerWidget {
     if (payments.isEmpty) {
       return _buildEmptyState();
     }
-    
-    return RefreshIndicator(
-      backgroundColor: Colors.white,
-      color: AppColors.primary,
-      onRefresh: () async {
-        // This would need access to the WidgetRef, so in a real implementation
-        // you might need to pass the ref or use a different approach
-      },
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: payments.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final payment = payments[index];
-          return _buildPaymentCard(context, payment);
-        },
+    return Expanded(
+      child: RefreshIndicator(
+        backgroundColor: Colors.white,
+        color: AppColors.primary,
+        onRefresh: () async {},
+        child: ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: payments.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final payment = payments[index];
+            return _buildPaymentCard(context, payment);
+          },
+        ),
       ),
     );
   }
@@ -176,10 +232,7 @@ class BillingInfoScreen extends ConsumerWidget {
             Text(
               'Your payment history will appear here',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
           ],
         ),
@@ -221,7 +274,10 @@ class BillingInfoScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     // ignore: deprecated_member_use
                     color: _getStatusColor(payment['status']).withOpacity(0.1),
@@ -239,10 +295,7 @@ class BillingInfoScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Container(
-              height: 1,
-              color: AppColors.lightBorder,
-            ),
+            Container(height: 1, color: AppColors.lightBorder),
             const SizedBox(height: 16),
             _buildDetailRow('Order ID', payment['orderId'] ?? 'N/A'),
             _buildDetailRow(
@@ -281,10 +334,7 @@ class BillingInfoScreen extends ConsumerWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
             ),
           ),
         ],

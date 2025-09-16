@@ -121,7 +121,7 @@ final  GoRouter approuter = GoRouter(
       ),
       GoRoute(
         path: '/scratch-cart',
-        builder: (context, state) => const ScratchCardDemo(),
+        builder: (context, state) => const ScratchCardsScreen(),
       ),
       GoRoute(
         path: '/chat-screen',

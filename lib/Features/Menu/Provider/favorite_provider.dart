@@ -141,13 +141,15 @@ class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> toggleFavorite(Map<String, dynamic> itemData) async {
     state = const AsyncValue.loading();
     try {
+       final usernumber = FirebaseAuth.instance.currentUser;
+       late final phoneNumber = usernumber?.phoneNumber;
       final userPhoneNumber = getPhoneNumber();
       if (userPhoneNumber == null) throw Exception('User not logged in');
 
       final itemName = itemData['name'];
       final favoritesRef = firestore
           .collection('users')
-          .doc(userPhoneNumber)
+          .doc(phoneNumber)
           .collection('favorites')
           .doc(itemName);
 

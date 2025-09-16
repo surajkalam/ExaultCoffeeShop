@@ -544,10 +544,11 @@ class ProfileScreen extends ConsumerWidget {
   ) {
     final options = [
       {
-        'title': 'Edit Profile',
+        'title': 'Rewards',
         'icon': Iconsax.profile_circle,
         'onTap': () =>
-            _navigateToEditProfile(context, ref, colorscheme, texttheme),
+            // _navigateToEditProfile(context, ref, colorscheme, texttheme),
+            context.push('/scratch-cart'),
       },
       {
         'title': 'Favorite Items',
@@ -748,83 +749,83 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _navigateToEditProfile(
-    BuildContext context,
-    WidgetRef ref,
-    ColorScheme colorscheme,
-    TextTheme texttheme,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: colorscheme.onPrimary,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      builder: (context) {
-        final profile = ref.read(profileProvider);
-        TextEditingController nameController = TextEditingController(
-          text: profile.name,
-        );
+//   void _navigateToEditProfile(
+//     BuildContext context,
+//     WidgetRef ref,
+//     ColorScheme colorscheme,
+//     TextTheme texttheme,
+//   ) {
+//     showModalBottomSheet(
+//       context: context,
+//       backgroundColor: colorscheme.onPrimary,
+//       shape: RoundedRectangleBorder(
+//         borderRadius: BorderRadius.only(
+//           topLeft: Radius.circular(20),
+//           topRight: Radius.circular(20),
+//         ),
+//       ),
+//       builder: (context) {
+//         final profile = ref.read(profileProvider);
+//         TextEditingController nameController = TextEditingController(
+//           text: profile.name,
+//         );
 
-        return Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Edit Profile',
-                style: texttheme.titleMedium?.copyWith(
-                  color: colorscheme.primaryContainer,
-                ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: Icon(
-                    Iconsax.user,
-                    color: colorscheme.secondaryFixed,
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    ref
-                        .read(profileProvider.notifier)
-                        .updateName(nameController.text);
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorscheme.onPrimaryFixedVariant,
-                    foregroundColor: colorscheme.onSecondaryFixed,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Save Changes',
-                    style: texttheme.labelLarge?.copyWith(
-                      color: colorscheme.onSecondaryFixed,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
+//         return Padding(
+//           padding: EdgeInsets.all(20),
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               Text(
+//                 'Edit Profile',
+//                 style: texttheme.titleMedium?.copyWith(
+//                   color: colorscheme.primaryContainer,
+//                 ),
+//               ),
+//               SizedBox(height: 20),
+//               TextField(
+//                 controller: nameController,
+//                 decoration: InputDecoration(
+//                   labelText: 'Name',
+//                   border: OutlineInputBorder(
+//                     borderRadius: BorderRadius.circular(12),
+//                   ),
+//                   prefixIcon: Icon(
+//                     Iconsax.user,
+//                     color: colorscheme.secondaryFixed,
+//                   ),
+//                 ),
+//               ),
+//               SizedBox(height: 20),
+//               SizedBox(
+//                 width: double.infinity,
+//                 child: ElevatedButton(
+//                   onPressed: () {
+//                     ref
+//                         .read(profileProvider.notifier)
+//                         .updateName(nameController.text);
+//                     Navigator.pop(context);
+//                   },
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: colorscheme.onPrimaryFixedVariant,
+//                     foregroundColor: colorscheme.onSecondaryFixed,
+//                     padding: EdgeInsets.symmetric(vertical: 16),
+//                     shape: RoundedRectangleBorder(
+//                       borderRadius: BorderRadius.circular(12),
+//                     ),
+//                   ),
+//                   child: Text(
+//                     'Save Changes',
+//                     style: texttheme.labelLarge?.copyWith(
+//                       color: colorscheme.onSecondaryFixed,
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//               SizedBox(height: 16),
+//             ],
+//           ),
+//         );
+//       },
+//     );
+//   }
 }

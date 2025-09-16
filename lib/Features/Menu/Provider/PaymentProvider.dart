@@ -1,6 +1,7 @@
 // ignore: file_names
 import 'dart:developer';
 import 'package:coffee_shop/Services/Razorpay_Service.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -145,6 +146,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
       );
     }
   }
+  
 
   Future<void> _savePaymentToFirebase(
     Map<String, dynamic> paymentDetails,
@@ -154,17 +156,61 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
       throw Exception('User not logged in');
     }
 
-    final phoneNumber = user.phoneNumber!;
-
+  final usernumber = FirebaseAuth.instance.currentUser;
+  late final phoneNumber = usernumber?.phoneNumber;
+    // final phoneNumber = user.phoneNumber!;
     await _firestore
         .collection('users')
-        .doc(phoneNumber) // Use phone number as doc ID
+        .doc(phoneNumber) 
         .collection('payments')
         .doc(paymentDetails['orderId'])
         .set(paymentDetails);
 
     log('Payment details saved to Firebase successfully');
   }
+//   Future<void> _savePaymentToFirebase(
+//   Map<String, dynamic> paymentDetails,
+// ) async {
+//   try {
+//     final user = FirebaseAuth.instance.currentUser;
+//     if (user == null) {
+//       throw Exception('User not logged in');
+//     }
+
+//     final userId = user.uid;
+//     final phoneNumber = user.phoneNumber;
+
+//     // Reference to the user document
+//     final userDocRef = _firestore.collection('users').doc(userId);
+
+//     // Check if user document exists, if not create it
+//     final userDoc = await userDocRef.get();
+//     if (!userDoc.exists) {
+//       await userDocRef.set({
+//         'userId': userId,
+//         'phoneNumber': phoneNumber,
+//         'createdAt': FieldValue.serverTimestamp(),
+//         'lastLogin': FieldValue.serverTimestamp(),
+//       });
+//     }
+
+//     // Save payment under the user's payments subcollection
+//     await userDocRef
+//         .collection('payments')
+//         .doc(paymentDetails['orderId'])
+//         .set({
+//           ...paymentDetails,
+//           'userId': userId,
+//           'userPhone': phoneNumber,
+//           'timestamp': FieldValue.serverTimestamp(),
+//         });
+
+//     log('Payment saved successfully for user: $userId');
+//   } catch (e) {
+//     log('Error saving payment: $e');
+//     throw Exception('Payment save failed: $e');
+//   }
+// }
 
   void _handlePaymentError(PaymentFailureResponse response) {
     state = state.copyWith(
