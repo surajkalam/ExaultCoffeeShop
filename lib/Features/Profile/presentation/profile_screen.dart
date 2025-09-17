@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:lottie/lottie.dart';
+
 // List of available asset images
 final List<String> assetImages = [
   "Assets/Icons/avtar2.png",
@@ -19,7 +20,6 @@ final List<String> assetImages = [
   "Assets/Icons/avtrars (9).png",
   "Assets/Icons/avtrars (11).png",
   "Assets/Icons/avtrars (14).png",
-  
   "Assets/Icons/avtrars (12).png",
 ];
 
@@ -89,28 +89,27 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-           Lottie.asset('Assets/Icons/404 error. oops page not found.json',
-          height: 200,
-          width:280 ,
-          fit: BoxFit.fill
-          ),
+            Lottie.asset(
+              'Assets/Icons/404 error. oops page not found.json',
+              height: 200,
+              width: 280,
+              fit: BoxFit.fill,
+            ),
             SizedBox(height: 16),
             Text(
               'Sign In to View Profile',
-            style: texttheme.titleMedium?.copyWith(
-              color: colorscheme.primaryContainer,
-            ),
+              style: texttheme.titleMedium?.copyWith(
+                color: colorscheme.primaryContainer,
+              ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
             Text(
               'Create an account or sign in to access your profile information',
               textAlign: TextAlign.center,
-                style: texttheme.labelSmall?.copyWith(
-              color: colorscheme.secondary,
-             
-              
-            ),
+              style: texttheme.labelSmall?.copyWith(
+                color: colorscheme.secondary,
+              ),
             ),
             SizedBox(height: 32),
             SizedBox(
@@ -125,11 +124,11 @@ class ProfileScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('Login',
-                style: texttheme.bodyMedium?.copyWith(
-              color: colorscheme.onSecondaryFixed,
-            
-            ),
+                child: Text(
+                  'Login',
+                  style: texttheme.bodyMedium?.copyWith(
+                    color: colorscheme.onSecondaryFixed,
+                  ),
                 ),
               ),
             ),
@@ -148,8 +147,8 @@ class ProfileScreen extends ConsumerWidget {
                 child: Text(
                   'Go To Home',
                   style: texttheme.bodyMedium?.copyWith(
-              color: colorscheme.onPrimaryFixedVariant,
-            ),
+                    color: colorscheme.onPrimaryFixedVariant,
+                  ),
                 ),
               ),
             ),
@@ -543,13 +542,13 @@ class ProfileScreen extends ConsumerWidget {
     TextTheme texttheme,
   ) {
     final options = [
-      {
-        'title': 'Rewards',
-        'icon': Iconsax.profile_circle,
-        'onTap': () =>
-            // _navigateToEditProfile(context, ref, colorscheme, texttheme),
-            context.push('/scratch-cart'),
-      },
+      // {
+      //   'title': 'Rewards',
+      //   'icon': Iconsax.profile_circle,
+      //   'onTap': () =>
+      //       // _navigateToEditProfile(context, ref, colorscheme, texttheme),
+      //       context.push('/scratch-cart'),
+      // },
       {
         'title': 'Favorite Items',
         'icon': Iconsax.heart,
@@ -749,83 +748,83 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-//   void _navigateToEditProfile(
-//     BuildContext context,
-//     WidgetRef ref,
-//     ColorScheme colorscheme,
-//     TextTheme texttheme,
-//   ) {
-//     showModalBottomSheet(
-//       context: context,
-//       backgroundColor: colorscheme.onPrimary,
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.only(
-//           topLeft: Radius.circular(20),
-//           topRight: Radius.circular(20),
-//         ),
-//       ),
-//       builder: (context) {
-//         final profile = ref.read(profileProvider);
-//         TextEditingController nameController = TextEditingController(
-//           text: profile.name,
-//         );
+  //   void _navigateToEditProfile(
+  //     BuildContext context,
+  //     WidgetRef ref,
+  //     ColorScheme colorscheme,
+  //     TextTheme texttheme,
+  //   ) {
+  //     showModalBottomSheet(
+  //       context: context,
+  //       backgroundColor: colorscheme.onPrimary,
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.only(
+  //           topLeft: Radius.circular(20),
+  //           topRight: Radius.circular(20),
+  //         ),
+  //       ),
+  //       builder: (context) {
+  //         final profile = ref.read(profileProvider);
+  //         TextEditingController nameController = TextEditingController(
+  //           text: profile.name,
+  //         );
 
-//         return Padding(
-//           padding: EdgeInsets.all(20),
-//           child: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               Text(
-//                 'Edit Profile',
-//                 style: texttheme.titleMedium?.copyWith(
-//                   color: colorscheme.primaryContainer,
-//                 ),
-//               ),
-//               SizedBox(height: 20),
-//               TextField(
-//                 controller: nameController,
-//                 decoration: InputDecoration(
-//                   labelText: 'Name',
-//                   border: OutlineInputBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                   prefixIcon: Icon(
-//                     Iconsax.user,
-//                     color: colorscheme.secondaryFixed,
-//                   ),
-//                 ),
-//               ),
-//               SizedBox(height: 20),
-//               SizedBox(
-//                 width: double.infinity,
-//                 child: ElevatedButton(
-//                   onPressed: () {
-//                     ref
-//                         .read(profileProvider.notifier)
-//                         .updateName(nameController.text);
-//                     Navigator.pop(context);
-//                   },
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: colorscheme.onPrimaryFixedVariant,
-//                     foregroundColor: colorscheme.onSecondaryFixed,
-//                     padding: EdgeInsets.symmetric(vertical: 16),
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
-//                   ),
-//                   child: Text(
-//                     'Save Changes',
-//                     style: texttheme.labelLarge?.copyWith(
-//                       color: colorscheme.onSecondaryFixed,
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//               SizedBox(height: 16),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
+  //         return Padding(
+  //           padding: EdgeInsets.all(20),
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               Text(
+  //                 'Edit Profile',
+  //                 style: texttheme.titleMedium?.copyWith(
+  //                   color: colorscheme.primaryContainer,
+  //                 ),
+  //               ),
+  //               SizedBox(height: 20),
+  //               TextField(
+  //                 controller: nameController,
+  //                 decoration: InputDecoration(
+  //                   labelText: 'Name',
+  //                   border: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                   ),
+  //                   prefixIcon: Icon(
+  //                     Iconsax.user,
+  //                     color: colorscheme.secondaryFixed,
+  //                   ),
+  //                 ),
+  //               ),
+  //               SizedBox(height: 20),
+  //               SizedBox(
+  //                 width: double.infinity,
+  //                 child: ElevatedButton(
+  //                   onPressed: () {
+  //                     ref
+  //                         .read(profileProvider.notifier)
+  //                         .updateName(nameController.text);
+  //                     Navigator.pop(context);
+  //                   },
+  //                   style: ElevatedButton.styleFrom(
+  //                     backgroundColor: colorscheme.onPrimaryFixedVariant,
+  //                     foregroundColor: colorscheme.onSecondaryFixed,
+  //                     padding: EdgeInsets.symmetric(vertical: 16),
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(12),
+  //                     ),
+  //                   ),
+  //                   child: Text(
+  //                     'Save Changes',
+  //                     style: texttheme.labelLarge?.copyWith(
+  //                       color: colorscheme.onSecondaryFixed,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //               SizedBox(height: 16),
+  //             ],
+  //           ),
+  //         );
+  //       },
+  //     );
+  //   }
 }

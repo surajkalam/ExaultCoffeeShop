@@ -124,10 +124,10 @@ final  GoRouter approuter = GoRouter(
         path: '/datastore',
         builder: (context, state) => const Datadstore(),
       ),
-      GoRoute(
-        path: '/scratch-cart',
-        builder: (context, state) => const ScratchCardsScreen(),
-      ),
+      // GoRoute(
+      //   path: '/scratch-cart',
+      //   builder: (context, state) => const ScratchCardsScreen(),
+      // ),
       GoRoute(
         path: '/chat-screen',
         builder: (context, state) => const TwaktoScreen(),

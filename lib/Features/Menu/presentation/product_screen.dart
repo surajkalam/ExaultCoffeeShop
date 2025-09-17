@@ -1,13 +1,15 @@
 import 'dart:developer';
 import 'package:coffee_shop/Features/Menu/Provider/paymentProvider.dart';
-import 'package:coffee_shop/Features/Profile/Provider/scratch_provider.dart';
-import 'package:coffee_shop/Features/Profile/data/scratch_model.dart';
+// import 'package:coffee_shop/Features/Profile/Provider/order_provider.dart';
+// import 'package:coffee_shop/Features/Profile/Provider/scratch_provider.dart';
+// import 'package:coffee_shop/Features/Profile/data/order_model.dart';
+// import 'package:coffee_shop/Features/Profile/data/scratch_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:scratcher/widgets.dart';
+// import 'package:scratcher/widgets.dart';
 
 final quantityProvider = StateProvider<int>((ref) => 1);
 
@@ -17,13 +19,13 @@ class ProductDetailsScreen extends ConsumerStatefulWidget {
   const ProductDetailsScreen({super.key, required this.product});
   @override
   ConsumerState<ProductDetailsScreen> createState() =>
+
       _ProductDetailsScreenState();
 }
 
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   @override
   Widget build(BuildContext context) {
-    
     final user = FirebaseAuth.instance.currentUser;
     log('${user?.phoneNumber}');
     ref.listen<PaymentState>(paymentProvider, (previous, next) {
@@ -40,16 +42,18 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (mounted) {
             // Show scratch card and wait for completion
-            final scratchCompleted = await showScratchCardDialog(context);
-            if (scratchCompleted && mounted) {
-              log('Scratch completed, navigating to success screen');
-              // ignore: use_build_context_synchronously
-              context.push('/payment-success', extra: paymentData);
-              ref.read(paymentProvider.notifier).clearSuccess();
-            } else if (mounted) {
-              log('Scratch was cancelled');
-              ref.read(paymentProvider.notifier).clearSuccess();
-            }
+            // final scratchCompleted = await showScratchCardDialog(context);
+          //   if (scratchCompleted && mounted) {
+          //     log('Scratch completed, navigating to success screen');
+          //     // ignore: use_build_context_synchronously
+          //     context.push('/payment-success', extra: paymentData);
+          //     ref.read(paymentProvider.notifier).clearSuccess();
+          //   } else if (mounted) {
+          //     log('Scratch was cancelled');
+          //     ref.read(paymentProvider.notifier).clearSuccess();
+          //   }
+          context.push('/payment-success', extra: paymentData);
+           ref.read(paymentProvider.notifier).clearSuccess();
           }
         });
       }
@@ -136,98 +140,141 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       ),
     );
   }
-
-  Future<bool> showScratchCardDialog(BuildContext context) async {
-     final scratchCardsNotifier = ref.read(scratchCardsProvider.notifier);
+// String _generateRandomReward() {
+//   final rewards = [
+//     '10% Off Your Next Order',
+//     'Free Coffee',
+//     '20% Off Premium Blends',
+//     'Buy One Get One Free',
+//     'Free Pastry with Purchase',
+//     '15% Off All Items',
+//     'Free Delivery on Next Order'
+//   ];
   
-  // Create a new scratch card
-  final newScratchCard = ScratchCardModel(
-    isScratched: false,
-    createdAt: DateTime.now(),
-    reward: 'Special Discount',
-    imagePath: 'Assets/Images/scratch1.jpg',
-     // You can customize this
-  );
-    return await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext dialogContext) {
-            log('in scratch cart');
-            return AlertDialog(
-              contentPadding: EdgeInsets.zero,
-              content: SizedBox(
-                height: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: 16.0),
-                      child: Text(
-                        'Scratch to reveal your reward!',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        height: 180,
-                        width: 200,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Colors.amber,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Scratcher(
-                            brushSize: 70,
-                            threshold: 50,
-                            color: Colors.pink,
-                            onScratchEnd: () async {
-                          log("✅ Scratch finished!");
-                        final updatedCard = newScratchCard.copyWith(
-                          isScratched: true,
-                        );
-                        await scratchCardsNotifier.addScratchCard(updatedCard);
-                        // ignore: use_build_context_synchronously
-                        Navigator.of(dialogContext).pop(true);
-                            },
-                            child: Center(
-                              child: Image(
-                                image: AssetImage('Assets/Images/scratch1.jpg'),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: ()async {
-                      log("⏩ Skip tapped.");
-                  await scratchCardsNotifier.addScratchCard(newScratchCard);
-                  Navigator.of(dialogContext).pop(true);
-                      },
-                      child: Text('Skip'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ) ??
-        false;
-  }
+//   return rewards[DateTime.now().millisecond % rewards.length];
+// }
+// Future<void> _saveOrderToFirebase(
+//   WidgetRef ref,
+//   Map<String, dynamic> product,
+//   int quantity,
+//   double totalPrice,
+// ) async {
+//   try {
+//     final user = FirebaseAuth.instance.currentUser;
+//     if (user == null || user.phoneNumber == null) {
+//       throw Exception('User not authenticated');
+//     }
+
+//     // Create OrderItem
+//     final order = OrderItem(
+//       userId: user.uid,
+//       imagePath: product['image'] ?? '',
+//       name: product['name'] ?? 'Unknown Product',
+//       rating: (product['rating'] is num ? product['rating'].toDouble() : 0.0),
+//       quantity: quantity.toDouble(),
+//       total: totalPrice.toDouble(),
+//       unitPrice: (product['price'] is num ? product['price'].toDouble() : 0.0),
+//       productId: product['id']?.toString(),
+//     );
+
+//     // Save using the provider
+//     await ref.read(orderProvider.notifier).addOrder(order);
+//     log('Order saved successfully: ${order.name}');
+//   } catch (e) {
+//     log('Error saving order: $e');
+//     throw Exception('Failed to save order: $e');
+//   }
+// }
+
+  // Future<bool> showScratchCardDialog(BuildContext context) async {
+  // final scratchCardsNotifier = ref.read(scratchCardsProvider.notifier);
+  // final newScratchCard = ScratchCardModel(
+  //   isScratched: false,
+  //   createdAt: DateTime.now(),
+  //   reward: _generateRandomReward(),
+  //   imagePath: 'Assets/Images/scratch1.jpg',
+  // );
+  //   return await showDialog<bool>(
+  //         context: context,
+  //         barrierDismissible: false,
+  //         builder: (BuildContext dialogContext) {
+  //           log('in scratch cart');
+  //           return AlertDialog(
+  //             contentPadding: EdgeInsets.zero,
+  //             content: SizedBox(
+  //               height: 300,
+  //               child: Column(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 children: [
+  //                   Padding(
+  //                     padding: EdgeInsets.only(top: 16.0),
+  //                     child: Text(
+  //                       'Scratch to reveal your reward!',
+  //                       style: TextStyle(
+  //                         fontSize: 12,
+  //                         fontWeight: FontWeight.w600,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   Padding(
+  //                     padding: const EdgeInsets.all(8.0),
+  //                     child: Container(
+  //                       height: 180,
+  //                       width: 200,
+  //                       decoration: BoxDecoration(
+  //                         borderRadius: BorderRadius.circular(20),
+  //                         color: Colors.amber,
+  //                         boxShadow: [
+  //                           BoxShadow(
+  //                             color: Colors.grey.withOpacity(0.5),
+  //                             spreadRadius: 2,
+  //                             blurRadius: 5,
+  //                             offset: const Offset(0, 3),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                       child: ClipRRect(
+  //                         borderRadius: BorderRadius.circular(20),
+  //                         child: Scratcher(
+  //                           brushSize: 70,
+  //                           threshold: 50,
+  //                           color: Colors.pink,
+  //                           onScratchEnd: () async {
+  //                         log("✅ Scratch finished!");
+  //                       final updatedCard = newScratchCard.copyWith(
+  //                         isScratched: true,
+  //                       );
+  //                       await scratchCardsNotifier.addScratchCard(updatedCard);
+  //                       // ignore: use_build_context_synchronously
+  //                       Navigator.of(dialogContext).pop(true);
+  //                           },
+  //                           child: Center(
+  //                             child: Image(
+  //                               image: AssetImage('Assets/Images/scratch1.jpg'),
+  //                               fit: BoxFit.cover,
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   TextButton(
+  //                     onPressed: ()async {
+  //                     log("⏩ Skip tapped.");
+  //                 await scratchCardsNotifier.addScratchCard(newScratchCard);
+  //                 // ignore: use_build_context_synchronously
+  //                 Navigator.of(dialogContext).pop(true);
+  //                     },
+  //                     child: Text('Skip'),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           );
+  //         },
+  //       ) ??
+  //       false;
+  // }
 
   // Build iOS-style app bar
   PreferredSizeWidget _buildAppBar(
@@ -675,7 +722,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
     try {
       log('Initiating payment...');
-
       await ref
           .read(paymentProvider.notifier)
           .initiatePayment(
@@ -685,7 +731,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             orderId: orderId,
           );
 
-      log('Payment initiated successfully');
+      // await _saveOrderToFirebase(ref, product, quantity, totalPrice.toDouble());  //use for save to firebase recent order with data 
     } catch (e) {
       log('Payment initiation error: $e');
       // ignore: use_build_context_synchronously

@@ -1,7 +1,6 @@
 // ignore: file_names
 import 'dart:developer';
 import 'package:coffee_shop/Services/Razorpay_Service.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -94,8 +93,8 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
         name: productName,
         description: '$quantity x $productName',
         orderId: orderId,
-        onSuccess: _handlePaymentSuccess, // Add callback
-        onError: _handlePaymentError, // Add callback
+        onSuccess: _handlePaymentSuccess, 
+        onError: _handlePaymentError, 
       );
 
       state = state.copyWith(isLoading: false);

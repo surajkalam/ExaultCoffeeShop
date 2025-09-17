@@ -16,7 +16,7 @@ class _RecentOrderScreenState extends State<RecentOrderScreen> {
       appBar: CustomAppBar(
         titleText: 'RecentOrders',
         centerTitle: true,
-         backgroundColor: colorScheme.surface,
+        backgroundColor: colorScheme.surface,
       ),
     );
   }

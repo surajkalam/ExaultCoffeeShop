@@ -14,7 +14,6 @@ class FirebaseSalesService {
 
       // Get all users
       final usersSnapshot = await _firestore.collection('users').get();
-
       final Map<String, Map<String, dynamic>> userSalesMap = {};
       final List<Future<void>> userFutures = [];
 

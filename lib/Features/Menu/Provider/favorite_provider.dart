@@ -125,24 +125,24 @@ final userPhoneProvider = Provider<String?>((ref) {
 // Main favorites provider
 final favoritesProvider =
     StateNotifierProvider<FavoritesNotifier, AsyncValue<void>>((ref) {
-  return FavoritesNotifier(
-    firestore: ref.watch(firestoreProvider),
-    getPhoneNumber: () => ref.read(userPhoneProvider),
-  );
-});
+      return FavoritesNotifier(
+        firestore: ref.watch(firestoreProvider),
+        getPhoneNumber: () => ref.read(userPhoneProvider),
+      );
+    });
 
 class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
   final FirebaseFirestore firestore;
   final String? Function() getPhoneNumber;
 
   FavoritesNotifier({required this.firestore, required this.getPhoneNumber})
-      : super(const AsyncValue.data(null));
+    : super(const AsyncValue.data(null));
 
   Future<void> toggleFavorite(Map<String, dynamic> itemData) async {
     state = const AsyncValue.loading();
     try {
-       final usernumber = FirebaseAuth.instance.currentUser;
-       late final phoneNumber = usernumber?.phoneNumber;
+      final usernumber = FirebaseAuth.instance.currentUser;
+      late final phoneNumber = usernumber?.phoneNumber;
       final userPhoneNumber = getPhoneNumber();
       if (userPhoneNumber == null) throw Exception('User not logged in');
 
@@ -189,24 +189,33 @@ class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 // Favorites stream provider
-final favoritesStreamProvider = StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
-  final userPhoneNumber = ref.watch(userPhoneProvider);
-  final firestore = ref.watch(firestoreProvider);
-
-  if (userPhoneNumber == null) return Stream.value([]);
-
-  return firestore
-      .collection('users')
-      .doc(userPhoneNumber)
-      .collection('favorites')
-      .snapshots()
-      .map((snapshot) => snapshot.docs
-          .map((doc) => doc.data()..['id'] = doc.id)
-          .toList());
-});
+final favoritesStreamProvider =
+    StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+      final firestore = ref.watch(firestoreProvider);
+      final usernumber = FirebaseAuth.instance.currentUser;
+      late final phoneNumber = usernumber?.phoneNumber;
+      if (phoneNumber == null) return Stream.value([]);
+      return firestore
+          .collection('users')
+          .doc(phoneNumber)
+          .collection('favorites')
+          .snapshots()
+          .map((snapshot) {
+            return snapshot.docs.map((doc) {
+              // Combine document ID with document data
+              final data = doc.data();
+              return {
+                'id': doc.id, // This is the item name (document ID)
+                ...data, // This contains all the item data
+              };
+            }).toList();
+          });
+    });
 
 // Cart provider (if you need one)
-final cartProvider = StateNotifierProvider<CartNotifier, AsyncValue<void>>((ref) {
+final cartProvider = StateNotifierProvider<CartNotifier, AsyncValue<void>>((
+  ref,
+) {
   return CartNotifier(
     firestore: ref.watch(firestoreProvider),
     getPhoneNumber: () => ref.read(userPhoneProvider),
@@ -218,7 +227,7 @@ class CartNotifier extends StateNotifier<AsyncValue<void>> {
   final String? Function() getPhoneNumber;
 
   CartNotifier({required this.firestore, required this.getPhoneNumber})
-      : super(const AsyncValue.data(null));
+    : super(const AsyncValue.data(null));
 
   Future<void> addToCart(Map<String, dynamic> itemData) async {
     state = const AsyncValue.loading();
@@ -232,10 +241,7 @@ class CartNotifier extends StateNotifier<AsyncValue<void>> {
           .collection('cart')
           .doc();
 
-      await cartRef.set({
-        ...itemData,
-        'addedAt': FieldValue.serverTimestamp(),
-      });
+      await cartRef.set({...itemData, 'addedAt': FieldValue.serverTimestamp()});
       state = const AsyncValue.data(null);
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
@@ -263,18 +269,21 @@ class CartNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 // Cart stream provider
-final cartStreamProvider = StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
-  final userPhoneNumber = ref.watch(userPhoneProvider);
-  final firestore = ref.watch(firestoreProvider);
+final cartStreamProvider =
+    StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+      final userPhoneNumber = ref.watch(userPhoneProvider);
+      final firestore = ref.watch(firestoreProvider);
 
-  if (userPhoneNumber == null) return Stream.value([]);
+      if (userPhoneNumber == null) return Stream.value([]);
 
-  return firestore
-      .collection('users')
-      .doc(userPhoneNumber)
-      .collection('cart')
-      .snapshots()
-      .map((snapshot) => snapshot.docs
-          .map((doc) => doc.data()..['id'] = doc.id)
-          .toList());
-});
+      return firestore
+          .collection('users')
+          .doc(userPhoneNumber)
+          .collection('cart')
+          .snapshots()
+          .map(
+            (snapshot) => snapshot.docs
+                .map((doc) => doc.data()..['id'] = doc.id)
+                .toList(),
+          );
+    });

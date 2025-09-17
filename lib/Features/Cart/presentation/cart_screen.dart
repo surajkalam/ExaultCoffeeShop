@@ -628,6 +628,7 @@ class CartScreen extends ConsumerWidget {
             _proceedToCheckout(context, total, items);
           },
           style: ElevatedButton.styleFrom(
+            
             backgroundColor: const Color(0xFFC67C4E),
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
