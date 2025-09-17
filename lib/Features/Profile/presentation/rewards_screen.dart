@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:developer';
+import 'package:coffee_shop/Features/Profile/Provider/profile_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +18,8 @@ class RewarsScreens extends ConsumerWidget {
     var width = MediaQuery.of(context).size.width;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final currentPoints = ref.watch(currentPointsProvider);
+    log('current points: $currentPoints');
     return Scaffold(
       backgroundColor: colorScheme.onPrimary,
       appBar: CustomAppBar(
@@ -32,7 +35,7 @@ class RewarsScreens extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildUserProfileSection(height, width, colorScheme, textTheme),
+            _buildUserProfileSection(height, width, colorScheme, textTheme,currentPoints),
             SizedBox(height: height * 0.03),
             _buildSectionTitle("How to Earn", colorScheme, textTheme),
             SizedBox(height: height * 0.02),
@@ -97,6 +100,7 @@ class RewarsScreens extends ConsumerWidget {
     double width,
     ColorScheme colorscheme,
     TextTheme texttheme,
+    int points,
   ) {
     return Center(
       child: Container(
@@ -144,7 +148,7 @@ class RewarsScreens extends ConsumerWidget {
                 border: Border.all(color: colorscheme.onPrimaryFixedVariant),
               ),
               child: Text(
-                "150 Points",
+                '$points Points',
                 style: texttheme.bodyLarge?.copyWith(
                   color: colorscheme.onPrimaryFixedVariant,
                   fontSize: 12,

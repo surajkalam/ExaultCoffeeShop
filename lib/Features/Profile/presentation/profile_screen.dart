@@ -27,6 +27,7 @@ final selectedImageProvider = StateProvider<String>((ref) {
   return "Assets/Icons/avtar2.png"; // Default image
 });
 
+
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -36,6 +37,7 @@ class ProfileScreen extends ConsumerWidget {
     final selectedImage = ref.watch(selectedImageProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+ final currentPoints = ref.watch(currentPointsProvider);
 
     return Scaffold(
       backgroundColor: colorScheme.onPrimary,
@@ -344,6 +346,7 @@ class ProfileScreen extends ConsumerWidget {
     ColorScheme colorscheme,
     TextTheme texttheme,
   ) {
+      final pointsAsync = ref.watch(calculatedPointsProvider);
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -398,9 +401,11 @@ class ProfileScreen extends ConsumerWidget {
                       Consumer(
                         builder: (context, ref, child) {
                           final levels = ref.watch(levelProvider);
+                           final currentPoints = ref.watch(totalPointsProvider);
                           final currentLevel = ref
                               .read(levelProvider.notifier)
-                              .getCurrentLevel(totalPoints ?? 0);
+                              // .getCurrentLevel(totalPoints ?? 0);
+                              .getCurrentLevel(currentPoints);
 
                           return Text(
                             currentLevel.name,
@@ -503,7 +508,7 @@ class ProfileScreen extends ConsumerWidget {
                   data: (data) {
                     int paymentPoints = data.length * 10;
                     int currentTotalPoints = profile.points + paymentPoints;
-
+                   ref.read(currentPointsProvider.notifier).state = currentTotalPoints;
                     return Text(
                       "$currentTotalPoints points",
                       style: texttheme.titleMedium?.copyWith(

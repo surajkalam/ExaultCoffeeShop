@@ -45,6 +45,32 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     state = state.copyWith(accountLevel: newLevel);
   }
 }
+//
+final currentPointsProvider = StateProvider<int>((ref) => 0);
+
+// Provider to calculate and update the current points
+final updateCurrentPointsProvider = FutureProvider<void>((ref) async {
+  final profile = ref.read(profileProvider);
+  final paymentsAsync = ref.read(userPaymentsProvider);
+  
+  paymentsAsync.when(
+    data: (payments) {
+      int paymentPoints = payments.length * 10;
+      int totalPoints = profile.points + paymentPoints;
+
+      ref.read(currentPointsProvider.notifier).state = totalPoints;
+    },
+    loading: () {},
+    error: (error, stack) {},
+  );
+});
+
+
+
+
+
+
+//
 
 final totalPointsProvider = StateProvider<int>((ref) {
   return 0;
