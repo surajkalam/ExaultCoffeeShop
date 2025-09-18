@@ -8,7 +8,6 @@ plugins {
 
 android {
     namespace = "com.example.coffee_shop"
-    //compileSdk = flutter.compileSdkVersion
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
@@ -30,7 +29,7 @@ android {
         //minSdk = flutter.minSdkVersion
         minSdk = flutter.minSdkVersion
         //targetSdk = flutter.targetSdkVersion
-        targetSdk =34
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true 

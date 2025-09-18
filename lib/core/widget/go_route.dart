@@ -1,3 +1,4 @@
+import 'package:coffee_shop/Authentication/mobile_login.dart';
 import 'package:coffee_shop/Authentication/phone_auth.dart';
 import 'package:coffee_shop/Features/Home/Home.dart';
 import 'package:coffee_shop/Features/Home/presentation/topbestseller_screen.dart';
@@ -17,7 +18,8 @@ final GoRouter approuter = GoRouter(
   debugLogDiagnostics: true,
   routes: [
     // GoRoute(path: '/', builder: (context, state) => const Datadstore()),
-    GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
+    // GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
+    GoRoute(path: '/', builder: (context, state) => const PhoneOTPVerification()),
     GoRoute(
       path: '/login-screen',
       builder: (context, state) => const PhoneAuth(),

@@ -41,48 +41,47 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCHa5HwcAwIyOE9TYuTUeOlX--RtdR9gN8',
-    appId: '1:699709353509:web:3b117d4c781fd7705419cc',
-    messagingSenderId: '699709353509',
-    projectId: 'coffeeshop-3270e',
-    authDomain: 'coffeeshop-3270e.firebaseapp.com',
-    storageBucket: 'coffeeshop-3270e.firebasestorage.app',
-    measurementId: 'G-XE8V7VSG5Z',
+    apiKey: 'AIzaSyD-VFjPbl0FAA_ABFbkwqR8lhx0aMMaSsw',
+    appId: '1:911881811812:web:aecd95e17ba56804476c71',
+    messagingSenderId: '911881811812',
+    projectId: 'exult-shop',
+    authDomain: 'exult-shop.firebaseapp.com',
+    storageBucket: 'exult-shop.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCCvoTD7SbBmOlOhUga0psaOMkZ05-uvIU',
-    appId: '1:699709353509:android:5961acb777abc0855419cc',
-    messagingSenderId: '699709353509',
-    projectId: 'coffeeshop-3270e',
-    storageBucket: 'coffeeshop-3270e.firebasestorage.app',
+    apiKey: 'AIzaSyDysF2uvkCf0QzScLC9GvmsfGrjA8NYKq8',
+    appId: '1:911881811812:android:c9a879d089778eb1476c71',
+    messagingSenderId: '911881811812',
+    projectId: 'exult-shop',
+    storageBucket: 'exult-shop.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyARnoP_c-3NHE5c1cbcK-AFxuZtmy2gMrs',
-    appId: '1:699709353509:ios:162fb12aed324d6c5419cc',
-    messagingSenderId: '699709353509',
-    projectId: 'coffeeshop-3270e',
-    storageBucket: 'coffeeshop-3270e.firebasestorage.app',
+    apiKey: 'AIzaSyAlGTseWCatNmFTDgZ6cneh1rZ3q0CQOvc',
+    appId: '1:911881811812:ios:7ca324623fa395e1476c71',
+    messagingSenderId: '911881811812',
+    projectId: 'exult-shop',
+    storageBucket: 'exult-shop.firebasestorage.app',
     iosBundleId: 'com.example.coffeeShop',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyARnoP_c-3NHE5c1cbcK-AFxuZtmy2gMrs',
-    appId: '1:699709353509:ios:162fb12aed324d6c5419cc',
-    messagingSenderId: '699709353509',
-    projectId: 'coffeeshop-3270e',
-    storageBucket: 'coffeeshop-3270e.firebasestorage.app',
+    apiKey: 'AIzaSyAlGTseWCatNmFTDgZ6cneh1rZ3q0CQOvc',
+    appId: '1:911881811812:ios:7ca324623fa395e1476c71',
+    messagingSenderId: '911881811812',
+    projectId: 'exult-shop',
+    storageBucket: 'exult-shop.firebasestorage.app',
     iosBundleId: 'com.example.coffeeShop',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCHa5HwcAwIyOE9TYuTUeOlX--RtdR9gN8',
-    appId: '1:699709353509:web:1a9ebeb7fe862fe35419cc',
-    messagingSenderId: '699709353509',
-    projectId: 'coffeeshop-3270e',
-    authDomain: 'coffeeshop-3270e.firebaseapp.com',
-    storageBucket: 'coffeeshop-3270e.firebasestorage.app',
-    measurementId: 'G-1YN3R964WS',
+    apiKey: 'AIzaSyD-VFjPbl0FAA_ABFbkwqR8lhx0aMMaSsw',
+    appId: '1:911881811812:web:85769cc9a0a40434476c71',
+    messagingSenderId: '911881811812',
+    projectId: 'exult-shop',
+    authDomain: 'exult-shop.firebaseapp.com',
+    storageBucket: 'exult-shop.firebasestorage.app',
   );
+
 }
