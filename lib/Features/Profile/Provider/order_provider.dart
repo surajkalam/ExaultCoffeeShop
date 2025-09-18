@@ -1,66 +1,45 @@
-// order_provider.dart
+// payment_provider.dart
 import 'package:coffee_shop/Features/Profile/data/order_model.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
-final orderProvider = StateNotifierProvider<OrderNotifier, List<OrderItem>>((ref) {
-  return OrderNotifier();
+import '../../../DATABASE_HELPER/payment_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+final paymentProvider = ChangeNotifierProvider<PaymentProvider>((ref) {
+  return PaymentProvider();
 });
 
-class OrderNotifier extends StateNotifier<List<OrderItem>> {
-  OrderNotifier() : super([]);
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class PaymentProvider with ChangeNotifier {
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+  List<PaymentData> _payments = [];
+  bool _isLoading = false;
 
-  // Add order to Firestore and local state
-  Future<void> addOrder(OrderItem order) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not logged in');
+  List<PaymentData> get payments => _payments;
+  bool get isLoading => _isLoading;
 
-      // Add to Firestore
-      final docRef = await _firestore
-          .collection('users')
-          .doc(user.phoneNumber)
-          .collection('recentOrders')
-          .add(order.toMap());
-
-      // Update local state with the generated ID
-      final newOrder = order.copyWith(id: docRef.id);
-      state = [newOrder, ...state];
-      
-    } catch (e) {
-      throw Exception('Failed to add order: $e');
-    }
+  Future<void> loadPayments() async {
+    _setLoading(true);
+    _payments = await _dbHelper.getPayments();
+    _setLoading(false);
   }
 
-  // Fetch user's orders
-  Future<void> fetchUserOrders() async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null || user.phoneNumber == null) return;
-
-      final snapshot = await _firestore
-          .collection('users')
-          .doc(user.phoneNumber)
-          .collection('recentOrders')
-          .orderBy('orderDate', descending: true)
-          .get();
-
-      final orders = snapshot.docs
-          .map((doc) => OrderItem.fromMap(doc.data(), doc.id))
-          .toList();
-
-      state = orders;
-    } catch (e) {
-      throw Exception('Failed to fetch orders: $e');
-    }
+  Future<void> addPayment(PaymentData payment) async {
+    await _dbHelper.insertPayment(payment);
+    await loadPayments(); // This automatically refreshes the list
   }
 
-  // Clear all orders
-  void clearOrders() {
-    state = [];
+  Future<void> deletePayment(int id) async {
+    await _dbHelper.deletePayment(id);
+    await loadPayments(); // This automatically refreshes the list
+  }
+
+  Future<void> clearAllPayments() async {
+    await _dbHelper.clearPayments();
+    await loadPayments(); // This automatically refreshes the list
+  }
+
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    notifyListeners();
   }
 }

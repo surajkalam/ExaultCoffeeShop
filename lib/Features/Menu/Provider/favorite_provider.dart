@@ -1,107 +1,3 @@
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-
-// // Provider for Firebase Firestore instance
-// final firestoreProvider = Provider<FirebaseFirestore>((ref) {
-//   return FirebaseFirestore.instance;
-// });
-
-// // Provider for Firebase Auth instance
-// final authProvider = Provider<FirebaseAuth>((ref) {
-//   return FirebaseAuth.instance;
-// });
-
-// // Provider for the current user's email (sanitized for Firestore)
-// final userEmailProvider = Provider<String?>((ref) {
-//   final user = ref.watch(authProvider).currentUser;
-//   return user?.email?.replaceAll('.', '_');
-// });
-
-// // Main favorites provider
-// final favoritesProvider =
-//     StateNotifierProvider<FavoritesNotifier, AsyncValue<void>>((ref) {
-//       return FavoritesNotifier(
-//         firestore: ref.watch(firestoreProvider),
-//         getEmail: () => ref.read(
-//           userEmailProvider,
-//         ), // Using read instead of watch to avoid reactivity
-//       );
-//     });
-
-// class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
-//   final FirebaseFirestore firestore;
-//   final String? Function() getEmail;
-
-//   FavoritesNotifier({required this.firestore, required this.getEmail})
-//     : super(const AsyncValue.data(null));
-
-//   Future<void> toggleFavorite(Map<String, dynamic> itemData) async {
-//     state = const AsyncValue.loading();
-//     try {
-//       final userEmail = getEmail();
-//       if (userEmail == null) throw Exception('User not logged in');
-
-//       final itemName = itemData['name'];
-//       final favoritesRef = firestore
-//           .collection('users')
-//           .doc(userEmail)
-//           .collection('favorites')
-//           .doc(itemName);
-
-//       final doc = await favoritesRef.get();
-
-//       if (doc.exists) {
-//         await favoritesRef.delete();
-//       } else {
-//         await favoritesRef.set({
-//           ...itemData,
-//           'addedAt': FieldValue.serverTimestamp(),
-//         });
-//       }
-//       state = const AsyncValue.data(null);
-//     } catch (e) {
-//       state = AsyncValue.error(e, StackTrace.current);
-//     }
-//   }
-
-//   Future<bool> isFavorite(String itemName) async {
-//     try {
-//       final userEmail = getEmail();
-//       if (userEmail == null) return false;
-
-//       final doc = await firestore
-//           .collection('users')
-//           .doc(userEmail)
-//           .collection('favorites')
-//           .doc(itemName)
-//           .get();
-
-//       return doc.exists;
-//     } catch (e) {
-//       return false;
-//     }
-//   }
-// }
-
-// //add cart provider
-
-// // providers.dart
-// final favoritesStreamProvider = StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
-//   final userEmail = ref.watch(userEmailProvider);
-//   final firestore = ref.watch(firestoreProvider);
-
-//   if (userEmail == null) return Stream.value([]);
-
-//   return firestore
-//       .collection('users')
-//       .doc(userEmail)
-//       .collection('favorites')
-//       .snapshots()
-//       .map((snapshot) => snapshot.docs
-//           .map((doc) => doc.data()..['id'] = doc.id)
-//           .toList());
-// });
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -131,6 +27,63 @@ final favoritesProvider =
       );
     });
 
+// class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
+//   final FirebaseFirestore firestore;
+//   final String? Function() getPhoneNumber;
+
+//   FavoritesNotifier({required this.firestore, required this.getPhoneNumber})
+//     : super(const AsyncValue.data(null));
+
+//   Future<void> toggleFavorite(Map<String, dynamic> itemData) async {
+//     state = const AsyncValue.loading();
+//     try {
+//       final usernumber = FirebaseAuth.instance.currentUser;
+//       late final phoneNumber = usernumber?.phoneNumber;
+//       final userPhoneNumber = getPhoneNumber();
+//       if (userPhoneNumber == null) throw Exception('User not logged in');
+
+//       final itemName = itemData['name'];
+//       final favoritesRef = firestore
+//           .collection('users')
+
+//           .doc(phoneNumber)
+//           .collection('favorites')
+//           .doc(itemName);
+
+//       final doc = await favoritesRef.get();
+
+//       if (doc.exists) {
+//         await favoritesRef.delete();
+//       } else {
+//         await favoritesRef.set({
+//           ...itemData,
+//           'addedAt': FieldValue.serverTimestamp(),
+//         });
+//       }
+//       state = const AsyncValue.data(null);
+//     } catch (e) {
+//       state = AsyncValue.error(e, StackTrace.current);
+//     }
+//   }
+
+//   Future<bool> isFavorite(String itemName) async {
+//     try {
+//       final userPhoneNumber = getPhoneNumber();
+//       if (userPhoneNumber == null) return false;
+
+//       final doc = await firestore
+//           .collection('users')
+//           .doc(userPhoneNumber)
+//           .collection('favorites')
+//           .doc(itemName)
+//           .get();
+
+//       return doc.exists;
+//     } catch (e) {
+//       return false;
+//     }
+//   }
+// }
 class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
   final FirebaseFirestore firestore;
   final String? Function() getPhoneNumber;
@@ -141,15 +94,13 @@ class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> toggleFavorite(Map<String, dynamic> itemData) async {
     state = const AsyncValue.loading();
     try {
-      final usernumber = FirebaseAuth.instance.currentUser;
-      late final phoneNumber = usernumber?.phoneNumber;
+      // Use the same method to get phone number consistently
       final userPhoneNumber = getPhoneNumber();
       if (userPhoneNumber == null) throw Exception('User not logged in');
-
       final itemName = itemData['name'];
       final favoritesRef = firestore
           .collection('users')
-          .doc(phoneNumber)
+          .doc(userPhoneNumber)
           .collection('favorites')
           .doc(itemName);
 
@@ -189,20 +140,44 @@ class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 // Favorites stream provider
+// final favoritesStreamProvider =
+//     StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+//       final firestore = ref.watch(firestoreProvider);
+
+//       final usernumber = FirebaseAuth.instance.currentUser;
+//       late final phoneNumber = usernumber?.phoneNumber;
+//       if (phoneNumber == null) return Stream.value([]);
+//       return firestore
+//           .collection('users')
+//           .doc(userPhoneNumber)
+//           .collection('favorites')
+//           .snapshots()
+//           .map((snapshot) {
+//             return snapshot.docs.map((doc) {
+//               // Combine document ID with document data
+//               final data = doc.data();
+//               return {
+//                 'id': doc.id, // This is the item name (document ID)
+//                 ...data, // This contains all the item data
+//               };
+//             }).toList();
+//           });
+//     });
 final favoritesStreamProvider =
     StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
       final firestore = ref.watch(firestoreProvider);
-      final usernumber = FirebaseAuth.instance.currentUser;
-      late final phoneNumber = usernumber?.phoneNumber;
-      if (phoneNumber == null) return Stream.value([]);
+      final userPhoneNumber = ref.watch(userPhoneProvider); // Use the provider
+
+      if (userPhoneNumber == null) return Stream.value([]);
+
       return firestore
           .collection('users')
-          .doc(phoneNumber)
+          .doc(userPhoneNumber) // Use the sanitized phone number
           .collection('favorites')
+          .orderBy('addedAt', descending: true) // Optional: order by date
           .snapshots()
           .map((snapshot) {
             return snapshot.docs.map((doc) {
-              // Combine document ID with document data
               final data = doc.data();
               return {
                 'id': doc.id, // This is the item name (document ID)
@@ -211,7 +186,6 @@ final favoritesStreamProvider =
             }).toList();
           });
     });
-
 // Cart provider (if you need one)
 final cartProvider = StateNotifierProvider<CartNotifier, AsyncValue<void>>((
   ref,

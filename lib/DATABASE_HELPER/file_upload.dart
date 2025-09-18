@@ -5,8 +5,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-
 class ImageUploadScreen extends StatefulWidget {
   const ImageUploadScreen({super.key});
 

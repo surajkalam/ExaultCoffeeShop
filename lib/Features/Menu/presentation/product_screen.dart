@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:coffee_shop/Features/Menu/Provider/favorite_provider.dart';
 import 'package:coffee_shop/Features/Menu/Provider/paymentProvider.dart';
 // import 'package:coffee_shop/Features/Profile/Provider/order_provider.dart';
 // import 'package:coffee_shop/Features/Profile/Provider/scratch_provider.dart';
@@ -13,17 +14,28 @@ import 'package:iconsax/iconsax.dart';
 
 final quantityProvider = StateProvider<int>((ref) => 1);
 
-
 class ProductDetailsScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> product;
   const ProductDetailsScreen({super.key, required this.product});
   @override
   ConsumerState<ProductDetailsScreen> createState() =>
-
       _ProductDetailsScreenState();
 }
 
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
+  
+
+   bool _isFavorite = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFavoriteStatus();
+  }
+
+  
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -37,23 +49,23 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             .read(paymentProvider.notifier)
             .getLastPaymentData();
         log('paymentdata : $paymentData');
-        log('Showing scratch card first');
+        // log('Showing scratch card first');
 
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (mounted) {
             // Show scratch card and wait for completion
             // final scratchCompleted = await showScratchCardDialog(context);
-          //   if (scratchCompleted && mounted) {
-          //     log('Scratch completed, navigating to success screen');
-          //     // ignore: use_build_context_synchronously
-          //     context.push('/payment-success', extra: paymentData);
-          //     ref.read(paymentProvider.notifier).clearSuccess();
-          //   } else if (mounted) {
-          //     log('Scratch was cancelled');
-          //     ref.read(paymentProvider.notifier).clearSuccess();
-          //   }
-          context.push('/payment-success', extra: paymentData);
-           ref.read(paymentProvider.notifier).clearSuccess();
+            //   if (scratchCompleted && mounted) {
+            //     log('Scratch completed, navigating to success screen');
+            //     // ignore: use_build_context_synchronously
+            //     context.push('/payment-success', extra: paymentData);
+            //     ref.read(paymentProvider.notifier).clearSuccess();
+            //   } else if (mounted) {
+            //     log('Scratch was cancelled');
+            //     ref.read(paymentProvider.notifier).clearSuccess();
+            //   }
+            context.push('/payment-success', extra: paymentData);
+            ref.read(paymentProvider.notifier).clearSuccess();
           }
         });
       }
@@ -79,6 +91,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         product['name'] ?? 'Product Details',
         colorScheme,
         textTheme,
+        _isFavorite
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -140,51 +153,75 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       ),
     );
   }
-// String _generateRandomReward() {
-//   final rewards = [
-//     '10% Off Your Next Order',
-//     'Free Coffee',
-//     '20% Off Premium Blends',
-//     'Buy One Get One Free',
-//     'Free Pastry with Purchase',
-//     '15% Off All Items',
-//     'Free Delivery on Next Order'
-//   ];
-  
-//   return rewards[DateTime.now().millisecond % rewards.length];
-// }
-// Future<void> _saveOrderToFirebase(
-//   WidgetRef ref,
-//   Map<String, dynamic> product,
-//   int quantity,
-//   double totalPrice,
-// ) async {
-//   try {
-//     final user = FirebaseAuth.instance.currentUser;
-//     if (user == null || user.phoneNumber == null) {
-//       throw Exception('User not authenticated');
-//     }
+  Future<void> _checkFavoriteStatus() async {
+    setState(() => _isLoading = true);
+    try {
+      final isFav = await ref
+          .read(favoritesProvider.notifier)
+          .isFavorite(widget.product['name']);
+      setState(() => _isFavorite = isFav);
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
-//     // Create OrderItem
-//     final order = OrderItem(
-//       userId: user.uid,
-//       imagePath: product['image'] ?? '',
-//       name: product['name'] ?? 'Unknown Product',
-//       rating: (product['rating'] is num ? product['rating'].toDouble() : 0.0),
-//       quantity: quantity.toDouble(),
-//       total: totalPrice.toDouble(),
-//       unitPrice: (product['price'] is num ? product['price'].toDouble() : 0.0),
-//       productId: product['id']?.toString(),
-//     );
+  Future<void> _toggleFavorite() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      await ref
+          .read(favoritesProvider.notifier)
+          .toggleFavorite(widget.product);
+      setState(() => _isFavorite = !_isFavorite);
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+  // String _generateRandomReward() {
+  //   final rewards = [
+  //     '10% Off Your Next Order',
+  //     'Free Coffee',
+  //     '20% Off Premium Blends',
+  //     'Buy One Get One Free',
+  //     'Free Pastry with Purchase',
+  //     '15% Off All Items',
+  //     'Free Delivery on Next Order'
+  //   ];
 
-//     // Save using the provider
-//     await ref.read(orderProvider.notifier).addOrder(order);
-//     log('Order saved successfully: ${order.name}');
-//   } catch (e) {
-//     log('Error saving order: $e');
-//     throw Exception('Failed to save order: $e');
-//   }
-// }
+  //   return rewards[DateTime.now().millisecond % rewards.length];
+  // }
+  // Future<void> _saveOrderToFirebase(
+  //   WidgetRef ref,
+  //   Map<String, dynamic> product,
+  //   int quantity,
+  //   double totalPrice,
+  // ) async {
+  //   try {
+  //     final user = FirebaseAuth.instance.currentUser;
+  //     if (user == null || user.phoneNumber == null) {
+  //       throw Exception('User not authenticated');
+  //     }
+
+  //     // Create OrderItem
+  //     final order = OrderItem(
+  //       userId: user.uid,
+  //       imagePath: product['image'] ?? '',
+  //       name: product['name'] ?? 'Unknown Product',
+  //       rating: (product['rating'] is num ? product['rating'].toDouble() : 0.0),
+  //       quantity: quantity.toDouble(),
+  //       total: totalPrice.toDouble(),
+  //       unitPrice: (product['price'] is num ? product['price'].toDouble() : 0.0),
+  //       productId: product['id']?.toString(),
+  //     );
+
+  //     // Save using the provider
+  //     await ref.read(orderProvider.notifier).addOrder(order);
+  //     log('Order saved successfully: ${order.name}');
+  //   } catch (e) {
+  //     log('Error saving order: $e');
+  //     throw Exception('Failed to save order: $e');
+  //   }
+  // }
 
   // Future<bool> showScratchCardDialog(BuildContext context) async {
   // final scratchCardsNotifier = ref.read(scratchCardsProvider.notifier);
@@ -282,6 +319,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     String title,
     ColorScheme colorscheme,
     TextTheme texttheme,
+    bool isFavorite,
   ) {
     return AppBar(
       backgroundColor: colorscheme.surface,
@@ -302,9 +340,16 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       ),
       actions: [
         IconButton(
-          icon: Icon(Iconsax.heart, color: colorscheme.secondaryFixed),
-          onPressed: () {},
+        icon: Icon(
+          isFavorite ? Icons.favorite : Icons.favorite_border_outlined,
+          color: isFavorite 
+              ? Colors.red 
+              : colorscheme.secondaryFixed,
         ),
+        onPressed: () async {
+          await _toggleFavorite();
+        },
+      ),
       ],
     );
   }
@@ -697,6 +742,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
     log('User: ${user?.uid}');
     log('Phone: ${user?.phoneNumber}');
+    log('=== Checkout Details ===');
+    log('Total Items: ${product.length}');
+    log('Total Price: ₹${totalPrice.toStringAsFixed(2)}');
 
     if (user == null || user.phoneNumber == null) {
       log('User not authenticated with phone number');
@@ -730,8 +778,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             quantity: quantity,
             orderId: orderId,
           );
+      // .initiatePayment(amount: totalPrice, productName: product['name'], quantity: quantity, orderId: orderId);
 
-      // await _saveOrderToFirebase(ref, product, quantity, totalPrice.toDouble());  //use for save to firebase recent order with data 
+      // await _saveOrderToFirebase(ref, product, quantity, totalPrice.toDouble());  //use for save to firebase recent order with data
     } catch (e) {
       log('Payment initiation error: $e');
       // ignore: use_build_context_synchronously
