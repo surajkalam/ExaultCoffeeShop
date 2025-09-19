@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 
 class PhoneOTPVerification extends StatefulWidget {
   const PhoneOTPVerification({super.key});
@@ -38,7 +39,7 @@ class _PhoneOTPVerificationState extends State<PhoneOTPVerification> {
               ? CircularProgressIndicator()
               : !visible 
                 ? SendOTPButton("Send OTP") 
-                : SubmitOTPButton("Submit"),
+                : SubmitOTPButton("Submit",context),
             if (visible)
               TextButton(
                 onPressed: () => resendOTP(),
@@ -50,6 +51,7 @@ class _PhoneOTPVerificationState extends State<PhoneOTPVerification> {
     );
   }
 
+  // ignore: non_constant_identifier_names
   Widget SendOTPButton(String text) => ElevatedButton(
     onPressed: () async {
       if (phoneNumber.text.isEmpty || phoneNumber.text.length != 10) {
@@ -100,7 +102,7 @@ class _PhoneOTPVerificationState extends State<PhoneOTPVerification> {
     child: Text(text),
   );
 
-  Widget SubmitOTPButton(String text) => ElevatedButton(
+  Widget SubmitOTPButton(String text,BuildContext context) => ElevatedButton(
     onPressed: () async {
       if (otp.text.isEmpty || verificationId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -120,11 +122,15 @@ class _PhoneOTPVerificationState extends State<PhoneOTPVerification> {
       });
       
       if (success) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Authentication Successful!")),
         );
+        // ignore: use_build_context_synchronously
+        context.go('/navbar');
         // Navigate to next screen
       } else {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Authentication failed. Please check your OTP.")),
         );

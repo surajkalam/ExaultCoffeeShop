@@ -118,7 +118,7 @@ class ProfileScreen extends ConsumerWidget {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () => context.go('/'),
+                onPressed: () => context.go('/login-screen'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorscheme.onPrimaryFixedVariant,
                   foregroundColor: colorscheme.onSecondaryFixed,
@@ -508,7 +508,12 @@ class ProfileScreen extends ConsumerWidget {
                   data: (data) {
                     int paymentPoints = data.length * 10;
                     int currentTotalPoints = profile.points + paymentPoints;
-                   ref.read(currentPointsProvider.notifier).state = currentTotalPoints;
+                    // ref.read(currentPointsProvider.notifier).state =
+                    //     currentTotalPoints;
+                    Future.microtask(() {
+                      ref.read(currentPointsProvider.notifier).state =
+                          currentTotalPoints;
+                    });
                     return Text(
                       "$currentTotalPoints points",
                       style: texttheme.titleMedium?.copyWith(
@@ -572,7 +577,7 @@ class ProfileScreen extends ConsumerWidget {
       {
         'title': 'Recent Orders',
         'icon': Iconsax.receipt,
-        'onTap': () => context.push('/Recent-order'),
+        'onTap': () => context.push('/recent-order'),
       },
       {
         'title': 'Help & Support',

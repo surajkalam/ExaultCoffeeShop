@@ -1,8 +1,12 @@
-import 'package:coffee_shop/Authentication/mobile_login.dart';
+import 'package:coffee_shop/Authentication/auth_wrapper.dart';
 import 'package:coffee_shop/Authentication/phone_auth.dart';
 import 'package:coffee_shop/Features/Home/Home.dart';
+import 'package:coffee_shop/Features/Home/presentation/onlineorder_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/topbestseller_screen.dart';
+import 'package:coffee_shop/Features/Profile/presentation/order_screen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/datastore.dart';
+import 'package:coffee_shop/Features/firebasestoredata/newarraivles.dart';
+import 'package:coffee_shop/Features/firebasestoredata/seasional_items.dart';
 import 'package:coffee_shop/Features/payment/paymentmethods.dart';
 import 'package:coffee_shop/core/core.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +23,11 @@ final GoRouter approuter = GoRouter(
   routes: [
     // GoRoute(path: '/', builder: (context, state) => const Datadstore()),
     // GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
-    GoRoute(path: '/', builder: (context, state) => const PhoneOTPVerification()),
+    // GoRoute(path: '/', builder: (context, state) => const PhoneOTPVerification()),
+    // GoRoute(path: '/', builder: (context, state) => const MainAppere()),
+     GoRoute(path: '/Newarraivles', builder: (context, state) => NewArrivals()),
+      GoRoute(path: '/sessional-items', builder: (context, state) => Sessionalitems()),
+     GoRoute(path: '/', builder: (context, state) => const AuthWrapper()),
     GoRoute(
       path: '/login-screen',
       builder: (context, state) => const PhoneAuth(),
@@ -47,8 +55,10 @@ final GoRouter approuter = GoRouter(
         );
       },
     ),
+     GoRoute(path: '/online-order', builder: (context, state) => const OnlineorderScreen()),
     GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
     GoRoute(path: '/reward', builder: (context, state) => RewarsScreens()),
+
     GoRoute(
       path: '/notification',
       builder: (context, state) => NotificationScreen(),
@@ -122,6 +132,9 @@ final GoRouter approuter = GoRouter(
     //     return RecentOrderScreen(paymentData: paymentData ?? {});
     //   },
     // ),
+    GoRoute(path: '/recent-order',
+    builder:(context,state)=>RecentOrdersScreen(),
+    ),
     GoRoute(
       path: '/datastore',
       builder: (context, state) => const Datadstore(),

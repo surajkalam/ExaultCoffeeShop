@@ -1,5 +1,7 @@
-import 'package:coffee_shop/Features/Menu/Provider/PaymentProvider.dart';
-import 'package:coffee_shop/Features/Profile/data/order_model.dart';
+import 'dart:developer';
+
+import 'package:coffee_shop/Features/Profile/Provider/recentorder_provider.dart';
+import 'package:coffee_shop/Features/Profile/data/paymentorder_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,18 +17,18 @@ class PaymentSuccessScreen extends ConsumerStatefulWidget {
       _PaymentSuccessScreenState();
 }
 class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen> {
+  
   @override
-  void initState() {
+   void initState() {
     super.initState();
-     WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _storePaymentData();
     });
-    Timer(Duration(seconds: 2), () {
+    Timer(Duration(seconds: 4), () {
       context.go('/navbar');
     });
   }
     void _storePaymentData() {
-    // Extract data from paymentData map and convert to PaymentData model
     final payment = PaymentData(
       productName: widget.paymentData['productName'] ?? 'Unknown Product',
       quantity: widget.paymentData['quantity'] ?? 1,
@@ -35,13 +37,14 @@ class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen> {
       status: widget.paymentData['status'] ?? 'completed',
       completedAt: DateTime.now(),
     );
-
-    // Store in database
-   ref.read(paymentProvider.notifier).addPayment(payment);
+     
+    ref.read(orderpaymentProvider.notifier).addPayment(payment);
   }
 
   @override
   Widget build(BuildContext context) {
+    log('price: ${widget.paymentData['price']}');
+    log('totalprice: ${widget.paymentData['totalPrice']}');
     // final colorScheme = Theme.of(context).colorScheme;
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;

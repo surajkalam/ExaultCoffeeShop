@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:lottie/lottie.dart';
+
 
 class MenuScreen extends ConsumerWidget {
   const MenuScreen({super.key});
@@ -60,6 +62,7 @@ class MenuScreen extends ConsumerWidget {
               ),
               SizedBox(height: height * 0.02),
               _buildHorizontalScrollSection(
+                context,
                 height,
                 width,
                 "home",
@@ -75,6 +78,7 @@ class MenuScreen extends ConsumerWidget {
               ),
               SizedBox(height: height * 0.02),
               _buildHorizontalScrollSection(
+                context,
                 height,
                 width,
                 "seasonal",
@@ -96,7 +100,10 @@ class MenuScreen extends ConsumerWidget {
     return SizedBox(
       height: height * 0.6,
       child: Center(
-        child: CircularProgressIndicator(color: colorScheme.primary),
+        child: Lottie.asset('Assets/Icons/coffee-break.json',
+        height: 200,
+        width: 150
+        ),
       ),
     );
   }
@@ -266,7 +273,7 @@ class MenuScreen extends ConsumerWidget {
                                       height: 50,
                                       width: 50,
                                       child: Image.network(
-                                        firstItem['image'] ?? '',
+                                        firstItem['image'] ?? Icon(Icons.coffee,color: colorscheme.secondaryFixed,),
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, _, __) =>
                                             _buildFallbackIcon(
@@ -315,6 +322,7 @@ class MenuScreen extends ConsumerWidget {
 
   // Build horizontal scroll section
   Widget _buildHorizontalScrollSection(
+    BuildContext context,
     double height,
     double width,
     String type,
@@ -338,6 +346,7 @@ class MenuScreen extends ConsumerWidget {
         children: [
           const SizedBox(width: 8),
           _buildProductCard(
+            context,
             height,
             width,
             imagePath,
@@ -346,9 +355,11 @@ class MenuScreen extends ConsumerWidget {
             isHomeSection,
             colorscheme,
             texttheme,
+            
           ),
           const SizedBox(width: 16),
           _buildProductCard(
+             context,
             height,
             width,
             imagePath,
@@ -357,6 +368,7 @@ class MenuScreen extends ConsumerWidget {
             isHomeSection,
             colorscheme,
             texttheme,
+           
           ),
           const SizedBox(width: 8),
         ],
@@ -366,6 +378,7 @@ class MenuScreen extends ConsumerWidget {
 
   // Build product card
   Widget _buildProductCard(
+    BuildContext context,
     double height,
     double width,
     String imagePath,
@@ -502,20 +515,25 @@ class MenuScreen extends ConsumerWidget {
                         fontSize: 16,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorscheme.onPrimaryFixedVariant,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        "Order Now",
-                        style: textTheme.titleSmall?.copyWith(
-                          color: colorscheme.onSecondaryFixed,
-                          fontSize: 11,
+                    InkWell(
+                      onTap: (){
+                        context.push('/online-order');
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorscheme.onPrimaryFixedVariant,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          "Order Now",
+                          style: textTheme.titleSmall?.copyWith(
+                            color: colorscheme.onSecondaryFixed,
+                            fontSize: 11,
+                          ),
                         ),
                       ),
                     ),

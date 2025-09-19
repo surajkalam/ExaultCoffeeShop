@@ -1,10 +1,5 @@
-// screens/billing_info_screen.dart
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:coffee_shop/core/widget/appbar.dart';
 import 'package:coffee_shop/Features/Profile/Provider/fetchpaymentdata.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -26,287 +21,457 @@ class BillingInfoScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final paymentsAsync = ref.watch(userPaymentsProvider);
-    final user = FirebaseAuth.instance.currentUser;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(
-        titleText: 'Billing Information',
+      appBar: AppBar(
+        title: Text(
+          'Billing Information',
+          style: TextStyle(
+            color: AppColors.primaryDark,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: AppColors.primaryLight,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryDark),
+          onPressed: () => Navigator.pop(context),
+        ),
         centerTitle: true,
-        backgroundColor: AppColors.primary,
-        // foregroundColor: AppColors.primaryDark,
-        elevation: 0.5,
       ),
-      body: Column(
-        children: [
-          paymentsAsync.when(
-            loading: () => _buildLoadingState(),
-            error: (error, stack) => _buildErrorState(error),
-            data: (payments) => _buildPaymentList(payments),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final user = FirebaseAuth.instance.currentUser;
-              if (user?.phoneNumber != null) {
-                final phone = user!.phoneNumber!.replaceAll(
-                  RegExp(r'[^0-9]'),
-                  '',
-                );
-                log('Trying to access document at path: users/$phone');
-
-                FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(phone)
-                    .get()
-                    .then((doc) {
-                      log('Firestore document exists: ${doc.exists}');
-                      if (doc.exists) {
-                        log('Document data: ${doc.data()}');
-
-                        // Also check if payments subcollection exists
-                        doc.reference.collection('payments').get().then((
-                          paymentsSnapshot,
-                        ) {
-                          log(
-                            'Number of payment documents: ${paymentsSnapshot.docs.length}',
-                          );
-                          paymentsSnapshot.docs.forEach((paymentDoc) {
-                            log(
-                              'Payment doc: ${paymentDoc.id} - ${paymentDoc.data()}',
-                            );
-                          });
-                        });
-                      } else {
-                        log('Document does not exist at path: users/$phone');
-                        log('Available collections:');
-
-                        // Check what collections actually exist
-                        FirebaseFirestore.instance.collection('users').get().then((
-                          usersSnapshot,
-                        ) {
-                          log(
-                            'Total users documents: ${usersSnapshot.docs.length}',
-                          );
-                          usersSnapshot.docs.forEach((userDoc) {
-                            log('User document ID: ${userDoc.id}');
-                          });
-                        });
-                      }
-                    })
-                    .catchError((error) {
-                      log('Error accessing document: $error');
-                    });
-              } else {
-                log('User phone number is null');
-              }
-            },
-            child: Text('Check Firestore'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 30,
-            height: 30,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Loading payments...',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorState(dynamic error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 50,
-              // ignore: deprecated_member_use
-              color: AppColors.textSecondary.withOpacity(0.7),
+            paymentsAsync.when(
+              loading: () => _buildLoadingState(),
+              error: (error, stack) => _buildErrorState(error),
+              data: (payments) => payments.isEmpty
+                  ? _buildEmptyState()
+                  : _buildPaymentContent(payments, context),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Unable to load payment information',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Error: $error',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-            const SizedBox(height: 20),
-            _buildRetryButton(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRetryButton() {
-    return Consumer(
-      builder: (context, ref, child) {
-        return TextButton(
-          onPressed: () => ref.refresh(userPaymentsProvider),
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: AppColors.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text('Try Again'),
-        );
-      },
+  Widget _buildPaymentContent(
+    List<Map<String, dynamic>> payments,
+    BuildContext context,
+  ) {
+    // Calculate summary stats
+    double totalAmount = payments.fold(
+      0,
+      (sum, payment) => sum + (payment['amount'] ?? 0),
     );
-  }
+    int completedPayments = payments
+        .where(
+          (p) =>
+              p['status']?.toLowerCase() == 'completed' ||
+              p['status']?.toLowerCase() == 'success',
+        )
+        .length;
 
-  Widget _buildPaymentList(List<Map<String, dynamic>> payments) {
-    if (payments.isEmpty) {
-      return _buildEmptyState();
-    }
-    return Expanded(
-      child: RefreshIndicator(
-        backgroundColor: Colors.white,
-        color: AppColors.primary,
-        onRefresh: () async {},
-        child: ListView.separated(
+    return Column(
+      children: [
+        // Summary Cards Section
+        Container(
           padding: const EdgeInsets.all(16),
-          itemCount: payments.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final payment = payments[index];
-            return _buildPaymentCard(context, payment);
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.receipt_long,
-              size: 60,
-              // ignore: deprecated_member_use
-              color: AppColors.textSecondary.withOpacity(0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No payment records',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+          child: Row(
+            children: [
+              Expanded(
+                child: _buildSummaryCard(
+                  'Total Spent',
+                  '\$${totalAmount.toStringAsFixed(2)}',
+                  Icons.account_balance_wallet,
+                  AppColors.primary,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Your payment history will appear here',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentCard(BuildContext context, Map<String, dynamic> payment) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildSummaryCard(
+                  'Transactions',
+                  '${payments.length}',
+                  Icons.receipt_long,
+                  AppColors.accent,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildSummaryCard(
+                  'Completed',
+                  '$completedPayments',
+                  Icons.check_circle,
+                  Colors.blue,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    payment['productName'] ?? 'Unknown Product',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+        ),
+
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Transactions',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${payments.length} items',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(width: 12),
+              ),
+            ],
+          ),
+        ),
+
+        // Payment Cards with modern design
+        RefreshIndicator(
+          backgroundColor: Colors.white,
+          color: AppColors.primary,
+          onRefresh: () async {},
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: payments.length,
+            itemBuilder: (context, index) {
+              final payment = payments[index];
+              return _buildModernPaymentCard(context, payment, index);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernPaymentCard(
+    BuildContext context,
+    Map<String, dynamic> payment,
+    int index,
+  ) {
+    final statusColor = _getStatusColor(payment['status']);
+    final isSuccess =
+        payment['status']?.toLowerCase() == 'completed' ||
+        payment['status']?.toLowerCase() == 'success';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _showPaymentDetails(context, payment),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Product Icon with gradient background
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            // ignore: deprecated_member_use
+                            AppColors.primary.withOpacity(0.7),
+                            AppColors.primary,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Icon(Icons.coffee, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+
+                    // Product Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            payment['productName'] ?? 'Unknown Product',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _formatDate(payment['completedAt']),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Amount and Status
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '\$${payment['amount']?.toStringAsFixed(2) ?? '0.00'}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isSuccess ? Icons.check_circle : Icons.pending,
+                                size: 12,
+                                color: statusColor,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                (payment['status'] ?? 'Unknown').toUpperCase(),
+                                style: TextStyle(
+                                  color: statusColor,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                // Additional Info Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
+                  margin: const EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
-                    color: _getStatusColor(payment['status']).withOpacity(0.1),
+                    color: AppColors.background,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    (payment['status'] ?? 'Unknown').toUpperCase(),
-                    style: TextStyle(
-                      color: _getStatusColor(payment['status']),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildInfoItem(
+                        'Order ID',
+                        '#${payment['orderId']?.substring(0, 8) ?? 'N/A'}',
+                      ),
+                      _buildInfoItem(
+                        'Quantity',
+                        '${payment['quantity'] ?? '0'}',
+                      ),
+                      _buildInfoItem(
+                        'Payment',
+                        payment['paymentId']?.substring(0, 8) ?? 'N/A',
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Container(height: 1, color: AppColors.lightBorder),
-            const SizedBox(height: 16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showPaymentDetails(BuildContext context, Map<String, dynamic> payment) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.lightBorder,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Transaction Details',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildDetailRow('Product', payment['productName'] ?? 'Unknown'),
             _buildDetailRow('Order ID', payment['orderId'] ?? 'N/A'),
+            _buildDetailRow('Payment ID', payment['paymentId'] ?? 'N/A'),
             _buildDetailRow(
               'Amount',
               '\$${payment['amount']?.toStringAsFixed(2) ?? '0.00'}',
             ),
             _buildDetailRow('Quantity', payment['quantity']?.toString() ?? '0'),
-            _buildDetailRow('Payment ID', payment['paymentId'] ?? 'N/A'),
+            _buildDetailRow('Status', payment['status'] ?? 'Unknown'),
             _buildDetailRow('Date', _formatDate(payment['completedAt'])),
             if (payment['signature'] != null)
               _buildDetailRow('Signature', payment['signature']),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  'Close',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -315,12 +480,12 @@ class BillingInfoScreen extends ConsumerWidget {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 90,
+            width: 100,
             child: Text(
               label,
               style: TextStyle(
@@ -330,14 +495,206 @@ class BillingInfoScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.right,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Container(
+      height: 400,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Loading payments...',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(dynamic error) {
+    return Container(
+      height: 400,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(Icons.error_outline, size: 50, color: Colors.red),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Unable to load payments',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Error: $error',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              _buildRetryButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRetryButton() {
+    return Consumer(
+      builder: (context, ref, child) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => ref.refresh(userPaymentsProvider),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 14,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.refresh, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Try Again',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return SizedBox(
+      height: 400,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(30),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.primaryLight.withOpacity(0.3),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.receipt_long,
+                  size: 60,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No payment records',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Your payment history will appear here\nonce you make your first purchase',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -358,7 +715,7 @@ class BillingInfoScreen extends ConsumerWidget {
 
   String _formatDate(dynamic date) {
     if (date is Timestamp) {
-      return DateFormat('MMM dd, yyyy - hh:mm a').format(date.toDate());
+      return DateFormat('MMM dd, yyyy').format(date.toDate());
     } else if (date is String) {
       return date;
     }

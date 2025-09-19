@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:user_profile_avatar/user_profile_avatar.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../core/utils/utils.dart';
 import '../../Map/Map.dart';
@@ -133,7 +132,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     textTheme,
                   ),
                   SizedBox(height: height * 0.03),
-
                   Text(
                     'Voucher for you🎉',
                     style: textTheme.titleMedium?.copyWith(
@@ -162,7 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Row(
                       children: [
                         InkWell(
-                          onTap: (){
+                          onTap: () {
                             context.push('/best-seller');
                           },
                           child: _buildBestsellerSection(
@@ -224,7 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       flexibleSpace: _buildFlexibleSpace(height, width, colorscheme, textTheme),
       elevation: 1,
       scrolledUnderElevation: 2,
-      shadowColor:colorscheme.shadow,
+      shadowColor: colorscheme.shadow,
       surfaceTintColor: Colors.transparent,
       forceElevated: false,
       backgroundColor: colorscheme.tertiaryFixed,
@@ -300,38 +298,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: colorscheme.primary,
               ),
             ),
+            SizedBox(height: height*0.01,),
             Row(
               children: [
                 Text(
-              'What would you like to order today?',
-
-              style: textTheme.bodySmall?.copyWith(
-                color: colorscheme.secondary,
-              ),
-            ),
-            Spacer(),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: InkWell(
-                        onTap: () {},
-                        child: Icon(
-                          Iconsax.search_normal,
-                          size: 20,
-                          color: colorscheme.secondaryFixed,
-                        ),
-                      ),
-                    ),
+                  'What would you like to order today?',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorscheme.secondary,
                   ),
                 ),
               ],
             ),
-
           ],
         ),
       ),
@@ -368,21 +345,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         onPressed: () => context.push('/shophour'),
       ),
-      Padding(
-        padding: const EdgeInsets.only(right: 8.0, left: 4.0),
-        child: UserProfileAvatar(
-          avatarUrl:
-              "https://icons.veryicon.com/png/o/object/material-design-icons/notifications-1.png",
-          radius: 10,
-          notificationCount: 5,
-          notificationBubbleTextStyle: TextStyle(
-            backgroundColor: Colors.red,
-            color: Colors.white,
-            fontSize: 8,
-          ),
-          onAvatarTap: () => context.push('/notification'),
-        ),
-      ),
+      // Padding(
+      //   padding: const EdgeInsets.only(right: 8.0, left: 4.0),
+      //   child: UserProfileAvatar(
+      //     avatarUrl:
+      //         "https://icons.veryicon.com/png/o/object/material-design-icons/notifications-1.png",
+      //     radius: 10,
+      //     notificationCount: 5,
+      //     notificationBubbleTextStyle: TextStyle(
+      //       backgroundColor: Colors.red,
+      //       color: Colors.white,
+      //       fontSize: 8,
+      //     ),
+      //     onAvatarTap: () => context.push('/notification'),
+      //   ),
+      // ),
     ];
   }
 
@@ -511,8 +488,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             items: bannerImages.map((imagePath) {
               return GestureDetector(
                 onTap: () {
-                  context.push('/datastore');
-
+                  // context.push('/datastore');
                   // if (imagePath.contains('combobanner')) {
                   //   context.push('/offer');
                   // }
@@ -936,26 +912,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ) {
     return Column(
       children: [
-        _buildNewArrivalItem(
-          height,
-          width,
-          "Assets/Images/cappucino.jpg",
-          "Pumpkin Spice Latte",
-          "A seasonal favorite with warm spices",
-          "🌟 New Arrivals",
-          colorscheme,
-          textTheme,
+        InkWell(
+          onTap: () async {
+            //  context.push('/Newarraivles');
+            getProductsNewarrivalsAsMap();
+            final newproducts = await getProductsNewarrivalsAsMap();
+            // ignore: use_build_context_synchronously
+            context.push('/menu/new menu ', extra: newproducts);
+          },
+          child: _buildNewArrivalItem(
+            height,
+            width,
+            "Assets/Images/cappucino.jpg",
+            "Pumpkin Spice Latte",
+            "A seasonal favorite with warm spices",
+            "🌟 New Arrivals",
+            colorscheme,
+            textTheme,
+          ),
         ),
         SizedBox(height: height * 0.02),
-        _buildNewArrivalItem(
-          height,
-          width,
-          "Assets/Images/cappucino.jpg",
-          "Strawberry Cream Frappe",
-          "Creamy strawberry delight",
-          "🌟 Seasonal Specials",
-          colorscheme,
-          textTheme,
+        InkWell(
+          onTap: () async {
+            getProductsNewarrivalsAsMap();
+            final sessionproducts = await getproductsessionalAsMap();
+            // ignore: use_build_context_synchronously
+            context.push('/menu/specials', extra: sessionproducts);
+            //  context.push('/sessional-items');
+          },
+          child: _buildNewArrivalItem(
+            height,
+            width,
+            "Assets/Images/cappucino.jpg",
+            "Strawberry Cream Frappe",
+            "Creamy strawberry delight",
+            "🌟 Seasonal Specials",
+            colorscheme,
+            textTheme,
+          ),
         ),
       ],
     );
@@ -1224,6 +1218,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getProductsNewarrivalsAsMap() async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    try {
+      log('Fetching new arrivals products');
+
+      final QuerySnapshot productsSnapshot = await firestore
+          .collection('items')
+          .doc('Newarrivals')
+          .collection('items')
+          .get();
+
+      log('Total products found: ${productsSnapshot.docs.length}');
+
+      // Convert to List<Map<String, dynamic>>
+      final List<Map<String, dynamic>> products = productsSnapshot.docs.map((
+        doc,
+      ) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id; // Include the document ID
+        return data;
+      }).toList();
+
+      log('Successfully fetched ${products.length} products');
+      return products;
+    } catch (e) {
+      log('Error getting products: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getproductsessionalAsMap() async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    try {
+      log('Fetching new arrivals products');
+
+      final QuerySnapshot productsSnapshot = await firestore
+          .collection('items')
+          .doc('Sessional')
+          .collection('items')
+          .get();
+
+      log('Total products found: ${productsSnapshot.docs.length}');
+
+      // Convert to List<Map<String, dynamic>>
+      final List<Map<String, dynamic>> products = productsSnapshot.docs.map((
+        doc,
+      ) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id; // Include the document ID
+        return data;
+      }).toList();
+
+      log('Successfully fetched ${products.length} products');
+      return products;
+    } catch (e) {
+      log('Error getting products: $e');
+      rethrow;
     }
   }
 }
