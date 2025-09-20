@@ -108,7 +108,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bannerImages = ref.watch(carouselImagesProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
       backgroundColor: colorScheme.onSurface,
       body: CustomScrollView(
@@ -123,13 +122,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildCarouselSection(
-                    height,
-                    width,
-                    bannerImages,
-                    currentIndex,
-                    colorScheme,
-                    textTheme,
+                  GestureDetector(
+                    onTap: (){
+                      context.push('/offer-data');
+                    },
+                    child: _buildCarouselSection(
+                      height,
+                      width,
+                      bannerImages,
+                      currentIndex,
+                      colorScheme,
+                      textTheme,
+                    ),
                   ),
                   SizedBox(height: height * 0.03),
                   Text(
@@ -139,7 +143,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   SizedBox(height: height * 0.03),
-                  vouchersection(height, width, voucherlist),
+                  GestureDetector(
+                    onTap: ()async {
+                      context.push('/voucher-data');
+                      // String category=await getCategoriesname();
+                      // navigateToCategoryScreen(
+                      //       category,
+                      //       colorScheme,
+                      //       textTheme,
+                      //       '1757264051191711',
+                      //     );
+                    },
+                    child: vouchersection(height, width, voucherlist)),
                   SizedBox(height: height * 0.03),
                   _buildCategoriesSection(
                     height,
@@ -523,7 +538,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget vouchersection(double height, double width, List voucherlist) {
     return SizedBox(
-      height: height * 0.17, // Set a fixed height for the voucher section
+      height: height * 0.17, 
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: voucherlist.length,
@@ -550,15 +565,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+  Future<String> getCategoriesname() async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  try {
+    log('Fetching categories from items/Voucher/categories');
 
-  Future<List<Product>> getProductsByCategory(String category) async {
+    final QuerySnapshot categoriesSnapshot = await firestore
+        .collection('items')
+        .doc('Voucher')
+        .collection('categories')  
+        .get();
+
+    log('Total documents found in categories: ${categoriesSnapshot.docs.length}');
+
+    // Extract category values from the 'category' field of each document
+    String categoryName = ''; // Initialize with empty string
+    
+    for (final doc in categoriesSnapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      
+      // Check if the document has a 'category' field
+      if (data.containsKey('category') && data['category'] != null) {
+        categoryName = data['category'].toString(); // Assign to the outer variable
+        log('Found category: $categoryName in document ${doc.id}');
+        break; // If you only want the first category found, break the loop
+      } else {
+        log('Document ${doc.id} does not have a category field or it is null');
+      }
+      log('-----------------------------');
+    }
+    
+    log('Returning category: $categoryName');
+    return categoryName;
+    
+  } catch (e) {
+    log('Error getting categories: $e');
+    rethrow;
+  }
+}
+  Future<List<Product>> getProductsByCategory(String category,String docid) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     try {
       log('Fetching products for category: $category');
 
       final QuerySnapshot categorySnapshot = await firestore
           .collection('items')
-          .doc('1757264051191711')
+          .doc(docid)
           .collection(category)
           .get();
 
@@ -577,7 +629,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         data['id'] = productDoc.id;
         return Product.fromMap(data);
       }).toList();
-
       log(
         'Successfully fetched ${allProducts.length} products from category $category',
       );
@@ -592,6 +643,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     String category,
     ColorScheme colorscheme,
     TextTheme textTheme,
+    String docid
   ) async {
     try {
       showDialog(
@@ -605,7 +657,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       );
-      List<Product> products = await getProductsByCategory(category);
+      List<Product> products = await getProductsByCategory(category,docid);
 
       List<Map<String, dynamic>> productsMap = products
           .map((product) => product.toMap())
@@ -653,6 +705,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     double width,
     ColorScheme colorscheme,
     TextTheme textTheme,
+    { String category=''}
   ) {
     final categories = [
       'Coffee',
@@ -693,12 +746,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       InkWell(
                         onTap: () {
+                          final selectedCategory = category.isNotEmpty
+                              ? category
+                              : categories[index];
                           log('Category tapped: ${categories[index]}');
-                          getProductsByCategory(categories[index]);
+                          getProductsByCategory(
+                            selectedCategory,
+                            '1757264051191711',
+                          );
                           navigateToCategoryScreen(
-                            categories[index],
+                            selectedCategory,
                             colorscheme,
                             textTheme,
+                            '1757264051191711',
                           );
                         },
                         child: Container(
@@ -1107,14 +1167,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       width: width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black26,
-        //     offset: const Offset(3, 3),
-        //     blurRadius: 10,
-        //     spreadRadius: 2
-        //   ),
-        // ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -1126,22 +1178,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
+                  // ignore: deprecated_member_use
                   colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
                 ),
               ),
             ),
-            Positioned(
-              bottom: 16,
-              left: 16,
-              child: Text(
-                "Special Offer",
-                style: GoogleFonts.dmSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            // Positioned(
+            //   bottom: 16,
+            //   left: 16,
+            //   child: Text(
+            //     "Special Offer",
+            //     style: GoogleFonts.dmSans(
+            //       fontSize: 18,
+            //       fontWeight: FontWeight.w700,
+            //       color: Colors.white,
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

@@ -54,11 +54,16 @@ class MenuScreen extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: height * 0.03),
-              _buildSectionTitle(
-                "Buy For Home",
-                "Perfect for your home brewing",
-                colorScheme,
-                textTheme,
+              GestureDetector(
+                onTap: (){
+                  context.push('/voucher-screen');
+                },
+                child: _buildSectionTitle(
+                  "Buy For Home",
+                  "Perfect for your home brewing",
+                  colorScheme,
+                  textTheme,
+                ),
               ),
               SizedBox(height: height * 0.02),
               _buildHorizontalScrollSection(

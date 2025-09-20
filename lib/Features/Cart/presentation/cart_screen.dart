@@ -342,7 +342,7 @@ class CartScreen extends ConsumerWidget {
                     children: [
                       // Product Type and Name
                       Text(
-                        item['category'] ?? 'Cappuccino',
+                        item['category'] ?? '',
                         style: GoogleFonts.dmSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,

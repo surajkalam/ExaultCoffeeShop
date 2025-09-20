@@ -355,7 +355,7 @@ class CategoryItemsScreen extends ConsumerWidget {
 
       final userId = UserUtils.getUserIdentifier(user);
       final itemName = itemData['name'];
-
+      //  late final phoneNumber = user?.phoneNumber;
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)

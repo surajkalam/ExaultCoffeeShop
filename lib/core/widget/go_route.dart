@@ -4,9 +4,12 @@ import 'package:coffee_shop/Features/Home/Home.dart';
 import 'package:coffee_shop/Features/Home/presentation/onlineorder_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/topbestseller_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/order_screen.dart';
+import 'package:coffee_shop/Features/Profile/presentation/voucher_screen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/datastore.dart';
 import 'package:coffee_shop/Features/firebasestoredata/newarraivles.dart';
+import 'package:coffee_shop/Features/firebasestoredata/voucher_Storedata.dart';
 import 'package:coffee_shop/Features/firebasestoredata/seasional_items.dart';
+import 'package:coffee_shop/Features/firebasestoredata/offer_data.dart';
 import 'package:coffee_shop/Features/payment/paymentmethods.dart';
 import 'package:coffee_shop/core/core.dart';
 import 'package:flutter/material.dart';
@@ -25,14 +28,28 @@ final GoRouter approuter = GoRouter(
     // GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
     // GoRoute(path: '/', builder: (context, state) => const PhoneOTPVerification()),
     // GoRoute(path: '/', builder: (context, state) => const MainAppere()),
-     GoRoute(path: '/Newarraivles', builder: (context, state) => NewArrivals()),
-      GoRoute(path: '/sessional-items', builder: (context, state) => Sessionalitems()),
-     GoRoute(path: '/', builder: (context, state) => const AuthWrapper()),
+    GoRoute(path: '/Newarraivles', builder: (context, state) => NewArrivals()),
+    GoRoute(
+      path: '/sessional-items',
+      builder: (context, state) => Sessionalitems(),
+    ),
+    GoRoute(
+      path: '/voucher-data',
+      builder: (context, state) => VoucherdataStoreScreen(),
+    ),
+    GoRoute(
+      path: '/offer-data',
+      builder: (context, state) =>OfferdataStoreScreen(),
+    ),
+    GoRoute(path: '/', builder: (context, state) => const AuthWrapper()),
     GoRoute(
       path: '/login-screen',
       builder: (context, state) => const PhoneAuth(),
     ),
-
+    GoRoute(
+      path: '/voucher-screen',
+      builder: (context, state) => GiveVoucherScreen(),
+    ),
     GoRoute(path: '/navbar', builder: (context, state) => const MainAppere()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
 
@@ -55,7 +72,10 @@ final GoRouter approuter = GoRouter(
         );
       },
     ),
-     GoRoute(path: '/online-order', builder: (context, state) => const OnlineorderScreen()),
+    GoRoute(
+      path: '/online-order',
+      builder: (context, state) => const OnlineorderScreen(),
+    ),
     GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
     GoRoute(path: '/reward', builder: (context, state) => RewarsScreens()),
 

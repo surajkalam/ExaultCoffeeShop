@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:coffee_shop/Features/Menu/Provider/favorite_provider.dart';
 import 'package:coffee_shop/Features/Menu/Provider/paymentProvider.dart';
+import 'package:coffee_shop/Features/Profile/Provider/voucher_provider.dart';
 // import 'package:coffee_shop/Features/Profile/Provider/order_provider.dart';
 // import 'package:coffee_shop/Features/Profile/Provider/scratch_provider.dart';
 // import 'package:coffee_shop/Features/Profile/data/order_model.dart';
@@ -27,19 +28,22 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
    bool _isFavorite = false;
   bool _isLoading = false;
-
+ 
+   late num price;
+  late int quantity;
+  late num totalPrice;
   @override
   void initState() {
     super.initState();
     _checkFavoriteStatus();
   }
-
-  
-
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     log('${user?.phoneNumber}');
+      final appliedVoucherId = ref.watch(appliedVoucherIdProvider);
+  final voucherDiscount = ref.watch(voucherDiscountProvider);
+  
     ref.listen<PaymentState>(paymentProvider, (previous, next) {
       log('Payment State Changed:');
       log('Previous: ${previous?.paymentSuccess}');
@@ -74,7 +78,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     final quantity = ref.watch(quantityProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
+ // CALCULATE PRICES USING PROVIDER VALUES:
     final product = widget.product;
     final price = product['price'] != null
         ? (product['price'] is num
@@ -82,6 +86,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               : (double.tryParse(product['price'].toString()) ?? 0.0))
         : 0.0;
     final totalPrice = price * quantity;
+    final discountAmount = (price * quantity * voucherDiscount / 100);
+  final finalPrice = (price * quantity) - discountAmount;
+
     log('starting product :$product');
 
     return Scaffold(
@@ -124,9 +131,16 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             SizedBox(height: MediaQuery.of(context).size.height * 0.02),
 
             // Price Section
-            _buildPriceSection(price, totalPrice, colorScheme, textTheme),
+            _buildPriceSection(price, totalPrice, discountAmount, finalPrice, colorScheme, textTheme),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-
+              _buildVoucherSection(
+            context,
+            ref,
+            totalPrice.toDouble(),
+            colorScheme,
+            textTheme,
+          ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             // Description (if available)
             if (product['description'] != null)
               _buildDescriptionSection(
@@ -138,16 +152,16 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
             // Add to Cart Button
             SizedBox(height: MediaQuery.of(context).size.height * 0.04),
-            _buildCheckoutButton(
-              context,
-              ref,
-              product,
-              quantity,
-              price,
-              totalPrice,
-              colorScheme,
-              textTheme,
-            ),
+             _buildCheckoutButton(
+            context,
+            ref,
+            product,
+            quantity,
+            price,
+            finalPrice,   // Use final price instead of totalPrice
+            colorScheme,
+            textTheme,
+          ),
           ],
         ),
       ),
@@ -548,8 +562,11 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   Widget _buildPriceSection(
     num price,
     num totalPrice,
+    num discountAmount,
+    num finalPrice,
     ColorScheme colorscheme,
     TextTheme texttheme,
+
   ) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -575,18 +592,99 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ),
           ),
           SizedBox(height: 12),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Text(
+          //       'Unit Price:',
+          //       style: texttheme.bodySmall?.copyWith(
+          //         color: colorscheme.secondary,
+          //         fontSize: 12,
+          //       ),
+          //     ),
+          //     Text(
+          //       '₹${price.toStringAsFixed(2)}',
+          //       style: texttheme.bodyMedium?.copyWith(
+          //         color: colorscheme.primary,
+          //       ),
+          //     ),
+          //   ],
+          // ),
+          // SizedBox(height: 8),
+          // Divider(height: 1, color: colorscheme.shadow),
+          // SizedBox(height: 8),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Text(
+          //       'Total:',
+          //       style: texttheme.bodySmall?.copyWith(
+          //         color: colorscheme.primary,
+          //         fontSize: 11,
+          //       ),
+          //     ),
+          //     Text(
+          //       '₹${totalPrice.toStringAsFixed(2)}',
+          //       style: texttheme.bodyMedium?.copyWith(
+          //         color: colorscheme.secondaryFixed,
+          //       ),
+          //     ),
+          //     if (_voucherDiscount > 0) ...[
+          //       SizedBox(height: 8),
+          //       Row(
+          //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //         children: [
+          //           Text(
+          //             'Discount (${_voucherDiscount}%):',
+          //             style: texttheme.bodySmall?.copyWith(
+          //               color: Colors.green,
+          //               fontSize: 12,
+          //             ),
+          //           ),
+          //           Text(
+          //             '-₹${discountAmount.toStringAsFixed(2)}',
+          //             style: texttheme.bodyMedium?.copyWith(
+          //               color: Colors.green,
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ],
+          //   ],
+          // ),
+           Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Unit Price:',
+              style: texttheme.bodySmall?.copyWith(
+                color: colorscheme.secondary,
+                fontSize: 12,
+              ),
+            ),
+            Text(
+              '₹${price.toStringAsFixed(2)}',
+              style: texttheme.bodyMedium?.copyWith(
+                color: colorscheme.primary,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8),
+        
+          // Quantity
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Unit Price:',
+                'Quantity:',
                 style: texttheme.bodySmall?.copyWith(
                   color: colorscheme.secondary,
                   fontSize: 12,
                 ),
               ),
               Text(
-                '₹${price.toStringAsFixed(2)}',
+                quantity.toString(),
                 style: texttheme.bodyMedium?.copyWith(
                   color: colorscheme.primary,
                 ),
@@ -594,26 +692,73 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ],
           ),
           SizedBox(height: 8),
-          Divider(height: 1, color: colorscheme.shadow),
-          SizedBox(height: 8),
+
+          // Subtotal
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total:',
+                'Subtotal:',
                 style: texttheme.bodySmall?.copyWith(
-                  color: colorscheme.primary,
-                  fontSize: 11,
+                  color: colorscheme.secondary,
+                  fontSize: 12,
                 ),
               ),
               Text(
                 '₹${totalPrice.toStringAsFixed(2)}',
                 style: texttheme.bodyMedium?.copyWith(
-                  color: colorscheme.secondaryFixed,
+                  color: colorscheme.primary,
                 ),
               ),
             ],
           ),
+
+          // Discount if applied
+          if (voucherDiscount > 0) ...[
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Discount (${voucherDiscount}%):',
+                  style: texttheme.bodySmall?.copyWith(
+                    color: Colors.green,
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  '-₹${discountAmount.toStringAsFixed(2)}',
+                  style: texttheme.bodyMedium?.copyWith(color: Colors.green),
+                ),
+              ],
+            ),
+          ],
+
+          SizedBox(height: 8),
+          Divider(height: 1, color: colorscheme.shadow),
+          SizedBox(height: 8),
+
+          // Final Total
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total Amount:',
+                style: texttheme.bodySmall?.copyWith(
+                color: colorscheme.primary,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '₹${finalPrice.toStringAsFixed(2)}',
+              style: texttheme.bodyMedium?.copyWith(
+                color: colorscheme.secondaryFixed,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
         ],
       ),
     );
@@ -669,7 +814,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     Map<String, dynamic> product,
     int quantity,
     num price,
-    num totalPrice,
+    num finalPrice,
     ColorScheme colorscheme,
     TextTheme texttheme,
   ) {
@@ -693,7 +838,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             );
             return;
           } else {
-            _handleCheckout(context, ref, product, quantity, price, totalPrice);
+            _handleCheckout(context, ref, product, quantity, price,  finalPrice);
           }
           // context.push('/payment-method');
         },
@@ -718,10 +863,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ),
             SizedBox(width: 8),
             Text(
-              'Proceed to Checkout ($quantity items)',
+              'Proceed to Checkout ($quantity items)₹ ${finalPrice.toStringAsFixed(2)}',
               style: texttheme.bodySmall?.copyWith(
                 color: colorscheme.onSecondaryFixed,
-                fontSize: 12,
+                fontSize: 10,
               ),
             ),
           ],
@@ -736,7 +881,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     Map<String, dynamic> product,
     int quantity,
     num price,
-    num totalPrice,
+    num finalPrice,
   ) async {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -745,6 +890,16 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     log('=== Checkout Details ===');
     log('Total Items: ${product.length}');
     log('Total Price: ₹${totalPrice.toStringAsFixed(2)}');
+    
+  final voucherDiscount = ref.read(voucherDiscountProvider);
+  final appliedVoucherId = ref.read(appliedVoucherIdProvider);
+  final discountAmount = (price * quantity * voucherDiscount / 100);
+  
+  // THEN USE THESE IN YOUR LOGS:
+  if (voucherDiscount > 0) {
+    log('Voucher: $appliedVoucherId');
+    log('Discount: ${voucherDiscount}% (₹${discountAmount.toStringAsFixed(2)})');
+  }
 
     if (user == null || user.phoneNumber == null) {
       log('User not authenticated with phone number');
@@ -766,14 +921,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     log('Product: ${product['name']}');
     log('Quantity: $quantity');
     log('Unit Price: ₹${price.toStringAsFixed(2)}');
-    log('Total Price: ₹${totalPrice.toStringAsFixed(2)}');
+    log('Total Price: ₹${finalPrice.toStringAsFixed(2)}');
 
     try {
       log('Initiating payment...');
       await ref
           .read(paymentProvider.notifier)
           .initiatePayment(
-            amount: totalPrice,
+            amount: finalPrice,
             productName: product['name'],
             quantity: quantity,
             orderId: orderId,
@@ -798,6 +953,202 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
     log('=======================');
   }
+}
+
+Future<void> _applyVoucher(WidgetRef ref,BuildContext context) async {
+  final voucherController = ref.read(voucherControllerProvider);
+  final voucherId = voucherController.text.trim();
+  
+  if (voucherId.isEmpty) {
+    ref.read(voucherErrorProvider.notifier).state = 'Please enter a voucher code';
+    return;
+  }
+
+  ref.read(isCheckingVoucherProvider.notifier).state = true;
+  ref.read(voucherErrorProvider.notifier).state = null;
+
+  try {
+    final discount = await ref.read(voucherValidationProvider(voucherId).future);
+    
+    if (discount != null && discount > 0) {
+      ref.read(appliedVoucherIdProvider.notifier).state = voucherId;
+      ref.read(voucherDiscountProvider.notifier).state = discount;
+      ref.read(voucherErrorProvider.notifier).state = null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$discount% discount applied successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ref.read(voucherErrorProvider.notifier).state = 'Invalid or expired voucher code';
+      ref.read(appliedVoucherIdProvider.notifier).state = null;
+      ref.read(voucherDiscountProvider.notifier).state = 0.0;
+    }
+  } catch (e) {
+    ref.read(voucherErrorProvider.notifier).state = 'Error validating voucher: $e';
+    ref.read(appliedVoucherIdProvider.notifier).state = null;
+    ref.read(voucherDiscountProvider.notifier).state = 0.0;
+  } finally {
+    ref.read(isCheckingVoucherProvider.notifier).state = false;
+  }
+}
+void _removeVoucher(WidgetRef ref,BuildContext context) {
+  ref.read(appliedVoucherIdProvider.notifier).state = null;
+  ref.read(voucherDiscountProvider.notifier).state = 0.0;
+  ref.read(voucherControllerProvider).clear();
+  ref.read(voucherErrorProvider.notifier).state = null;
+  
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Voucher removed'),
+      backgroundColor: Colors.blue,
+    ),
+  );
+}
+// Build voucher code section
+Widget _buildVoucherSection(
+  BuildContext context,
+  WidgetRef ref,
+  double totalPrice,
+  ColorScheme colorscheme,
+  TextTheme texttheme,
+) {
+   final voucherController = ref.watch(voucherControllerProvider);
+  final appliedVoucherId = ref.watch(appliedVoucherIdProvider);
+  final voucherDiscount = ref.watch(voucherDiscountProvider);
+  final isCheckingVoucher = ref.watch(isCheckingVoucherProvider);
+  final voucherError = ref.watch(voucherErrorProvider);
+  return Container(
+    padding: EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: colorscheme.onSecondaryFixed,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: colorscheme.shadow,
+          offset: Offset(0, 4),
+          blurRadius: 8,
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Apply Voucher',
+          style: texttheme.bodyMedium?.copyWith(
+            color: colorscheme.primary,
+            fontSize: 13,
+          ),
+        ),
+        SizedBox(height: 12),
+        
+        // Voucher Input Field
+        TextField(
+          controller: voucherController,
+          decoration: InputDecoration(
+            hintText: 'Enter voucher code',
+            suffixIcon: isCheckingVoucher
+                ? CircularProgressIndicator(strokeWidth: 2)
+                : IconButton(
+                    icon: Icon(Icons.discount),
+                    onPressed: () => _applyVoucher(ref,context),
+                  ),
+            errorText: voucherError,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          onSubmitted: (_) => _applyVoucher(ref,context),
+        ),
+        
+        SizedBox(height: 8),
+        
+        // Voucher Status
+        if (appliedVoucherId != null)
+          Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Voucher Applied:',
+                    style: texttheme.bodySmall?.copyWith(
+                      color: Colors.green,
+                    ),
+                  ),
+                  Text(
+                    appliedVoucherId,
+                    style: texttheme.bodySmall?.copyWith(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Discount:',
+                    style: texttheme.bodySmall?.copyWith(
+                      color: colorscheme.secondary,
+                    ),
+                  ),
+                  Text(
+                    '${voucherDiscount.toStringAsFixed(1)}% OFF',
+                    style: texttheme.bodySmall?.copyWith(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => _removeVoucher(ref,context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 36),
+                ),
+                child: Text('Remove Voucher'),
+              ),
+            ],
+          ),
+        
+        // Discount Amount Display
+        if (voucherDiscount > 0)
+          Column(
+            children: [
+              SizedBox(height: 12),
+              Divider(height: 1, color: colorscheme.shadow),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'You Save:',
+                    style: texttheme.bodySmall?.copyWith(
+                      color: Colors.green,
+                    ),
+                  ),
+                  Text(
+                    '₹${(totalPrice * voucherDiscount / 100).toStringAsFixed(2)}',
+                    style: texttheme.bodyMedium?.copyWith(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+      ],
+    ),
+  );
 }
 
 // Define a color palette for the app

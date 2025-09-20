@@ -1,29 +1,23 @@
+// ignore: file_names
 import 'dart:io';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:coffee_shop/Features/Home/models/items_model.dart';
-
-class NewArrivals extends StatefulWidget {
-  const NewArrivals({super.key});
+class VoucherdataStoreScreen extends StatefulWidget {
+  const VoucherdataStoreScreen({super.key});
   @override
-  State<NewArrivals> createState() => _NewArrivalsState();
+  State<VoucherdataStoreScreen> createState() => _VoucherdataStoreScreeState();
 }
 
-class _NewArrivalsState extends State<NewArrivals> {
-  TextEditingController namecontroller = TextEditingController();
-  TextEditingController typecontroller = TextEditingController();
-  TextEditingController ratingcontroller = TextEditingController();
-  TextEditingController descriptioncontroller = TextEditingController();
-  TextEditingController pricecontroller = TextEditingController();
-
+class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
   File? _selectedImage;
   String? _imageUrl;
   bool _isUploading = false;
   bool _isSubmitting = false;
   String _selectedCategory = 'Coffee';
+  TextEditingController _offerPercentageController = TextEditingController();
 
   final List<String> _categories = [
     'Coffee',
@@ -39,6 +33,18 @@ class _NewArrivalsState extends State<NewArrivals> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _offerPercentageController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _offerPercentageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -48,6 +54,7 @@ class _NewArrivalsState extends State<NewArrivals> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Category Selection
               Text(
                 'Select Category:',
                 style: const TextStyle(
@@ -85,7 +92,6 @@ class _NewArrivalsState extends State<NewArrivals> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.blue),
@@ -99,6 +105,17 @@ class _NewArrivalsState extends State<NewArrivals> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // Offer Percentage Field
+              _buildTextField(
+                controller: _offerPercentageController,
+                hintText: 'Offer Percentage (e.g., 20)',
+                icon: Icons.percent,
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 20),
+
+              // Image Upload Section
               GestureDetector(
                 onTap: _pickImageFromGallery,
                 child: Container(
@@ -147,6 +164,8 @@ class _NewArrivalsState extends State<NewArrivals> {
                 ),
               ),
               const SizedBox(height: 20),
+              
+              // Upload Status
               if (_isUploading)
                 const Column(
                   children: [
@@ -164,43 +183,8 @@ class _NewArrivalsState extends State<NewArrivals> {
                   style: TextStyle(color: Colors.green, fontSize: 12),
                 ),
               const SizedBox(height: 20),
-              _buildTextField(
-                controller: namecontroller,
-                hintText: 'Item name',
-                icon: Icons.fastfood,
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                controller: typecontroller,
-                hintText: 'Type name',
-                icon: Icons.category,
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                controller: ratingcontroller,
-                hintText: 'Rating (e.g., 4.5)',
-                icon: Icons.star,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                controller: descriptioncontroller,
-                hintText: 'Description',
-                icon: Icons.description,
-                maxLines: 3,
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                controller: pricecontroller,
-                hintText: 'Price (e.g., 12.99)',
-                icon: Icons.attach_money,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 25),
+
+              // Submit Button
               _isSubmitting
                   ? const CircularProgressIndicator(color: Colors.blue)
                   : ElevatedButton(
@@ -215,7 +199,7 @@ class _NewArrivalsState extends State<NewArrivals> {
                         elevation: 4,
                       ),
                       child: const Text(
-                        'Submit Item',
+                        'Store Category & Image',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -243,7 +227,7 @@ class _NewArrivalsState extends State<NewArrivals> {
       style: const TextStyle(color: Colors.black87, fontSize: 16),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.black),
+        hintStyle: const TextStyle(color: Colors.black54),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.blue, width: 1.5),
@@ -303,9 +287,8 @@ class _NewArrivalsState extends State<NewArrivals> {
     try {
       final storageRef = FirebaseStorage.instance.ref();
       String fileName =
-          'items/newarrivals/image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          'items/Voucher/image_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final imageRef = storageRef.child(fileName);
-
       final uploadTask = imageRef.putFile(_selectedImage!);
       final snapshot = await uploadTask.whenComplete(() {});
 
@@ -314,7 +297,6 @@ class _NewArrivalsState extends State<NewArrivals> {
       log('Image URL: $_imageUrl');
       log('Upload completed at: ${DateTime.now()}');
 
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Image uploaded successfully!'),
@@ -323,7 +305,6 @@ class _NewArrivalsState extends State<NewArrivals> {
       );
     } catch (e) {
       log('Error uploading image: $e');
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error uploading image: $e'),
@@ -338,24 +319,20 @@ class _NewArrivalsState extends State<NewArrivals> {
   }
 
   void _submitForm() async {
-    if (namecontroller.text.isEmpty ||
-        typecontroller.text.isEmpty ||
-        ratingcontroller.text.isEmpty ||
-        descriptioncontroller.text.isEmpty ||
-        pricecontroller.text.isEmpty) {
+    if (_imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill all fields'),
+          content: Text('Please upload an image first'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    if (_imageUrl == null) {
+    if (_offerPercentageController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please upload an image first'),
+          content: Text('Please enter offer percentage'),
           backgroundColor: Colors.red,
         ),
       );
@@ -367,35 +344,23 @@ class _NewArrivalsState extends State<NewArrivals> {
     });
 
     try {
-      final newItem = Item(
-        name: namecontroller.text.trim(),
-        type: typecontroller.text.trim(),
-        rating: double.parse(ratingcontroller.text.trim()),
-        image: _imageUrl!,
-        description: descriptioncontroller.text.trim(),
-        price: double.parse(pricecontroller.text.trim()),
-        category: _selectedCategory.toLowerCase(),
-        timestamp: Timestamp.now(),
-      );
-
-      await addItem(newItem);
+      // Store category, image URL, and offer percentage in Firestore
+      await _storeCategoryData();
 
       _clearForm();
 
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Item added successfully!'),
+          content: Text('Category, image and offer stored successfully!'),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 2),
         ),
       );
     } catch (e) {
-      log('Error submitting form: $e');
-      // ignore: use_build_context_synchronously
+      log('Error storing data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error submitting item: $e'),
+          content: Text('Error storing data: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -406,44 +371,41 @@ class _NewArrivalsState extends State<NewArrivals> {
     }
   }
 
-  void _clearForm() {
-    namecontroller.clear();
-    typecontroller.clear();
-    ratingcontroller.clear();
-    descriptioncontroller.clear();
-    pricecontroller.clear();
-    setState(() {
-      _selectedImage = null;
-      _imageUrl = null;
-      _selectedCategory = 'Coffee';
-    });
-  }
-
-  Future<void> addItem(Item item) async {
+  Future<void> _storeCategoryData() async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     try {
+      // Parse offer percentage to double
+      double offerPercentage = double.parse(_offerPercentageController.text.trim());
+
+      // Store category, image, and offer data
+      final data = {
+        'category': _selectedCategory,
+        'imageUrl': _imageUrl,
+        'offerPercentage': offerPercentage,
+        'timestamp': Timestamp.now(),
+      };
+
       await firestore
           .collection('items')
-          .doc('Newarrivals')
-          .collection('items')
-          .add(item.toMap());
+          .doc('voucher')
+          .collection('categories')
+          .add(data);
 
-      log('Item added successfully: ${item.name}');
-      log('Image URL: ${item.image}');
-      log('Category: ${item.category}');
+      log('Category data stored successfully: $_selectedCategory');
+      log('Image URL: $_imageUrl');
+      log('Offer Percentage: $offerPercentage%');
     } catch (e) {
-      log('Error adding item: $e');
+      log('Error storing category data: $e');
       rethrow;
     }
   }
 
-  @override
-  void dispose() {
-    namecontroller.dispose();
-    typecontroller.dispose();
-    ratingcontroller.dispose();
-    descriptioncontroller.dispose();
-    pricecontroller.dispose();
-    super.dispose();
+  void _clearForm() {
+    setState(() {
+      _selectedImage = null;
+      _imageUrl = null;
+      _selectedCategory = 'Coffee';
+      _offerPercentageController.clear();
+    });
   }
 }
