@@ -1,12 +1,15 @@
 // ignore: file_names
-import 'dart:io';
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+
 class VoucherdataStoreScreen extends StatefulWidget {
   const VoucherdataStoreScreen({super.key});
+
   @override
   State<VoucherdataStoreScreen> createState() => _VoucherdataStoreScreeState();
 }
@@ -18,6 +21,8 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
   bool _isSubmitting = false;
   String _selectedCategory = 'Coffee';
   TextEditingController _offerPercentageController = TextEditingController();
+  TextEditingController _validUntilController = TextEditingController();
+  DateTime? _selectedDate;
 
   final List<String> _categories = [
     'Coffee',
@@ -36,11 +41,13 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
   void initState() {
     super.initState();
     _offerPercentageController = TextEditingController();
+    _validUntilController = TextEditingController();
   }
 
   @override
   void dispose() {
     _offerPercentageController.dispose();
+    _validUntilController.dispose();
     super.dispose();
   }
 
@@ -115,6 +122,46 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
               ),
               const SizedBox(height: 20),
 
+              // Valid Until Date Field
+              TextField(
+                controller: _validUntilController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Valid Until',
+                  labelStyle: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
+                  hintText: 'Select date',
+                  hintStyle: const TextStyle(color: Colors.black, fontSize: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: Icon(Icons.calendar_today, color: Colors.blue),
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.calendar_month, color: Colors.blue),
+                    onPressed: () => _selectDate(context),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Colors.blue,
+                      width: 1.5,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Colors.blue,
+                      width: 2.0,
+                    ),
+                  ),
+                ),
+                onTap: () => _selectDate(context),
+              ),
+              const SizedBox(height: 20),
+
               // Image Upload Section
               GestureDetector(
                 onTap: _pickImageFromGallery,
@@ -164,7 +211,7 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Upload Status
               if (_isUploading)
                 const Column(
@@ -213,6 +260,22 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
     );
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _validUntilController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
@@ -224,10 +287,10 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
-      style: const TextStyle(color: Colors.black87, fontSize: 16),
+      style: const TextStyle(color: Colors.black, fontSize: 16),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.black54),
+        hintStyle: const TextStyle(color: Colors.black, fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.blue, width: 1.5),
@@ -339,6 +402,16 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
       return;
     }
 
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a valid until date'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isSubmitting = true;
     });
@@ -375,13 +448,16 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     try {
       // Parse offer percentage to double
-      double offerPercentage = double.parse(_offerPercentageController.text.trim());
+      double offerPercentage = double.parse(
+        _offerPercentageController.text.trim(),
+      );
 
-      // Store category, image, and offer data
+      // Store category, image, offer data and valid until date
       final data = {
         'category': _selectedCategory,
         'imageUrl': _imageUrl,
         'offerPercentage': offerPercentage,
+        'validUntil': Timestamp.fromDate(_selectedDate!),
         'timestamp': Timestamp.now(),
       };
 
@@ -394,6 +470,7 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
       log('Category data stored successfully: $_selectedCategory');
       log('Image URL: $_imageUrl');
       log('Offer Percentage: $offerPercentage%');
+      log('Valid Until: ${_selectedDate!.toString()}');
     } catch (e) {
       log('Error storing category data: $e');
       rethrow;
@@ -406,6 +483,8 @@ class _VoucherdataStoreScreeState extends State<VoucherdataStoreScreen> {
       _imageUrl = null;
       _selectedCategory = 'Coffee';
       _offerPercentageController.clear();
+      _validUntilController.clear();
+      _selectedDate = null;
     });
   }
 }

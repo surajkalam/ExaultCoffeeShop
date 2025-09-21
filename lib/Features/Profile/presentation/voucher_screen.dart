@@ -3,6 +3,7 @@ import 'package:coffee_shop/Features/Profile/data/voucher_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+
 class GiveVoucherScreen extends ConsumerWidget {
   const GiveVoucherScreen({super.key});
   @override
@@ -55,7 +56,6 @@ class GiveVoucherScreen extends ConsumerWidget {
               ),
             );
           }
-
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -64,29 +64,30 @@ class GiveVoucherScreen extends ConsumerWidget {
                 Text(
                   'Available Vouchers',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Tap on any voucher to share it',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 20),
                 Expanded(
                   child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 0.8,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.8,
+                        ),
                     itemCount: vouchers.length,
                     itemBuilder: (context, index) {
                       final voucher = vouchers[index];
-                      return _buildVoucherCard(context, voucher);
+                      return _buildVoucherCard(context, ref, voucher);
                     },
                   ),
                 ),
@@ -98,12 +99,18 @@ class GiveVoucherScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildVoucherCard(BuildContext context, VoucherProduct voucher) {
+  Widget _buildVoucherCard(
+    BuildContext context,
+    WidgetRef ref,
+    VoucherProduct voucher,
+  ) {
+    // Watch the validity of this specific voucher
+    final voucherValidity = ref.watch(
+      voucherValidityProvider(voucher.voucherId!),
+    );
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () => _shareVoucher(context, voucher),
         borderRadius: BorderRadius.circular(16),
@@ -113,10 +120,7 @@ class GiveVoucherScreen extends ConsumerWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.blue.shade100,
-                Colors.blue.shade50,
-              ],
+              colors: [Colors.blue.shade100, Colors.blue.shade50],
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -132,28 +136,20 @@ class GiveVoucherScreen extends ConsumerWidget {
                     ? NetworkImage(voucher.imageUrl)
                     : null,
                 child: voucher.imageUrl.isEmpty
-                    ? const Icon(Icons.local_offer, color: Colors.white, size: 30)
+                    ? const Icon(
+                        Icons.local_offer,
+                        color: Colors.white,
+                        size: 30,
+                      )
                     : null,
               ),
-              const SizedBox(height: 12),
-
-              // Category Name
-              // Text(
-              //   voucher.category,
-              //   style: const TextStyle(
-              //     fontSize: 16,
-              //     fontWeight: FontWeight.bold,
-              //     color: Colors.black87,
-              //   ),
-              //   textAlign: TextAlign.center,
-              //   maxLines: 2,
-              //   overflow: TextOverflow.ellipsis,
-              // ),
               const SizedBox(height: 8),
-
               // Offer Percentage
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(20),
@@ -163,38 +159,63 @@ class GiveVoucherScreen extends ConsumerWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 10,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 2),
+              // Voucher Validity Status
+              voucherValidity.when(
+                loading: () => const SizedBox(
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                error: (error, stack) => const Text(
+                  'Check Failed',
+                  style: TextStyle(fontSize: 10, color: Colors.red),
+                ),
+                data: (isValid) => Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isValid ? Colors.green : Colors.red,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    isValid ? '✓ Valid' : '✗ Invalid',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
               // Voucher ID
               Text(
                 voucher.voucherId ?? 'No ID',
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 10,
                   color: Colors.grey,
                   fontFamily: 'monospace',
                 ),
               ),
-
               // Share Button
-              const SizedBox(height: 8),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.share, size: 16, color: Colors.blue),
-                  SizedBox(width: 4),
-                  Text(
-                    'Tap to share',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ],
-              ),
+              const SizedBox(height: 4),
+              // const Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     // Icon(Icons.share, size: 14, color: Colors.blue),
+              //     SizedBox(width: 2),
+              //     // Text(
+              //     //   'Tap to share',
+              //     //   style: TextStyle(fontSize: 10, color: Colors.blue),
+              //     // ),
+              //   ],
+              // ),
             ],
           ),
         ),
@@ -203,7 +224,8 @@ class GiveVoucherScreen extends ConsumerWidget {
   }
 
   void _shareVoucher(BuildContext context, VoucherProduct voucher) {
-    final shareText = '''
+    final shareText =
+        '''
 🎉 Special Offer! 🎉
 
 Get ${voucher.offerPercentage}% OFF on ${voucher.category}!
@@ -214,7 +236,12 @@ Valid until: ${DateTime.now().add(const Duration(days: 30)).toString().split(' '
 
 Enjoy your discount! 🎊
 ''';
-    Share.share(shareText, subject: '${voucher.offerPercentage}% OFF Voucher for ${voucher.category}');
+    // ignore: deprecated_member_use
+    Share.share(
+      shareText,
+      subject:
+          '${voucher.offerPercentage}% OFF Voucher for ${voucher.category}',
+    );
   }
 }
 
@@ -223,9 +250,7 @@ void navigateToGiveVoucherScreen(BuildContext context) {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => const ProviderScope(
-        child: GiveVoucherScreen(),
-      ),
+      builder: (context) => const ProviderScope(child: GiveVoucherScreen()),
     ),
   );
 }

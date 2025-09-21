@@ -24,14 +24,8 @@ class ProductDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
-  
-
    bool _isFavorite = false;
   bool _isLoading = false;
- 
-   late num price;
-  late int quantity;
-  late num totalPrice;
   @override
   void initState() {
     super.initState();
@@ -131,7 +125,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             SizedBox(height: MediaQuery.of(context).size.height * 0.02),
 
             // Price Section
-            _buildPriceSection(price, totalPrice, discountAmount, finalPrice, colorScheme, textTheme),
+            _buildPriceSection(price, totalPrice, discountAmount, finalPrice, quantity, colorScheme, textTheme, voucherDiscount),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
               _buildVoucherSection(
             context,
@@ -564,9 +558,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     num totalPrice,
     num discountAmount,
     num finalPrice,
+    int quantity,
     ColorScheme colorscheme,
     TextTheme texttheme,
-
+    num voucherDiscount, // Add this parameter
   ) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -889,7 +884,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     log('Phone: ${user?.phoneNumber}');
     log('=== Checkout Details ===');
     log('Total Items: ${product.length}');
-    log('Total Price: ₹${totalPrice.toStringAsFixed(2)}');
+    log('Total Price: ₹${finalPrice.toStringAsFixed(2)}');
     
   final voucherDiscount = ref.read(voucherDiscountProvider);
   final appliedVoucherId = ref.read(appliedVoucherIdProvider);
@@ -954,13 +949,18 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     log('=======================');
   }
 }
-
-Future<void> _applyVoucher(WidgetRef ref,BuildContext context) async {
+Future<void> _applyVoucher(WidgetRef ref, BuildContext context) async {
   final voucherController = ref.read(voucherControllerProvider);
   final voucherId = voucherController.text.trim();
   
   if (voucherId.isEmpty) {
     ref.read(voucherErrorProvider.notifier).state = 'Please enter a voucher code';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Please enter a voucher code'),
+        backgroundColor: Colors.red,
+      ),
+    );
     return;
   }
 
@@ -974,21 +974,39 @@ Future<void> _applyVoucher(WidgetRef ref,BuildContext context) async {
       ref.read(appliedVoucherIdProvider.notifier).state = voucherId;
       ref.read(voucherDiscountProvider.notifier).state = discount;
       ref.read(voucherErrorProvider.notifier).state = null;
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$discount% discount applied successfully!'),
+          content: Text('✅ $discount% discount applied successfully!'),
           backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
         ),
       );
     } else {
       ref.read(voucherErrorProvider.notifier).state = 'Invalid or expired voucher code';
       ref.read(appliedVoucherIdProvider.notifier).state = null;
       ref.read(voucherDiscountProvider.notifier).state = 0.0;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Invalid or expired voucher code'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   } catch (e) {
     ref.read(voucherErrorProvider.notifier).state = 'Error validating voucher: $e';
     ref.read(appliedVoucherIdProvider.notifier).state = null;
     ref.read(voucherDiscountProvider.notifier).state = 0.0;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('⚠️ Error validating voucher'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      ),
+    );
   } finally {
     ref.read(isCheckingVoucherProvider.notifier).state = false;
   }

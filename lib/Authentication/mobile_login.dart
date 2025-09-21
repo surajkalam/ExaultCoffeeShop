@@ -102,6 +102,7 @@ class _PhoneOTPVerificationState extends State<PhoneOTPVerification> {
     child: Text(text),
   );
 
+  // ignore: non_constant_identifier_names
   Widget SubmitOTPButton(String text,BuildContext context) => ElevatedButton(
     onPressed: () async {
       if (otp.text.isEmpty || verificationId == null) {

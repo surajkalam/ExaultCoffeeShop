@@ -287,6 +287,16 @@ final voucherValidationProvider = FutureProvider.family<double?, String>((ref, v
   return validateVoucherAndGetDiscount(voucherId);
 });
 
+final voucherValidityProvider = FutureProvider.family<bool, String>((ref, voucherId) async {
+  return await checkVoucherValidity(voucherId);
+});
+
+// Function to check voucher validity
+Future<bool> checkVoucherValidity(String voucherId) async {
+  final discount = await validateVoucherAndGetDiscount(voucherId);
+  return discount != null && discount > 0;
+}
+
 Future<List<VoucherProduct>> getVoucherCategories() async {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   try {

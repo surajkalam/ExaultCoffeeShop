@@ -124,7 +124,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   GestureDetector(
                     onTap: (){
-                      context.push('/offer-data');
+                      // context.push('/offer-data');
+                      context.push('/voucher-data');
                     },
                     child: _buildCarouselSection(
                       height,
