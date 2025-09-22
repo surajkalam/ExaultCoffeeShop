@@ -24,8 +24,8 @@ import '../../Features/Profile/profile.dart';
 final GoRouter approuter = GoRouter(
   debugLogDiagnostics: true,
   routes: [
-    // GoRoute(path: '/', builder: (context, state) => const AuthWrapper()),
-    GoRoute(path: '/', builder: (context, state) => const Datadstore()),
+    GoRoute(path: '/', builder: (context, state) => const AuthWrapper()),
+    // GoRoute(path: '/', builder: (context, state) => const Datadstore()),
     // GoRoute(path: '/', builder: (context, state) => const Datadstore()),
     // GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
     // GoRoute(path: '/', builder: (context, state) => const PhoneOTPVerification()),
