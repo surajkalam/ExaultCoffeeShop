@@ -42,6 +42,8 @@ class _DatadstoreState extends State<Datadstore> {
 
   @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[100],
@@ -60,8 +62,6 @@ class _DatadstoreState extends State<Datadstore> {
                 ),
               ),
               SizedBox(height: 10),
-              
-              // Category Chips
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -71,8 +71,8 @@ class _DatadstoreState extends State<Datadstore> {
                     selected: _selectedCategory == category,
                     selectedColor: Colors.blue,
                     labelStyle: TextStyle(
-                      color: _selectedCategory == category 
-                          ? Colors.white 
+                      color: _selectedCategory == category
+                          ? Colors.white
                           : Colors.black,
                     ),
                     onSelected: (selected) {

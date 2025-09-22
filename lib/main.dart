@@ -14,6 +14,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     log('Firebase initialized successfully');
+    // firebaseAppCheck.installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance());
   } catch (e, stack) {
     log('Firebase initialization failed', error: e, stackTrace: stack);
     rethrow;
