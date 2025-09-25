@@ -5,11 +5,6 @@ import 'package:coffee_shop/Features/Home/presentation/onlineorder_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/topbestseller_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/order_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/voucher_screen.dart';
-import 'package:coffee_shop/Features/firebasestoredata/datastore.dart';
-import 'package:coffee_shop/Features/firebasestoredata/newarraivles.dart';
-import 'package:coffee_shop/Features/firebasestoredata/voucher_Storedata.dart';
-import 'package:coffee_shop/Features/firebasestoredata/seasional_items.dart';
-import 'package:coffee_shop/Features/firebasestoredata/offer_data.dart';
 import 'package:coffee_shop/Features/payment/paymentmethods.dart';
 import 'package:coffee_shop/core/core.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +15,7 @@ import '../../Features/Event/Event.dart';
 import '../../Features/Map/Map.dart';
 import '../../Features/Menu/Menu.dart';
 import '../../Features/Profile/profile.dart';
+import '../../Features/firebasestoredata/Screens/Screens.dart';
 
 final GoRouter approuter = GoRouter(
   debugLogDiagnostics: true,
