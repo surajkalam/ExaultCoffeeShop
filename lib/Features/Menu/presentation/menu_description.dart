@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffee_shop/Authentication/provider/current_user.dart';
 import 'package:coffee_shop/core/core.dart';
 import 'package:coffee_shop/DATABASE_HELPER/cart_data.dart';
 import 'package:coffee_shop/Features/Cart/provider/cart_provider.dart';
@@ -23,15 +24,21 @@ class CategoryItemsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // CHANGE 1: Log welcome message and current user details
+    log('welcome menu description screen');
+    final currentUser = ref.watch(currentUserProvider);
+    log('Current user: ${currentUser?.uid ?? "No user logged in"}, '
+        'Phone: ${currentUser?.phoneNumber ?? "N/A"}');
     log('categoryName : $categoryName');
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    // CHANGE 2: Use isLoggedInProvider to check login state
+    final isLoggedIn = ref.watch(isLoggedInProvider);
     if (items.isEmpty) {
       return Scaffold(
         backgroundColor: colorScheme.onPrimary,
-        // appBar: _buildAppBar(categoryName, context),
         appBar: CustomAppBar(
           titleText: categoryName,
           centerTitle: true,
@@ -93,6 +100,7 @@ class CategoryItemsScreen extends ConsumerWidget {
               hasImage,
               colorScheme,
               textTheme,
+              ref
             );
           },
         ),
@@ -145,6 +153,7 @@ class CategoryItemsScreen extends ConsumerWidget {
     bool hasImage,
     ColorScheme colorscheme,
     TextTheme texttheme,
+    WidgetRef ref, 
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -161,7 +170,6 @@ class CategoryItemsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Image Section
           Stack(
             children: [
               Container(
@@ -261,7 +269,7 @@ class CategoryItemsScreen extends ConsumerWidget {
                       ),
                       InkWell(
                         onTap: () async {
-                          await _addToCart(context, item, colorscheme);
+                          await _addToCart(context, item, colorscheme,ref);
                           if (context.mounted) {
                             context.pushNamed(
                               'product',
@@ -346,19 +354,34 @@ class CategoryItemsScreen extends ConsumerWidget {
     BuildContext context,
     Map<String, dynamic> itemData,
     ColorScheme colorscheme,
+    WidgetRef ref,
   ) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw Exception('User not logged in');
+      final user = ref.read(currentUserProvider); 
+     if (user == null) {
+        _showAddToCartError(context, 'Please log in to add items to cart', colorscheme);
+        if (context.mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please log in to add items to cart'),
+              backgroundColor: colorscheme.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: EdgeInsets.all(16),
+            ),
+          );
+          context.push('/login-screen');
+        }
+        return;
       }
 
       final userId = UserUtils.getUserIdentifier(user);
       final itemName = itemData['name'];
       //  late final phoneNumber = user?.phoneNumber;
+      final currentUser = ref.read(currentUserProvider);
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(userId)
+          .doc(currentUser?.phoneNumber)
           .collection('cart')
           .doc(itemName)
           .set({

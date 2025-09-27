@@ -1,7 +1,7 @@
 import 'dart:developer';
+import 'package:coffee_shop/Authentication/provider/current_user.dart';
 import 'package:coffee_shop/Features/Menu/Provider/favorite_provider.dart';
 import 'package:coffee_shop/Features/Menu/Provider/paymentProvider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,11 +28,16 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     super.initState();
     _checkFavoriteStatus();
   }
-
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    log('${user?.phoneNumber}');
+   // CHANGE 2: Use currentUserProvider instead of FirebaseAuth
+    final currentuser = ref.watch(currentUserProvider);
+    // CHANGE 3: Log welcome message and user details
+    log('welcome menu description screen');
+     log('Current user: ${currentuser?.uid ?? "No user logged in"}, '
+        'Phone: ${currentuser?.phoneNumber ?? "N/A"}');
+    // final user = FirebaseAuth.instance.currentUser;
+    // log('${user?.phoneNumber}');
     final appliedVoucherId = ref.watch(appliedVoucherIdProvider);
     final voucherDiscount = ref.watch(voucherDiscountProvider);
     final voucherError = ref.watch(voucherErrorProvider);
@@ -428,7 +433,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         return AlertDialog(
           title: const Text('Quantity Limit Reached'),
           content: const Text(
-            'You have reached the maximum quantity limit of 5.',
+            'You have reached the maximum quantity limit of 50.',
           ),
           actions: [
             TextButton(
@@ -487,7 +492,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 child: TextField(
                   controller: voucherController,
                   decoration: InputDecoration(
-                    hintText: 'Enter cupon code',
+                   hintText: 'Enter coupon code', 
                     hintStyle: TextStyle(fontSize: 12, color: Colors.black),
                     errorText: voucherError,
                     border: OutlineInputBorder(
@@ -513,7 +518,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                         if (voucherController.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Enter cupon code'),
+                              content: Text('Enter coupon code'),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -775,13 +780,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     ColorScheme colorscheme,
     TextTheme texttheme,
   ) {
+    final isLoggedIn = ref.watch(isLoggedInProvider);
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          final user = FirebaseAuth.instance.currentUser;
-          log('phone number suru :$user.phoneNumber');
-          if (user == null) {
+       onPressed: isLoggedIn
+            ? () {
+                final user = ref.read(currentUserProvider);
+                if (user == null) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text("Please log in before making a payment"),
@@ -797,7 +803,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           } else {
             _handleCheckout(context, ref, product, quantity, price, finalPrice);
           }
-        },
+        }
+        : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: colorscheme.onPrimaryFixedVariant,
           foregroundColor: colorscheme.onSecondaryFixed,
@@ -805,7 +812,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          elevation: 4,
+           elevation: isLoggedIn ? 4 : 0, 
           // ignore: deprecated_member_use
           shadowColor: colorscheme.shadow.withOpacity(0.3),
         ),
@@ -839,13 +846,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     num price,
     num finalPrice,
   ) async {
-    final user = FirebaseAuth.instance.currentUser;
+     final user = ref.read(currentUserProvider);
     final appliedVoucherId = ref.read(appliedVoucherIdProvider);
 
-    log('User: ${user?.uid}');
-    log('Phone: ${user?.phoneNumber}');
+   
+    log('User: ${user?.uid ?? "No user"}');
+    log('Phone: ${user?.phoneNumber ?? "N/A"}');
     log('=== Checkout Details ===');
-    log('Total Items: ${product.length}');
+    log('Total Items: ${quantity}'); 
     log('Total Price: ₹${finalPrice.toStringAsFixed(2)}');
     if (appliedVoucherId != null) {
       log('Applied Voucher: $appliedVoucherId');

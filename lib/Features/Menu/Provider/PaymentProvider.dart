@@ -1,5 +1,6 @@
 // ignore: file_names
 import 'dart:developer';
+import 'package:coffee_shop/Authentication/provider/current_user.dart';
 import 'package:coffee_shop/Features/Profile/data/paymentorder_model.dart';
 import 'package:coffee_shop/Services/Razorpay_Service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,14 +13,12 @@ final razorpayServiceProvider = Provider<RazorpayService>((ref) {
   service.initializeRazorpay();
   return service;
 });
-
-final paymentProvider = StateNotifierProvider<PaymentNotifier, PaymentState>((
-  ref,
-) {
+final paymentProvider = StateNotifierProvider<PaymentNotifier, PaymentState>((ref) {
   return PaymentNotifier(
+    ref as WidgetRef, // Pass ref
     ref.read(razorpayServiceProvider),
     FirebaseFirestore.instance,
-    FirebaseAuth.instance,
+    FirebaseAuth.instance, // Still needed for initialization, but user access will use provider
   );
 });
 
@@ -56,6 +55,7 @@ class PaymentState {
 }
 
 class PaymentNotifier extends StateNotifier<PaymentState> {
+   final WidgetRef _ref;
   final RazorpayService _razorpayService;
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -63,7 +63,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
   late String _currentUserEmail;
   late Map<String, dynamic> _paymentData;
 
-  PaymentNotifier(this._razorpayService, this._firestore, this._auth)
+  PaymentNotifier(this._ref,this._razorpayService, this._firestore, this._auth)
     : super(PaymentState()) {
     _currentUserEmail = _auth.currentUser?.email ?? 'guest';
   }
@@ -150,9 +150,13 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
   Future<void> _savePaymentToFirebase(
     Map<String, dynamic> paymentDetails,
   ) async {
-    final user = _auth.currentUser;
+    // final user = _auth.currentUser;
+    // if (user == null || user.phoneNumber == null) {
+    //   throw Exception('User not logged in');
+    // }
+  final user = _ref.read(currentUserProvider);
     if (user == null || user.phoneNumber == null) {
-      throw Exception('User not logged in');
+      throw Exception('User not logged in or phone number missing');
     }
 
     final usernumber = FirebaseAuth.instance.currentUser;
