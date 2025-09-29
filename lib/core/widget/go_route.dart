@@ -1,17 +1,18 @@
 import 'package:coffee_shop/Authentication/auth_wrapper.dart';
 import 'package:coffee_shop/Authentication/phone_auth.dart';
+import 'package:coffee_shop/Features/Event/presentation/event_book.dart';
 import 'package:coffee_shop/Features/Home/Home.dart';
 import 'package:coffee_shop/Features/Home/presentation/onlineorder_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/topbestseller_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/order_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/voucher_screen.dart';
+import 'package:coffee_shop/Features/firebasestoredata/Screens/widget/admin_pannel.dart';
 import 'package:coffee_shop/Features/payment/paymentmethods.dart';
 import 'package:coffee_shop/core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../Features/Cart/Cart.dart';
-import '../../Features/Event/Event.dart';
 import '../../Features/Map/Map.dart';
 import '../../Features/Menu/Menu.dart';
 import '../../Features/Profile/profile.dart';
@@ -21,7 +22,7 @@ final GoRouter approuter = GoRouter(
   debugLogDiagnostics: true,
   routes: [
     GoRoute(path: '/', builder: (context, state) => const AuthWrapper()),
-    // GoRoute(path: '/', builder: (context, state) => const Datadstore()),
+    GoRoute(path: '/admin', builder: (context, state) =>  AdminPanel()),
     // GoRoute(path: '/', builder: (context, state) => const Datadstore()),
     // GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
     // GoRoute(path: '/', builder: (context, state) => const PhoneOTPVerification()),
@@ -84,7 +85,7 @@ final GoRouter approuter = GoRouter(
     GoRoute(path: '/offer', builder: (context, state) => OfferScreen()),
     GoRoute(
       path: '/eventform',
-      builder: (context, state) => EventbookingScreen(),
+      builder: (context, state) => EventBookingScreen(),
     ),
     GoRoute(path: '/shophour', builder: (context, state) => ShophourScreen()),
     GoRoute(

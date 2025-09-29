@@ -3,13 +3,12 @@ import 'package:coffee_shop/Features/Login_Screen/authenticationService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:lottie/lottie.dart';
 import '../../core/core.dart';
 
-class EventbookingScreen extends ConsumerWidget {
-  const EventbookingScreen({super.key});
+class EventbookingScreen2 extends ConsumerWidget {
+  const EventbookingScreen2({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

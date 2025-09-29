@@ -28,14 +28,16 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     super.initState();
     _checkFavoriteStatus();
   }
+
   @override
   Widget build(BuildContext context) {
-   // CHANGE 2: Use currentUserProvider instead of FirebaseAuth
     final currentuser = ref.watch(currentUserProvider);
-    // CHANGE 3: Log welcome message and user details
+
     log('welcome menu description screen');
-     log('Current user: ${currentuser?.uid ?? "No user logged in"}, '
-        'Phone: ${currentuser?.phoneNumber ?? "N/A"}');
+    log(
+      'Current user: ${currentuser?.uid ?? "No user logged in"}, '
+      'Phone: ${currentuser?.phoneNumber ?? "N/A"}',
+    );
     // final user = FirebaseAuth.instance.currentUser;
     // log('${user?.phoneNumber}');
     final appliedVoucherId = ref.watch(appliedVoucherIdProvider);
@@ -492,7 +494,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 child: TextField(
                   controller: voucherController,
                   decoration: InputDecoration(
-                   hintText: 'Enter coupon code', 
+                    hintText: 'Enter coupon code',
                     hintStyle: TextStyle(fontSize: 12, color: Colors.black),
                     errorText: voucherError,
                     border: OutlineInputBorder(
@@ -784,27 +786,34 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-       onPressed: isLoggedIn
+        onPressed: isLoggedIn
             ? () {
                 final user = ref.read(currentUserProvider);
                 if (user == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Please log in before making a payment"),
-                margin: EdgeInsets.all(16),
-                behavior: SnackBarBehavior.floating,
-                backgroundColor: Colors.red,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-              ),
-            );
-            return;
-          } else {
-            _handleCheckout(context, ref, product, quantity, price, finalPrice);
-          }
-        }
-        : null,
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please log in before making a payment"),
+                      margin: EdgeInsets.all(16),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                    ),
+                  );
+                  return;
+                } else {
+                  _handleCheckout(
+                    context,
+                    ref,
+                    product,
+                    quantity,
+                    price,
+                    finalPrice,
+                  );
+                }
+              }
+            : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: colorscheme.onPrimaryFixedVariant,
           foregroundColor: colorscheme.onSecondaryFixed,
@@ -812,7 +821,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-           elevation: isLoggedIn ? 4 : 0, 
+          elevation: isLoggedIn ? 4 : 0,
           // ignore: deprecated_member_use
           shadowColor: colorscheme.shadow.withOpacity(0.3),
         ),
@@ -846,14 +855,13 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     num price,
     num finalPrice,
   ) async {
-     final user = ref.read(currentUserProvider);
+    final user = ref.read(currentUserProvider);
     final appliedVoucherId = ref.read(appliedVoucherIdProvider);
 
-   
     log('User: ${user?.uid ?? "No user"}');
     log('Phone: ${user?.phoneNumber ?? "N/A"}');
     log('=== Checkout Details ===');
-    log('Total Items: ${quantity}'); 
+    log('Total Items: $quantity');
     log('Total Price: ₹${finalPrice.toStringAsFixed(2)}');
     if (appliedVoucherId != null) {
       log('Applied Voucher: $appliedVoucherId');

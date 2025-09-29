@@ -146,14 +146,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   SizedBox(height: height * 0.03),
                   GestureDetector(
                     onTap: ()async {
-                      context.push('/voucher-data');
-                      // String category=await getCategoriesname();
-                      // navigateToCategoryScreen(
-                      //       category,
-                      //       colorScheme,
-                      //       textTheme,
-                      //       '1757264051191711',
-                      //     );
+                      context.push('/admin');
+                    
                     },
                     child: vouchersection(height, width, voucherlist)),
                   SizedBox(height: height * 0.03),

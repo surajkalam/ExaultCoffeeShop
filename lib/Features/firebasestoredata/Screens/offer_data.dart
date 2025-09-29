@@ -41,6 +41,15 @@ class _OfferdataStoreScreenState extends State<OfferdataStoreScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              Text(
+                'offer Data Store',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 10),
               // Category Selection
               Text(
                 'Select Category:',

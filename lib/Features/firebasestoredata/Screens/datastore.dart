@@ -52,6 +52,15 @@ class _DatadstoreState extends State<Datadstore> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+               Text(
+                'Items store',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 10),
               // Category Selection Section
               Text(
                 'Select Category:',

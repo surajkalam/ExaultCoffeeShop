@@ -48,6 +48,15 @@ class _NewArrivalsState extends State<NewArrivals> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+               Text(
+                'Newarrivales items',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 10),
               Text(
                 'Select Category:',
                 style: const TextStyle(

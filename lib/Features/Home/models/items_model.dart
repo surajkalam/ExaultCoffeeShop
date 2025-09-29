@@ -11,6 +11,7 @@ class Item {
   final double price;
   final String category;
   final Timestamp timestamp;
+  final bool isAvailable; 
 
   Item({
     this.id,
@@ -22,6 +23,7 @@ class Item {
     required this.price,
     required this.category,
     required this.timestamp,
+       this.isAvailable = true,
   });
 
   // Convert Item to Map for Firestore
@@ -35,6 +37,7 @@ class Item {
       'price': price,
       'category': category,
       'timestamp': timestamp,
+        'isAvailable': isAvailable,
     };
   }
 
@@ -50,6 +53,7 @@ class Item {
       price: (map['price'] ?? 0.0).toDouble(),
       category: map['category'] ?? '',
       timestamp: map['timestamp'] ?? Timestamp.now(),
+      isAvailable: map['isAvailable'] ?? true, 
     );
   }
 
@@ -64,6 +68,7 @@ class Item {
     double? price,
     String? category,
     Timestamp? timestamp,
+    bool? isAvailable,
   }) {
     return Item(
       id: id ?? this.id,
@@ -75,6 +80,7 @@ class Item {
       price: price ?? this.price,
       category: category ?? this.category,
       timestamp: timestamp ?? this.timestamp,
+       isAvailable: isAvailable ?? this.isAvailable,
     );
   }
 

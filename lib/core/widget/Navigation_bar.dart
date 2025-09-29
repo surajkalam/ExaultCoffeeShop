@@ -70,7 +70,7 @@
 // }
 // ignore: file_names
 import 'package:coffee_shop/Features/Cart/presentation/cart_screen.dart';
-import 'package:coffee_shop/Features/Event/event_screen.dart';
+import 'package:coffee_shop/Features/Event/presentation/event_book.dart';
 import 'package:coffee_shop/Features/Home/presentation/home_screen.dart';
 import 'package:coffee_shop/Features/Menu/presentation/menu_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/profile_screen.dart';
@@ -93,7 +93,7 @@ class MainAppere extends ConsumerWidget {
       const HomeScreen(),
       const MenuScreen(),
       const CartScreen(),
-      const EventScreen(),
+      const EventBookingScreen(),
       const ProfileScreen(),
     ];
 

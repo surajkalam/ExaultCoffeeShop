@@ -24,7 +24,7 @@ class CategoryItemsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // CHANGE 1: Log welcome message and current user details
+  
     log('welcome menu description screen');
     final currentUser = ref.watch(currentUserProvider);
     log('Current user: ${currentUser?.uid ?? "No user logged in"}, '
@@ -34,7 +34,6 @@ class CategoryItemsScreen extends ConsumerWidget {
     final width = MediaQuery.of(context).size.width;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    // CHANGE 2: Use isLoggedInProvider to check login state
     final isLoggedIn = ref.watch(isLoggedInProvider);
     if (items.isEmpty) {
       return Scaffold(
