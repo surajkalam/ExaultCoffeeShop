@@ -15,7 +15,6 @@ class AdminDashboard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Section with Gradient
             _buildWelcomeSection(),
             
             const SizedBox(height: 32),

@@ -1,4 +1,6 @@
 // screens/items_store_screen.dart
+import 'dart:developer';
+
 import 'package:coffee_shop/Features/Home/models/items_model.dart';
 import 'package:coffee_shop/Features/firebasestoredata/Screens/Menus/edit_items.dart';
 import 'package:coffee_shop/Features/firebasestoredata/provider/admin_provider.dart';
@@ -20,14 +22,16 @@ class _ItemsStoreScreenState extends ConsumerState<ItemsStoreScreen> {
   void initState() {
     super.initState();
     // Fetch all items when screen loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchItems();
-    });
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+    _fetchItems();
+    // Check Firebase structure
+    ref.read(firebaseStructureProvider.future);
+  });
   }
 
   // In your items_store_screen.dart, just use this simple fetch:
 void _fetchItems() {
-  print('🔄 Fetching items from Firebase...');
+  log('🔄 Fetching items from Firebase...');
   if (_selectedCategory == 'All') {
     ref.read(itemsProvider.notifier).fetchAllItems();
   } else {
@@ -36,7 +40,7 @@ void _fetchItems() {
 }
 
   void _onSearchChanged(String query) {
-    print('🔍 Searching for: $query');
+    log('🔍 Searching for: $query');
     setState(() {}); // Trigger rebuild for filtered list
   }
 
@@ -57,7 +61,7 @@ void _fetchItems() {
       ).toList();
     }
 
-    print('📊 Displaying ${filteredItems.length} filtered items');
+    log('📊 Displaying ${filteredItems.length} filtered items');
     return filteredItems;
   }
 
@@ -74,8 +78,8 @@ void _fetchItems() {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Items Store Management'),
-        backgroundColor: const Color(0xFF6D4C41),
+        title:  Text('Items Store Management'),
+        backgroundColor:  Color(0xFF6D4C41),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -122,10 +126,25 @@ void _fetchItems() {
         onChanged: _onSearchChanged,
         decoration: InputDecoration(
           hintText: 'Search items by name, type, or category...',
-          prefixIcon: const Icon(Icons.search),
+          hintStyle: TextStyle(color: Colors.black,fontSize: 12),
+          prefixIcon: const Icon(Icons.search,color: Colors.black),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+            borderSide: const BorderSide(
+              color: Colors.grey,
+            ), // Grey border when not focused
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(
+              color: Colors.grey,
+            ), // Grey border when enabled
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(
+              color: Colors.black,
+            ), // Black border when focused
           ),
           filled: true,
           fillColor: Colors.grey[100],
@@ -396,7 +415,7 @@ void _fetchItems() {
                             border: Border.all(color: Colors.red),
                           ),
                           child: const Text(
-                            'SOLD OUT',
+                            'Not available',
                             style: TextStyle(
                               fontSize: 10,
                               color: Colors.red,
@@ -485,26 +504,41 @@ void _fetchItems() {
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(Icons.edit, size: 18),
+                      Icon(Icons.edit, size: 18, color: Colors.brown,),
                       SizedBox(width: 8),
-                      Text('Edit'),
+                      Text('Edit',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.brown,
+                      ),
+                      ),
                     ],
                   ),
                 ),
-                // PopupMenuItem(
-                //   value: 'toggle_availability',
-                //   child: Row(
-                //     children: [
-                //       Icon(
-                //         item.isAvailable ? Icons.block : Icons.check_circle,
-                //         size: 18,
-                //         color: item.isAvailable ? Colors.orange : Colors.green,
-                //       ),
-                //       const SizedBox(width: 8),
-                //       Text(item.isAvailable ? 'Mark Sold Out' : 'Mark Available'),
-                //     ],
-                //   ),
-                // ),
+                PopupMenuItem(
+                  value: 'toggle_availability',
+                  child: Row(
+                    children: [
+                      Icon(
+                        item.isAvailable ? Icons.block : Icons.check_circle,
+                        size: 18,
+                        color: item.isAvailable ? Colors.orange : Colors.green,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(item.isAvailable 
+                      ? 'Not Available' 
+                      : 'Mark Available',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: item.isAvailable 
+                         ? Colors.orange
+                          : Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      ),
+                    ],
+                  ),
+                ),
                 const PopupMenuItem(
                   value: 'delete',
                   child: Row(
@@ -565,11 +599,12 @@ void _fetchItems() {
   }
 
   void _toggleItemAvailability(Item item) {
-    print('🔄 Toggling availability for ${item.name}');
+    log('🔄 Toggling availability for ${item.name}');
     final updatedItem = item.copyWith(isAvailable: !item.isAvailable);
     
     ref.read(itemsProvider.notifier).updateItem(updatedItem, item.category)
       .then((_) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -580,6 +615,7 @@ void _fetchItems() {
         );
       })
       .catchError((e) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error updating item: $e'),
@@ -590,7 +626,7 @@ void _fetchItems() {
   }
 
   void _navigateToAddItem(BuildContext context) {
-    print('➕ Navigating to Add Item screen');
+    log('➕ Navigating to Add Item screen');
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -603,7 +639,7 @@ void _fetchItems() {
   }
 
   void _navigateToEditItem(BuildContext context, Item item) {
-    print('✏️ Navigating to Edit Item screen for ${item.name}');
+    log('✏️ Navigating to Edit Item screen for ${item.name}');
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -616,7 +652,7 @@ void _fetchItems() {
   }
 
   void _showDeleteDialog(Item item) {
-    print('🗑️ Showing delete dialog for ${item.name}');
+    log('🗑️ Showing delete dialog for ${item.name}');
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -641,7 +677,7 @@ void _fetchItems() {
   }
 
   Future<void> _deleteItem(Item item) async {
-    print('🗑️ Deleting item: ${item.name}');
+    log('🗑️ Deleting item: ${item.name}');
     try {
       await ref.read(itemsProvider.notifier).deleteItem(item.id!, item.category);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -651,7 +687,7 @@ void _fetchItems() {
         ),
       );
     } catch (e) {
-      print('💥 Error deleting item: $e');
+      log('💥 Error deleting item: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error deleting item: $e'),

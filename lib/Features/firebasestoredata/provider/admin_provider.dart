@@ -1,4 +1,5 @@
 // providers/admin_providers.dart
+import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop/Features/Home/models/items_model.dart';
@@ -16,7 +17,7 @@ enum AdminTab {
 final adminTabProvider = StateProvider<AdminTab>((ref) => AdminTab.items);
 final adminStateProvider = StateProvider<int>((ref) => 0);
 
-// Items Provider for CRUD operations - FIXED VERSION
+// Items Provider for CRUD operations - FIXED for your structure
 final itemsProvider = StateNotifierProvider<ItemsNotifier, ItemsState>((ref) {
   return ItemsNotifier();
 });
@@ -49,62 +50,74 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
   ItemsNotifier() : super(ItemsState());
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  // Your main document ID where categories are stored
   final String _mainDocId = '1757264051191711';
 
-  // Define all possible categories to avoid using listCollections()
+  // Define all possible categories
   final List<String> _allCategories = [
-    'coffee',
-    'tea', 
-    'cooler',
-    'snacks',
-    'frozen',
-    'crispy delicious',
-    'breadcraft',
-    'house specials',
-    'continental',
-    'dessertduo'
+    'Coffee',
+    'Tea',
+    'Cooler',
+    'Snacks',
+    'Frozen',
+    'Crispy Delicious',
+    'Breadcraft',
+    'House Specials',
+    'Continental',
+    'Dessertduo'
   ];
 
-  // Fetch all items from all categories - FIXED without listCollections()
+  // Fetch all items from all categories - FIXED for your structure
   Future<void> fetchAllItems() async {
-    print('🔄 Starting to fetch all items...');
+    log('🔄 Starting to fetch all items from document: $_mainDocId...');
     state = state.copyWith(isLoading: true, error: null);
     
     try {
       final List<Item> allItems = [];
       
-      // Fetch from each known category sequentially
+      // Fetch from each category under the main document
       for (final category in _allCategories) {
         try {
+          log('📂 Fetching from: items/$_mainDocId/$category');
+          
           final querySnapshot = await _firestore
               .collection('items')
               .doc(_mainDocId)
               .collection(category)
               .get();
 
-          print('📂 Found ${querySnapshot.docs.length} items in $category');
+          log('✅ Found ${querySnapshot.docs.length} items in $category');
           
           for (var doc in querySnapshot.docs) {
             try {
               final itemData = doc.data();
+              log('📄 Raw data for ${doc.id}: $itemData');
+              
               final item = Item.fromMap(itemData, doc.id);
-              allItems.add(item);
-              print('✅ Loaded item: ${item.name} from $category');
+              // Add category information to the item
+              final itemWithCategory = item.copyWith(category: category);
+              allItems.add(itemWithCategory);
+              log('🎯 Loaded item: ${item.name} from $category');
             } catch (e) {
-              print('❌ Error parsing item ${doc.id} in $category: $e');
+              log('❌ Error parsing item ${doc.id} in $category: $e');
             }
           }
         } catch (e) {
-          // If a category doesn't exist, just skip it
-          print('⚠️ Category $category might not exist or error: $e');
+          log('⚠️ Error accessing category $category: $e');
           continue;
         }
       }
 
       state = state.copyWith(items: allItems, isLoading: false);
-      print('🎉 Successfully fetched ${allItems.length} items in total');
+      log('🎉 Successfully fetched ${allItems.length} items in total');
+      
+      // log all items for debugging
+      for (var item in allItems) {
+        log('📋 ${item.name} - ${item.category} - \$${item.price}');
+      }
     } catch (e) {
-      print('💥 Error fetching all items: $e');
+      log('💥 Error fetching all items: $e');
       state = state.copyWith(
         error: 'Failed to fetch items: $e', 
         isLoading: false
@@ -114,24 +127,35 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
 
   // Fetch items by specific category
   Future<void> fetchItemsByCategory(String category) async {
-    print('🔄 Fetching items from category: $category');
+    
+    log('🔄 Fetching items from category: $category');
     state = state.copyWith(isLoading: true, error: null);
     
     try {
+      log('📂 Fetching from: items/$_mainDocId/$category');
+      
       final querySnapshot = await _firestore
           .collection('items')
           .doc(_mainDocId)
-          .collection(category.toLowerCase())
+          .collection(category)
           .get();
 
       final items = querySnapshot.docs
-          .map((doc) => Item.fromMap(doc.data(), doc.id))
+          .map((doc) {
+            final item = Item.fromMap(doc.data(), doc.id);
+            return item.copyWith(category: category);
+          })
           .toList();
 
       state = state.copyWith(items: items, isLoading: false);
-      print('✅ Successfully fetched ${items.length} items from $category category');
+      log('✅ Successfully fetched ${items.length} items from $category category');
+      
+      // Debug log
+      for (var item in items) {
+        log('📋 ${item.name} - \$${item.price}');
+      }
     } catch (e) {
-      print('💥 Error fetching items from $category: $e');
+      log('💥 Error fetching items from $category: $e');
       state = state.copyWith(
         error: 'Failed to fetch items: $e', 
         isLoading: false
@@ -141,29 +165,30 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
 
   // Add new item
   Future<void> addItem(Item item, String category) async {
-    print('➕ Adding new item: ${item.name} to category: $category');
+    log('➕ Adding new item: ${item.name} to category: $category');
     try {
       final itemData = item.toMap();
       
       await _firestore
           .collection('items')
           .doc(_mainDocId)
-          .collection(category.toLowerCase())
+          // .collection(category.toLowerCase())
+          .collection(category)
           .add(itemData);
       
-      print('✅ Item added successfully to $category category');
+      log('✅ Item added successfully to $category category');
       
       // Refresh the list
       await fetchAllItems();
     } catch (e) {
-      print('💥 Error adding item: $e');
+      log('💥 Error adding item: $e');
       throw Exception('Failed to add item: $e');
     }
   }
 
   // Update item
   Future<void> updateItem(Item item, String category) async {
-    print('✏️ Updating item: ${item.name} (ID: ${item.id})');
+    log('✏️ Updating item: ${item.name} (ID: ${item.id}) in category: $category');
     try {
       if (item.id == null) {
         throw Exception('Item ID is null');
@@ -172,23 +197,23 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
       await _firestore
           .collection('items')
           .doc(_mainDocId)
-          .collection(category.toLowerCase())
+          .collection(category)
           .doc(item.id!)
           .update(item.toMap());
       
-      print('✅ Item updated successfully');
+      log('✅ Item updated successfully');
       
       // Refresh the list
       await fetchAllItems();
     } catch (e) {
-      print('💥 Error updating item: $e');
+      log('💥 Error updating item: $e');
       throw Exception('Failed to update item: $e');
     }
   }
 
   // Delete item
   Future<void> deleteItem(String itemId, String category) async {
-    print('🗑️ Deleting item ID: $itemId from category: $category');
+    log('🗑️ Deleting item ID: $itemId from category: $category');
     try {
       await _firestore
           .collection('items')
@@ -197,12 +222,12 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
           .doc(itemId)
           .delete();
       
-      print('✅ Item deleted successfully');
+      log('✅ Item deleted successfully');
       
       // Refresh the list
       await fetchAllItems();
     } catch (e) {
-      print('💥 Error deleting item: $e');
+      log('💥 Error deleting item: $e');
       throw Exception('Failed to delete item: $e');
     }
   }
@@ -213,10 +238,12 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
   }
 }
 
-// Statistics Provider - FIXED without listCollections()
+// Statistics Provider - FIXED for your structure
 final statsProvider = FutureProvider<Map<String, int>>((ref) async {
   final firestore = FirebaseFirestore.instance;
-  print('📊 Fetching statistics...');
+  final mainDocId = '1757264051191711';
+  
+  log('📊 Fetching statistics from document: $mainDocId...');
   
   try {
     int totalItems = 0;
@@ -231,33 +258,57 @@ final statsProvider = FutureProvider<Map<String, int>>((ref) async {
     // Count items in each category
     for (final category in categories) {
       try {
+        log('🔍 Counting items in: items/$mainDocId/$category');
+        
         final query = firestore
             .collection('items')
-            .doc('1757264051191711')
+            .doc(mainDocId)
             .collection(category);
         
         final snapshot = await query.get();
         totalItems += snapshot.docs.length;
-        print('📈 Category $category: ${snapshot.docs.length} items');
+        log('📈 Category $category: ${snapshot.docs.length} items');
+        
+        // log document IDs for debugging
+        if (snapshot.docs.isNotEmpty) {
+          log('   Document IDs: ${snapshot.docs.map((doc) => doc.id).toList()}');
+        }
       } catch (e) {
-        print('⚠️ Could not count category $category: $e');
+        log('⚠️ Could not count category $category: $e');
       }
     }
     
-    // Get counts from other collections (you can add these later)
-    // For now, return 0 for other stats
+    // Also check other documents (Newarrivals, Sessional, voucher)
+    final otherDocs = ['Newarrivals', 'Sessional', 'voucher'];
+    int newArrivalsCount = 0;
+    int seasonalItemsCount = 0;
+    int vouchersCount = 0;
+    
+    for (final docId in otherDocs) {
+      try {
+        log('🔍 Checking document: items/$docId');
+        final doc = await firestore.collection('items').doc(docId).get();
+        if (doc.exists) {
+          // If these documents have subcollections, you might need to count them too
+          log('📄 Document $docId exists');
+        }
+      } catch (e) {
+        log('⚠️ Could not access document $docId: $e');
+      }
+    }
+    
     final stats = {
       'totalItems': totalItems,
-      'activeOffers': 0,
-      'vouchers': 0,
-      'newArrivals': 0,
-      'seasonalItems': 0,
+      'activeOffers': 0, // You can implement this later
+      'vouchers': vouchersCount,
+      'newArrivals': newArrivalsCount,
+      'seasonalItems': seasonalItemsCount,
     };
     
-    print('📊 Statistics fetched: $stats');
+    log('📊 Final Statistics: $stats');
     return stats;
   } catch (e) {
-    print('💥 Error fetching stats: $e');
+    log('💥 Error fetching stats: $e');
     return {
       'totalItems': 0,
       'activeOffers': 0,
@@ -268,7 +319,40 @@ final statsProvider = FutureProvider<Map<String, int>>((ref) async {
   }
 });
 
-// Image Upload Provider
+// Debug function to check Firebase structure
+final firebaseStructureProvider = FutureProvider<void>((ref) async {
+  final firestore = FirebaseFirestore.instance;
+  log('🏗️ Checking Firebase structure...');
+  
+  try {
+    // Check what documents exist in 'items' collection
+    final itemsSnapshot = await firestore.collection('items').get();
+    log('📁 Documents in "items" collection:');
+    
+    for (final doc in itemsSnapshot.docs) {
+      log('   📄 ${doc.id}');
+      
+      // Try to list subcollections for each document
+      try {
+        // For web version, we can try to get one collection to see if it exists
+        final testCollection = await firestore
+            .collection('items')
+            .doc(doc.id)
+            .collection('coffee')
+            .limit(1)
+            .get();
+            
+        log('      ☕ coffee collection exists: ${testCollection.docs.length} items');
+      } catch (e) {
+        log('      ❌ No coffee collection or error: $e');
+      }
+    }
+  } catch (e) {
+    log('💥 Error checking Firebase structure: $e');
+  }
+});
+
+// Image Upload Provider (same as before)
 final imageUploadProvider = StateNotifierProvider<ImageUploadNotifier, ImageUploadState>((ref) {
   return ImageUploadNotifier();
 });
@@ -301,7 +385,7 @@ class ImageUploadNotifier extends StateNotifier<ImageUploadState> {
   ImageUploadNotifier() : super(ImageUploadState());
 
   Future<void> uploadImage(File image) async {
-    print('🖼️ Starting image upload...');
+    log('🖼️ Starting image upload...');
     state = state.copyWith(isUploading: true, error: null);
     
     try {
@@ -309,7 +393,7 @@ class ImageUploadNotifier extends StateNotifier<ImageUploadState> {
       String fileName = 'items/image_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final imageRef = storageRef.child(fileName);
 
-      print('📤 Uploading image to: $fileName');
+      log('📤 Uploading image to: $fileName');
       final uploadTask = imageRef.putFile(image);
       final snapshot = await uploadTask.whenComplete(() {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -318,9 +402,9 @@ class ImageUploadNotifier extends StateNotifier<ImageUploadState> {
         isUploading: false,
         imageUrl: downloadUrl,
       );
-      print('✅ Image uploaded successfully: $downloadUrl');
+      log('✅ Image uploaded successfully: $downloadUrl');
     } catch (e) {
-      print('💥 Error uploading image: $e');
+      log('💥 Error uploading image: $e');
       state = state.copyWith(
         isUploading: false,
         error: 'Failed to upload image: $e',
@@ -329,28 +413,18 @@ class ImageUploadNotifier extends StateNotifier<ImageUploadState> {
   }
 
   void clearImage() {
-    print('🗑️ Clearing uploaded image');
+    log('🗑️ Clearing uploaded image');
     state = ImageUploadState();
   }
 }
 
-// Debug Provider to monitor state changes
+// Debug Provider
 final debugProvider = Provider<void>((ref) {
   final itemsState = ref.watch(itemsProvider);
-  print('🐛 DEBUG - Items State:');
-  print('   📦 Items Count: ${itemsState.items.length}');
-  print('   ⏳ Loading: ${itemsState.isLoading}');
-  print('   ❌ Error: ${itemsState.error}');
-  
-  if (itemsState.items.isNotEmpty) {
-    print('   📋 Sample Items:');
-    for (var item in itemsState.items.take(3)) {
-      print('      - ${item.name} (${item.category}) - \$${item.price}');
-    }
-    if (itemsState.items.length > 3) {
-      print('      ... and ${itemsState.items.length - 3} more');
-    }
-  }
+  log('🐛 DEBUG - Items State:');
+  log('   📦 Items Count: ${itemsState.items.length}');
+  log('   ⏳ Loading: ${itemsState.isLoading}');
+  log('   ❌ Error: ${itemsState.error}');
 });
 
 // Category list provider for UI

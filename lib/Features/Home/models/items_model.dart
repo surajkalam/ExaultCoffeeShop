@@ -13,6 +13,7 @@ class Item {
   final Timestamp timestamp;
   final bool isAvailable; 
 
+
   Item({
     this.id,
     required this.name,
@@ -23,7 +24,8 @@ class Item {
     required this.price,
     required this.category,
     required this.timestamp,
-       this.isAvailable = true,
+    this.isAvailable = true,
+    
   });
 
   // Convert Item to Map for Firestore
