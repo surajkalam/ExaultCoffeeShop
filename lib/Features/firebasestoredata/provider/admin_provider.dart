@@ -68,6 +68,18 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
     'Dessertduo'
   ];
 
+  // To get only new arrivals
+  List<Item> get newArrivals =>
+      state.items.where((item) => item.itemType == 'new_arrivals').toList();
+
+  // To get only seasonal items
+  List<Item> get seasonalItems =>
+      state.items.where((item) => item.itemType == 'seasonal').toList();
+
+  // To get normal items
+  List<Item> get normalItems =>
+      state.items.where((item) => item.itemType == 'normal').toList();
+      
   // Fetch all items from all categories - FIXED for your structure
   Future<void> fetchAllItems() async {
     log('🔄 Starting to fetch all items from document: $_mainDocId...');
@@ -114,7 +126,7 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
       
       // log all items for debugging
       for (var item in allItems) {
-        log('📋 ${item.name} - ${item.category} - \$${item.price}');
+        log('📋 ${item.name} - ${item.category} - \${item.price}');
       }
     } catch (e) {
       log('💥 Error fetching all items: $e');
@@ -152,7 +164,7 @@ class ItemsNotifier extends StateNotifier<ItemsState> {
       
       // Debug log
       for (var item in items) {
-        log('📋 ${item.name} - \$${item.price}');
+        log('📋 ${item.name} - \${item.price}');
       }
     } catch (e) {
       log('💥 Error fetching items from $category: $e');
@@ -247,12 +259,12 @@ final statsProvider = FutureProvider<Map<String, int>>((ref) async {
   
   try {
     int totalItems = 0;
-    
     // Define categories to check
+    
     final categories = [
-      'coffee', 'tea', 'cooler', 'snacks', 'frozen', 
-      'crispy delicious', 'breadcraft', 'house specials', 
-      'continental', 'dessertduo'
+      'Coffee', 'Tea', 'Cooler', 'Snacks', 'Frozen',
+      'Crispy Delicious', 'Breadcraft', 'House Specials',
+      'Continental', 'Dessertduo'
     ];
     
     // Count items in each category

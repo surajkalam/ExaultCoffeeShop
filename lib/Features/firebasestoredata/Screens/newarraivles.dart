@@ -293,6 +293,7 @@ class _NewArrivalsState extends State<NewArrivals> {
       }
     } catch (e) {
       log('Error picking image: $e');
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error accessing gallery: $e'),
@@ -385,6 +386,7 @@ class _NewArrivalsState extends State<NewArrivals> {
         price: double.parse(pricecontroller.text.trim()),
         category: _selectedCategory.toLowerCase(),
         timestamp: Timestamp.now(),
+        itemType: 'newarrivals',
       );
 
       await addItem(newItem);

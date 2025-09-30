@@ -1,8 +1,6 @@
 // screens/admin_panel.dart
 import 'package:coffee_shop/Features/firebasestoredata/Screens/Menus/item_store.dart';
-import 'package:coffee_shop/Features/firebasestoredata/Screens/newarraivles.dart';
 import 'package:coffee_shop/Features/firebasestoredata/Screens/offer_data.dart';
-import 'package:coffee_shop/Features/firebasestoredata/Screens/seasional_items.dart';
 import 'package:coffee_shop/Features/firebasestoredata/Screens/voucher/voucher_storescreen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/Screens/widget/admin_dashboard.dart';
 import 'package:coffee_shop/Features/firebasestoredata/provider/admin_provider.dart';
@@ -22,8 +20,6 @@ class _AdminPanelState extends ConsumerState<AdminPanel> {
     const ItemsStoreScreen(),
     const OfferdataStoreScreen(),
     const VoucherStoreScreen(),
-    const NewArrivals(),
-    const Sessionalitems(),
   ];
 
   @override
@@ -118,20 +114,18 @@ class _AdminPanelState extends ConsumerState<AdminPanel> {
                   currentIndex: currentIndex,
                 ),
                 _buildDrawerItem(
-                  icon: Icons.new_releases,
-                  title: 'New Arrivals',
+                  icon: Icons.functions,
+                  title: 'Events',
                   index: 4,
                   currentIndex: currentIndex,
                 ),
                 _buildDrawerItem(
-                  icon: Icons.coffee_maker,
-                  title: 'Seasonal Items',
+                  icon: Icons.bike_scooter,
+                  title: 'Order ',
                   index: 5,
                   currentIndex: currentIndex,
                 ),
-
                 const Divider(),
-
                 // Statistics Section
                 Padding(
                   padding: const EdgeInsets.all(16.0),

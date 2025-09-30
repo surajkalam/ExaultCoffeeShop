@@ -26,13 +26,18 @@ class _AddEditItemScreenState extends ConsumerState<AddEditItemScreen> {
   File? _selectedImage;
   String _selectedCategory = 'Coffee';
   bool _isSubmitting = false;
+   String _selectedItemType = 'normal'; 
 
   final List<String> _categories = [
     'Coffee', 'Tea', 'Cooler', 'Snacks', 'Frozen',
     'Crispy Delicious', 'Breadcraft', 'House Specials',
     'Continental', 'DessertDuo'
   ];
-
+ final List<String> _itemTypes = [
+    'normal',
+    'new_arrivals', 
+    'seasonal'
+  ];
   @override
   void initState() {
     super.initState();
@@ -44,6 +49,7 @@ class _AddEditItemScreenState extends ConsumerState<AddEditItemScreen> {
       _descriptionController.text = widget.item!.description;
       _priceController.text = widget.item!.price.toString();
       _selectedCategory = widget.item!.category;
+       _selectedItemType = widget.item!.itemType; 
     }
   }
 
@@ -72,7 +78,11 @@ class _AddEditItemScreenState extends ConsumerState<AddEditItemScreen> {
               // Category Selection
               _buildCategorySection(),
               const SizedBox(height: 20),
-              
+               
+                  // Item Type Selection
+            _buildItemTypeSection(),
+            const SizedBox(height: 20),
+
               // Form Fields
               _buildFormFields(),
               const SizedBox(height: 30),
@@ -385,79 +395,157 @@ class _AddEditItemScreenState extends ConsumerState<AddEditItemScreen> {
     }
   }
 
-  void _submitForm(ImageUploadState imageState) async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    final imageUrl = imageState.imageUrl ?? widget.item?.image;
-    if (imageUrl == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please upload an image first'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      final item = Item(
-        id: widget.item?.id,
-        name: _nameController.text.trim(),
-        type: _typeController.text.trim(),
-        rating: double.parse(_ratingController.text.trim()),
-        image: imageUrl,
-        description: _descriptionController.text.trim(),
-        price: double.parse(_priceController.text.trim()),
-        category: _selectedCategory.toLowerCase(),
-        timestamp: widget.item?.timestamp ?? Timestamp.now(),
-      );
-
-      if (widget.item == null) {
-        // Add new item
-        await ref.read(itemsProvider.notifier).addItem(item, _selectedCategory);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Item added successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        // Update existing item
-        await ref.read(itemsProvider.notifier).updateItem(item, _selectedCategory);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Item updated successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-
-      // Clear image state if it was a new upload
-      if (imageState.imageUrl != null) {
-        ref.read(imageUploadProvider.notifier).clearImage();
-      }
-
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() {
-        _isSubmitting = false;
-      });
-    }
+void _submitForm(ImageUploadState imageState) async {
+  if (!_formKey.currentState!.validate()) {
+    return;
   }
 
+  final imageUrl = imageState.imageUrl ?? widget.item?.image;
+  if (imageUrl == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please upload an image first'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+
+  setState(() {
+    _isSubmitting = true;
+  });
+
+  try {
+    final item = Item(
+      id: widget.item?.id,
+      name: _nameController.text.trim(),
+      type: _typeController.text.trim(),
+      rating: double.parse(_ratingController.text.trim()),
+      image: imageUrl,
+      description: _descriptionController.text.trim(),
+      price: double.parse(_priceController.text.trim()),
+      category: _selectedCategory.toLowerCase(),
+      timestamp: widget.item?.timestamp ?? Timestamp.now(),
+      itemType: _selectedItemType, 
+    );
+
+    if (widget.item == null) {
+      // Add new item
+      await ref.read(itemsProvider.notifier).addItem(item, _selectedCategory);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Item added successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      // Update existing item
+      await ref.read(itemsProvider.notifier).updateItem(item, _selectedCategory);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Item updated successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+
+    // Clear image state if it was a new upload
+    if (imageState.imageUrl != null) {
+      ref.read(imageUploadProvider.notifier).clearImage();
+    }
+
+    Navigator.pop(context);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error: $e'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    setState(() {
+      _isSubmitting = false;
+    });
+  }
+}
+
+Widget _buildItemTypeSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'Item Type:',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF5D4037),
+        ),
+      ),
+      const SizedBox(height: 8),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFF6D4C41), width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _selectedItemType,
+            isExpanded: true,
+            icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF6D4C41)),
+            style: const TextStyle(color: Colors.black87, fontSize: 16),
+            items: _itemTypes.map((String type) {
+              return DropdownMenuItem<String>(
+                value: type,
+                child: Text(
+                  _getItemTypeDisplayName(type),
+                  style: const TextStyle(fontSize: 16),
+                ),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedItemType = newValue!;
+              });
+            },
+          ),
+        ),
+      ),
+      const SizedBox(height: 8),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF6D4C41).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFF6D4C41)),
+        ),
+        child: Text(
+          'Type: ${_getItemTypeDisplayName(_selectedItemType)}',
+          style: const TextStyle(
+            color: Color(0xFF6D4C41),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+// Helper method to get display name for item type
+String _getItemTypeDisplayName(String type) {
+  switch (type) {
+    case 'new_arrivals':
+      return 'New Arrivals';
+    case 'seasonal':
+      return 'Seasonal Items';
+    case 'normal':
+      return 'Normal Items';
+    default:
+      return 'Normal Items';
+  }
+}
   @override
   void dispose() {
     _nameController.dispose();

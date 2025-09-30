@@ -1,8 +1,7 @@
-// models/item_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Item {
-  final String? id; // For document ID
+  final String? id;
   final String name;
   final String type;
   final double rating;
@@ -11,8 +10,8 @@ class Item {
   final double price;
   final String category;
   final Timestamp timestamp;
-  final bool isAvailable; 
-
+  final bool isAvailable;
+  final String itemType; // Add this field: 'normal', 'new_arrivals', 'seasonal'
 
   Item({
     this.id,
@@ -25,7 +24,7 @@ class Item {
     required this.category,
     required this.timestamp,
     this.isAvailable = true,
-    
+    required this.itemType, 
   });
 
   // Convert Item to Map for Firestore
@@ -39,7 +38,8 @@ class Item {
       'price': price,
       'category': category,
       'timestamp': timestamp,
-        'isAvailable': isAvailable,
+      'isAvailable': isAvailable,
+      'itemType': itemType, 
     };
   }
 
@@ -55,7 +55,8 @@ class Item {
       price: (map['price'] ?? 0.0).toDouble(),
       category: map['category'] ?? '',
       timestamp: map['timestamp'] ?? Timestamp.now(),
-      isAvailable: map['isAvailable'] ?? true, 
+      isAvailable: map['isAvailable'] ?? true,
+      itemType: map['itemType'] ?? 'normal', 
     );
   }
 
@@ -71,6 +72,7 @@ class Item {
     String? category,
     Timestamp? timestamp,
     bool? isAvailable,
+    String? itemType,
   }) {
     return Item(
       id: id ?? this.id,
@@ -82,12 +84,13 @@ class Item {
       price: price ?? this.price,
       category: category ?? this.category,
       timestamp: timestamp ?? this.timestamp,
-       isAvailable: isAvailable ?? this.isAvailable,
+      isAvailable: isAvailable ?? this.isAvailable,
+      itemType: itemType ?? this.itemType, 
     );
   }
 
   @override
   String toString() {
-    return 'Item(id: $id, name: $name, type: $type, rating: $rating, price: $price, category: $category)';
+    return 'Item(id: $id, name: $name, type: $type, rating: $rating, price: $price, category: $category, itemType: $itemType)';
   }
 }

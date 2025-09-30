@@ -356,6 +356,7 @@ class _SessionalitemsState extends State<Sessionalitems> {
         price: double.parse(pricecontroller.text.trim()),
         category: _selectedCategory.toLowerCase(),
         timestamp: Timestamp.now(),
+        itemType: 'normal',
       );
 
       await addItem(newItem);

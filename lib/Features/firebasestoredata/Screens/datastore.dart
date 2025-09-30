@@ -406,6 +406,7 @@ class _DatadstoreState extends State<Datadstore> {
         price: double.parse(pricecontroller.text.trim()),
         category: _selectedCategory.toLowerCase(), 
         timestamp: Timestamp.now(),
+        itemType: 'normal'
       );
 
       await addItem(newItem, customCategory: _selectedCategory);
