@@ -1,6 +1,8 @@
 import 'dart:developer';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffee_shop/Features/Home/presentation/newarriavls_screen.dart';
+import 'package:coffee_shop/Features/Home/provider/itemtype_provider.dart';
 import 'package:coffee_shop/Features/Login_Screen/Signupscreen.dart';
 import 'package:coffee_shop/Features/Login_Screen/login_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -111,19 +113,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: colorScheme.onSurface,
       body: CustomScrollView(
+        physics: ClampingScrollPhysics(),
         slivers: [
           _buildSliverAppBar(width, height, colorScheme, textTheme),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
+              padding: EdgeInsets.only(top: 4, left: 16, right: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
-                    onTap: (){
+                    onTap: () {
                       // context.push('/offer-data');
                       context.push('/voucher-data');
                     },
@@ -145,11 +145,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   SizedBox(height: height * 0.03),
                   GestureDetector(
-                    onTap: ()async {
+                    onTap: () async {
                       context.push('/admin');
-                    
                     },
-                    child: vouchersection(height, width, voucherlist)),
+                    child: vouchersection(height, width, voucherlist),
+                  ),
                   SizedBox(height: height * 0.03),
                   _buildCategoriesSection(
                     height,
@@ -197,6 +197,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     textTheme,
                   ),
                   SizedBox(height: height * 0.02),
+                  _buildNewArrivalsSection(
+                    height,
+                    width,
+                    colorScheme,
+                    textTheme,
+                  ),
+                  SizedBox(height: height * 0.03),
                   _buildNewArrivalsSection(
                     height,
                     width,
@@ -308,7 +315,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: colorscheme.primary,
               ),
             ),
-            SizedBox(height: height*0.01,),
+            SizedBox(height: height * 0.01),
             Row(
               children: [
                 Text(
@@ -355,21 +362,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         onPressed: () => context.push('/shophour'),
       ),
-      // Padding(
-      //   padding: const EdgeInsets.only(right: 8.0, left: 4.0),
-      //   child: UserProfileAvatar(
-      //     avatarUrl:
-      //         "https://icons.veryicon.com/png/o/object/material-design-icons/notifications-1.png",
-      //     radius: 10,
-      //     notificationCount: 5,
-      //     notificationBubbleTextStyle: TextStyle(
-      //       backgroundColor: Colors.red,
-      //       color: Colors.white,
-      //       fontSize: 8,
-      //     ),
-      //     onAvatarTap: () => context.push('/notification'),
-      //   ),
-      // ),
     ];
   }
 
@@ -400,6 +392,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final distanceText = '${(distance / 1000).toStringAsFixed(1)} km away';
 
         showDialog(
+          // ignore: use_build_context_synchronously
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Coffee Shop Location'),
@@ -533,7 +526,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget vouchersection(double height, double width, List voucherlist) {
     return SizedBox(
-      height: height * 0.17, 
+      height: height * 0.17,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: voucherlist.length,
@@ -560,45 +553,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+
   Future<String> getCategoriesname() async {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  try {
-    log('Fetching categories from items/Voucher/categories');
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    try {
+      log('Fetching categories from items/Voucher/categories');
 
-    final QuerySnapshot categoriesSnapshot = await firestore
-        .collection('items')
-        .doc('Voucher')
-        .collection('categories')  
-        .get();
+      final QuerySnapshot categoriesSnapshot = await firestore
+          .collection('items')
+          .doc('Voucher')
+          .collection('categories')
+          .get();
 
-    log('Total documents found in categories: ${categoriesSnapshot.docs.length}');
+      log(
+        'Total documents found in categories: ${categoriesSnapshot.docs.length}',
+      );
 
-    // Extract category values from the 'category' field of each document
-    String categoryName = ''; // Initialize with empty string
-    
-    for (final doc in categoriesSnapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
-      
-      // Check if the document has a 'category' field
-      if (data.containsKey('category') && data['category'] != null) {
-        categoryName = data['category'].toString(); // Assign to the outer variable
-        log('Found category: $categoryName in document ${doc.id}');
-        break; // If you only want the first category found, break the loop
-      } else {
-        log('Document ${doc.id} does not have a category field or it is null');
+      // Extract category values from the 'category' field of each document
+      String categoryName = ''; // Initialize with empty string
+
+      for (final doc in categoriesSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        // Check if the document has a 'category' field
+        if (data.containsKey('category') && data['category'] != null) {
+          categoryName = data['category']
+              .toString(); // Assign to the outer variable
+          log('Found category: $categoryName in document ${doc.id}');
+          break; // If you only want the first category found, break the loop
+        } else {
+          log(
+            'Document ${doc.id} does not have a category field or it is null',
+          );
+        }
+        log('-----------------------------');
       }
-      log('-----------------------------');
+
+      log('Returning category: $categoryName');
+      return categoryName;
+    } catch (e) {
+      log('Error getting categories: $e');
+      rethrow;
     }
-    
-    log('Returning category: $categoryName');
-    return categoryName;
-    
-  } catch (e) {
-    log('Error getting categories: $e');
-    rethrow;
   }
-}
-  Future<List<Product>> getProductsByCategory(String category,String docid) async {
+
+  Future<List<Product>> getProductsByCategory(
+    String category,
+    String docid,
+  ) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     try {
       log('Fetching products for category: $category');
@@ -638,7 +640,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     String category,
     ColorScheme colorscheme,
     TextTheme textTheme,
-    String docid
+    String docid,
   ) async {
     try {
       showDialog(
@@ -652,7 +654,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       );
-      List<Product> products = await getProductsByCategory(category,docid);
+      List<Product> products = await getProductsByCategory(category, docid);
 
       List<Map<String, dynamic>> productsMap = products
           .map((product) => product.toMap())
@@ -699,9 +701,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     double height,
     double width,
     ColorScheme colorscheme,
-    TextTheme textTheme,
-    { String category=''}
-  ) {
+    TextTheme textTheme, {
+    String category = '',
+  }) {
     final categories = [
       'Coffee',
       'Tea',
@@ -838,10 +840,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: textTheme.bodyMedium?.copyWith(color: colorscheme.secondary),
-        ),
       ],
     );
   }
@@ -965,48 +963,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ColorScheme colorscheme,
     TextTheme textTheme,
   ) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: () async {
-            //  context.push('/Newarraivles');
-            getProductsNewarrivalsAsMap();
-            final newproducts = await getProductsNewarrivalsAsMap();
-            // ignore: use_build_context_synchronously
-            context.push('/menu/new menu ', extra: newproducts);
-          },
-          child: _buildNewArrivalItem(
-            height,
-            width,
-            "Assets/Images/cappucino.jpg",
-            "Pumpkin Spice Latte",
-            "A seasonal favorite with warm spices",
-            "🌟 New Arrivals",
-            colorscheme,
-            textTheme,
+    return Consumer(
+      builder: (context, ref, child) {
+        final newArrivalsAsync = ref.watch(newArrivalsProvider);
+
+        return newArrivalsAsync.when(
+          loading: () => Center(
+            child: CircularProgressIndicator(color: AppColors.primaryDark),
           ),
-        ),
-        SizedBox(height: height * 0.02),
-        InkWell(
-          onTap: () async {
-            getProductsNewarrivalsAsMap();
-            final sessionproducts = await getproductsessionalAsMap();
-            // ignore: use_build_context_synchronously
-            context.push('/menu/specials', extra: sessionproducts);
-            //  context.push('/sessional-items');
-          },
-          child: _buildNewArrivalItem(
-            height,
-            width,
-            "Assets/Images/cappucino.jpg",
-            "Strawberry Cream Frappe",
-            "Creamy strawberry delight",
-            "🌟 Seasonal Specials",
-            colorscheme,
-            textTheme,
+          error: (error, stack) => Center(
+            child: Text(
+              'Failed to load new arrivals',
+              style: GoogleFonts.dmSans(color: Colors.red),
+            ),
           ),
-        ),
-      ],
+          data: (items) {
+            if (items.isEmpty) {
+              return Center(
+                child: Text(
+                  'No new arrivals available',
+                  style: GoogleFonts.dmSans(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+              );
+            }
+
+            // Take only first 2 items for home screen preview
+            final previewItems = items.take(2).toList();
+
+            return Column(
+              children: previewItems
+                  .map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: _buildNewArrivalItem(
+                        height,
+                        width,
+                        item.image,
+                        item.name,
+                        item.description,
+                        "🌟 New Arrivals",
+                        colorscheme,
+                        textTheme,
+                        onTap: () {
+                          // Navigate to all new arrivals screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AllNewArrivalsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                  .toList(),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -1019,94 +1036,105 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     String description,
     String tag,
     ColorScheme colorscheme,
-    TextTheme texttheme,
-  ) {
-    return Container(
-      height: height * 0.2,
-      width: width - 20,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      tag,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+    TextTheme texttheme, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: height * 0.2,
+        width: width - 20,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              offset: Offset(0, 4),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    title,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primaryDark,
+                    SizedBox(height: 4),
+                    Text(
+                      title,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryDark,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: height * 0.004),
-                  Text(
-                    description,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                    SizedBox(height: height * 0.004),
+                    Text(
+                      description,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Spacer(),
-                  _buildViewMoreButton(
-                    height,
-                    width,
-                    isSmall: true,
-                    colorscheme,
-                    texttheme,
-                  ),
-                ],
+                    Spacer(),
+                    _buildViewMoreButton(
+                      height,
+                      width,
+                      colorscheme,
+                      texttheme,
+                      isSmall: true,
+                      onTap: onTap,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: ClipRRect(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.cover,
-                height: height * 0.2,
+            Expanded(
+              flex: 2,
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                child: Image.network(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  height: height * 0.2,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: Icon(Icons.fastfood, color: Colors.grey[500]),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1118,9 +1146,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ColorScheme colorscheme,
     TextTheme textTheme, {
     bool isSmall = false,
+    VoidCallback? onTap,
   }) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: isSmall ? 8 : 12,
@@ -1152,7 +1181,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
-
   Widget _buildCarouselBannerItem(
     double width,
     double height,
@@ -1160,9 +1188,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ) {
     return Container(
       width: width,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Stack(
@@ -1178,18 +1204,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-            // Positioned(
-            //   bottom: 16,
-            //   left: 16,
-            //   child: Text(
-            //     "Special Offer",
-            //     style: GoogleFonts.dmSans(
-            //       fontSize: 18,
-            //       fontWeight: FontWeight.w700,
-            //       color: Colors.white,
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),

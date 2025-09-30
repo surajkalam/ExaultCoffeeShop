@@ -1,6 +1,6 @@
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop/Authentication/provider/current_user.dart';
+import 'package:coffee_shop/Features/Home/provider/itemtype_provider.dart';
 import 'package:coffee_shop/core/core.dart';
 import 'package:coffee_shop/DATABASE_HELPER/cart_data.dart';
 import 'package:coffee_shop/Features/Cart/provider/cart_provider.dart';
@@ -8,55 +8,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:coffee_shop/Features/Home/models/models.dart';
 
-import '../data/data.dart';
-
-class CategoryItemsScreen extends ConsumerWidget {
-  final String categoryName;
-  final List<Map<String, dynamic>> items;
-
-  const CategoryItemsScreen({
-    super.key,
-    required this.categoryName,
-    required this.items,
-  });
+class AllNewArrivalsScreen extends ConsumerWidget {
+  const AllNewArrivalsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-  
-    log('welcome menu description screen');
-    final currentUser = ref.watch(currentUserProvider);
-    log('Current user: ${currentUser?.uid ?? "No user logged in"}, '
-        'Phone: ${currentUser?.phoneNumber ?? "N/A"}');
-    log('categoryName : $categoryName');
+    final newArrivalsAsync = ref.watch(newArrivalsProvider);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final isLoggedIn = ref.watch(isLoggedInProvider);
-    if (items.isEmpty) {
-      return Scaffold(
-        backgroundColor: colorScheme.onPrimary,
-        appBar: CustomAppBar(
-          titleText: categoryName,
-          centerTitle: true,
-          backgroundColor: colorScheme.surface,
+
+    return Scaffold(
+      backgroundColor: colorScheme.onPrimary,
+      appBar: CustomAppBar(
+        titleText: 'New Arrivals',
+        centerTitle: true,
+        backgroundColor: colorScheme.surface,
+      ),
+      body: newArrivalsAsync.when(
+        loading: () => Center(
+          child: CircularProgressIndicator(color: AppColors.primaryDark),
         ),
-        body: Center(
+        error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Iconsax.coffee, size: 60, color: colorScheme.secondaryFixed),
+              Icon(Icons.error_outline, color: Colors.red, size: 50),
               SizedBox(height: 16),
               Text(
-                'No items available',
+                'Failed to load new arrivals',
                 style: textTheme.labelMedium?.copyWith(
                   color: colorScheme.primaryContainer,
                 ),
               ),
               SizedBox(height: 8),
               Text(
-                'Check back later for new additions',
+                'Check your connection and try again',
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.secondary,
                 ),
@@ -64,82 +54,62 @@ class CategoryItemsScreen extends ConsumerWidget {
             ],
           ),
         ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: colorScheme.onPrimary,
-      // appBar: _buildAppBar(categoryName, context),
-      appBar: CustomAppBar(
-        titleText: categoryName,
-        centerTitle: true,
-        backgroundColor: colorScheme.surface,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            final item = items[index];
-            log('$item');
-            final hasImage = item['image'] != null;
-
-            return _buildProductCard(
-              context,
-              height,
-              width,
-              item,
-              hasImage,
-              colorScheme,
-              textTheme,
-              ref
+        data: (items) {
+          if (items.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Iconsax.coffee, size: 60, color: colorScheme.secondaryFixed),
+                  SizedBox(height: 16),
+                  Text(
+                    'No new arrivals available',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.primaryContainer,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Check back later for new additions',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.secondary,
+                    ),
+                  ),
+                ],
+              ),
             );
-          },
-        ),
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.75,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                final hasImage = item.image.isNotEmpty;
+
+                return _buildProductCard(
+                  context,
+                  height,
+                  width,
+                  item,
+                  hasImage,
+                  colorScheme,
+                  textTheme,
+                  ref,
+                );
+              },
+            ),
+          );
+        },
       ),
     );
-  }
- Future<List<Product>> getProductsByCategory(String category) async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    try {
-      log('Fetching products for category: $category');
-
-      final QuerySnapshot categorySnapshot = await firestore
-          .collection('items')
-          .doc('1757264051191711')
-          .collection(category)
-          .get();
-
-      log('Total products found in $category: ${categorySnapshot.docs.length}');
-
-      // Print each product's data to console
-      for (final doc in categorySnapshot.docs) {
-        log('Product ID: ${doc.id}');
-        log('Product data: ${doc.data()}');
-        log('-----------------------------');
-      }
-
-      final List<Product> allProducts = categorySnapshot.docs.map((productDoc) {
-        final data = productDoc.data() as Map<String, dynamic>;
-        // Include the document ID in the data
-        data['id'] = productDoc.id;
-        return Product.fromMap(data);
-      }).toList();
-
-      log(
-        'Successfully fetched ${allProducts.length} products from category $category',
-      );
-      return allProducts;
-    } catch (e) {
-      log('Error getting products: $e');
-      rethrow;
-    }
   }
 
   // Build product card with iOS design
@@ -147,11 +117,11 @@ class CategoryItemsScreen extends ConsumerWidget {
     BuildContext context,
     double height,
     double width,
-    Map<String, dynamic> item,
+    Item item,
     bool hasImage,
     ColorScheme colorscheme,
     TextTheme texttheme,
-    WidgetRef ref, 
+    WidgetRef ref,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -187,7 +157,7 @@ class CategoryItemsScreen extends ConsumerWidget {
                   ),
                   child: hasImage
                       ? Image.network(
-                          item['image'],
+                          item.image,
                           fit: BoxFit.fill,
                           errorBuilder: (_, _, _) =>
                               _buildImagePlaceholder(colorscheme),
@@ -200,12 +170,12 @@ class CategoryItemsScreen extends ConsumerWidget {
                 right: 1,
                 child: FavoriteIcon(
                   itemData: {
-                    'name': item['name'] ?? '',
-                    'type': item['type'] ?? '',
-                    'rating': item['rating'] ?? 0,
-                    'image': item['image'] ?? '',
-                    'description': item['description'] ?? '',
-                    'price': item['price'] ?? 0,
+                    'name': item.name,
+                    'type': item.type,
+                    'rating': item.rating,
+                    'image': item.image,
+                    'description': item.description,
+                    'price': item.price,
                   },
                 ),
               ),
@@ -213,7 +183,7 @@ class CategoryItemsScreen extends ConsumerWidget {
                 bottom: 8,
                 left: 8,
                 child: _buildRatingBadge(
-                  item['rating'] ?? 0,
+                  item.rating,
                   colorscheme,
                   texttheme,
                 ),
@@ -229,20 +199,18 @@ class CategoryItemsScreen extends ConsumerWidget {
               children: [
                 // Product Name
                 Text(
-                  item['name'] ?? 'No Name',
-                  style: textTheme.bodyLarge?.copyWith(
+                  item.name,
+                  style: texttheme.bodyLarge?.copyWith(
                     color: colorscheme.primaryContainer,
                     fontSize: 14,
                   ),
-                  // maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 // Product Description (if available)
-                if (item['description'] != null &&
-                    item['description'].isNotEmpty)
+                if (item.description.isNotEmpty)
                   Text(
-                    item['description'],
-                    style: textTheme.bodySmall?.copyWith(
+                    item.description,
+                    style: texttheme.bodySmall?.copyWith(
                       color: colorscheme.secondary,
                       fontSize: 9,
                     ),
@@ -259,20 +227,20 @@ class CategoryItemsScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '₹${item['price'] ?? '0'}',
-                        style: textTheme.bodyMedium?.copyWith(
+                        '₹${item.price}',
+                        style: texttheme.bodyMedium?.copyWith(
                           color: colorscheme.onPrimaryFixedVariant,
                           fontSize: 16,
                         ),
                       ),
                       InkWell(
                         onTap: () async {
-                          await _addToCart(context, item, colorscheme,ref);
+                          await _addToCart(context, item, colorscheme, ref);
                           if (context.mounted) {
                             context.pushNamed(
                               'product',
-                              pathParameters: {'id': item['name'].toString()},
-                              extra: item,
+                              pathParameters: {'id': item.name},
+                              extra: item.toMap(),
                             );
                           }
                         },
@@ -298,7 +266,6 @@ class CategoryItemsScreen extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        // ignore: deprecated_member_use
         color: colorscheme.onSecondaryFixed.withOpacity(0.9),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
@@ -316,7 +283,7 @@ class CategoryItemsScreen extends ConsumerWidget {
           SizedBox(width: 4),
           Text(
             rating.toStringAsFixed(1),
-            style: textTheme.labelMedium?.copyWith(color: colorscheme.primary),
+            style: texttheme.labelMedium?.copyWith(color: colorscheme.primary),
           ),
         ],
       ),
@@ -341,7 +308,6 @@ class CategoryItemsScreen extends ConsumerWidget {
       child: Icon(
         Iconsax.coffee,
         size: 40,
-        // ignore: deprecated_member_use
         color: colorscheme.onPrimaryFixedVariant.withOpacity(0.5),
       ),
     );
@@ -350,16 +316,16 @@ class CategoryItemsScreen extends ConsumerWidget {
   // Add to cart function
   Future<void> _addToCart(
     BuildContext context,
-    Map<String, dynamic> itemData,
+    Item item,
     ColorScheme colorscheme,
     WidgetRef ref,
   ) async {
     try {
       final user = ref.read(currentUserProvider); 
-     if (user == null) {
+      if (user == null) {
         _showAddToCartError(context, 'Please log in to add items to cart', colorscheme);
         if (context.mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Please log in to add items to cart'),
               backgroundColor: colorscheme.error,
@@ -374,28 +340,28 @@ class CategoryItemsScreen extends ConsumerWidget {
       }
 
       final userId = UserUtils.getUserIdentifier(user);
-      final itemName = itemData['name'];
-      //  late final phoneNumber = user?.phoneNumber;
+      final itemName = item.name;
       final currentUser = ref.read(currentUserProvider);
+      
       await FirebaseFirestore.instance
           .collection('users')
           .doc(currentUser?.phoneNumber)
           .collection('cart')
           .doc(itemName)
           .set({
-            ...itemData,
+            ...item.toMap(),
             'quantity': FieldValue.increment(1),
             'addedAt': FieldValue.serverTimestamp(),
-            'userId': userId, // Store user ID for querying
+            'userId': userId,
           }, SetOptions(merge: true));
 
       await DatabaseHelper.instance.insertCartItem({
-        'product_id': itemData['id'] ?? itemData['name'],
-        'name': itemData['name'],
-        'price': itemData['price'],
+        'product_id': item.id ?? item.name,
+        'name': item.name,
+        'price': item.price,
         'quantity': 1,
-        'image': itemData['image'],
-        'rating': itemData['rating'],
+        'image': item.image,
+        'rating': item.rating,
       });
 
       if (context.mounted) {
@@ -403,20 +369,18 @@ class CategoryItemsScreen extends ConsumerWidget {
         ref.refresh(cartProvider);
       }
 
-      // ignore: use_build_context_synchronously
-      _showAddToCartSuccess(context, itemData['name'], colorscheme);
+      _showAddToCartSuccess(context, item.name, colorscheme);
 
       if (context.mounted) {
         final ref = ProviderScope.containerOf(context);
         ref.refresh(cartProvider);
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
       _showAddToCartError(context, e.toString(), colorscheme);
     }
   }
 
-  // Show success feedback with iOS-style animation
+  // Show success feedback
   void _showAddToCartSuccess(
     BuildContext context,
     String itemName,
