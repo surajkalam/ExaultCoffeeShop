@@ -1,5 +1,6 @@
 // screens/admin_panel.dart
 import 'package:coffee_shop/Features/firebasestoredata/Screens/Menus/item_store.dart';
+import 'package:coffee_shop/Features/firebasestoredata/Screens/booking/admin_booking.dart';
 import 'package:coffee_shop/Features/firebasestoredata/Screens/offer_data.dart';
 import 'package:coffee_shop/Features/firebasestoredata/Screens/voucher/voucher_storescreen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/Screens/widget/admin_dashboard.dart';
@@ -20,6 +21,7 @@ class _AdminPanelState extends ConsumerState<AdminPanel> {
     const ItemsStoreScreen(),
     const OfferdataStoreScreen(),
     const VoucherStoreScreen(),
+    const AdminBookingsScreen(),
   ];
 
   @override

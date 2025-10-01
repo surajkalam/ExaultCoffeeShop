@@ -1,6 +1,9 @@
 // screens/event_booking_screen.dart
+import 'dart:developer';
+
 import 'package:coffee_shop/Authentication/provider/current_user.dart';
 import 'package:coffee_shop/Features/Event/provider/event_provider.dart';
+import 'package:coffee_shop/Features/Event/provider/user_details.dart';
 import 'package:coffee_shop/Features/Event/widget/card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -81,85 +84,94 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
   }
 
   void _submitBooking() async {
-    if (_formKey.currentState!.validate()) {
-      final booking = ref.read(eventBookingProvider);
-      final firestoreService = ref.read(firestoreServiceProvider);
-      final currentuser = ref.read(currentUserProvider);
-      final notifier = ref.read(eventBookingProvider.notifier);
-
-      if (currentuser == null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Please log in to book an event'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+  if (_formKey.currentState!.validate()) {
+    final booking = ref.read(eventBookingProvider);
+    final firestoreService = ref.read(userFirestoreServiceProvider);
+    final currentuser = ref.read(currentUserProvider);
+    final notifier = ref.read(eventBookingProvider.notifier);
+     
+    if (currentuser == null) {
+       log('User is null');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please log in to book an event'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
           ),
-        );
-        return;
-      }
-
+        ),
+      );
+      return;
+    }
       final userId = currentuser.uid;
+        log('User ID: $userId');
 
-      try {
-        if (!mounted) return;
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => Dialog(
-            backgroundColor: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.shadow.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+       try {
+      // Show loading dialog for user details
+      if (!mounted) return;
+      log('Showing loading dialog');
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.secondaryFixed,
                   ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).colorScheme.secondaryFixed,
-                    ),
-                    strokeWidth: 3,
+                  strokeWidth: 3,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Loading user details...',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 14,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Submitting booking...',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        );
+        ),
+      );
+      final userDetails = await ref.read(userDetailsProvider.future);
 
+       log('Form validation passed');
         // Save to Firebase
-        final bookingId = await firestoreService.saveBooking(
-          userId: userId,
-          booking: booking,
-        );
-
+      final bookingId = await firestoreService.saveBooking(
+        userId:  currentuser.phoneNumber ?? userId,
+        booking: booking,
+        userName: userDetails.name,
+        userEmail: userDetails.email,
+        userPhone: userDetails.phone,
+      );
         // Close loading dialog
         // ignore: use_build_context_synchronously
-        Navigator.pop(context);
+      if (!mounted) return;
+      log('Closing loading dialog');
+      Navigator.pop(context);
 
         // Show success dialog
+         if (!mounted) return;
+      log('Showing booking submission dialog');
         showDialog(
           // ignore: use_build_context_synchronously
           context: context,
@@ -314,6 +326,11 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
                             booking.selectedTime.format(context),
                             context,
                           ),
+                          _buildCompactInfoRow(
+                            'Time',
+                            '${booking.selectedTime.format(context)} - ${booking.endingTime.format(context)}', 
+                            context,
+                          ),
                           const SizedBox(height: 8),
                           _buildCompactInfoRow(
                             'Guests',
@@ -444,83 +461,81 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
       } catch (e) {
         // Close loading dialog
         // ignore: use_build_context_synchronously
-        Navigator.pop(context);
+         if (!mounted) return;
+      Navigator.pop(context);
 
         // Show error dialog
-        showDialog(
-          // ignore: use_build_context_synchronously
-          context: context,
-          builder: (context) => Dialog(
-            backgroundColor: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.shadow.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.error_outline_rounded,
+         showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.error_outline_rounded,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Booking Failed',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(context).colorScheme.error,
-                    size: 48,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Booking Failed',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Error: $e', // Show actual error
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 13,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'We encountered an issue while processing your booking. Please try again.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        'OK',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    ),
+                    child: Text(
+                      'OK',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 13,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        );
+        ),
+      );
       }
     }
   }
@@ -881,6 +896,10 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
     final categories = ref.watch(eventCategoriesProvider);
     final booking = ref.watch(eventBookingProvider);
     final textTheme = Theme.of(context).textTheme;
+     final currentuser = ref.read(currentUserProvider);
+    log('Current User: $currentuser');
+    log('Current User Phone: ${currentuser?.phoneNumber}');
+
     return Scaffold(
   appBar: CustomAppBar(
     titleText: 'Book Your Event',
@@ -905,8 +924,19 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
     ),
     backgroundColor: Theme.of(context).colorScheme.surface,
     elevation: 0,
-    toolbarHeight: kToolbarHeight + 16, // Adjust height for the subtitle
-  ),body: Container(
+    toolbarHeight: kToolbarHeight + 16,
+     actions: [
+        IconButton(
+          onPressed: () {
+            context.push('/my-bookings'); // or use Navigator.push
+          },
+          icon: Icon(Icons.event_available),
+          tooltip: 'View My Bookings',
+        ),
+      ],
+  ),
+
+  body: Container(
     decoration: BoxDecoration(
       gradient: LinearGradient(
         colors: [
@@ -1050,35 +1080,41 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
                                           ),
                                     ),
                                   ],
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.surfaceContainerLow,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: DateTimePicker(
-                                    selectedDate: booking.selectedDate,
-                                    selectedTime: booking.selectedTime,
-                                    onDateChanged: (date) {
-                                      ref
-                                          .read(eventBookingProvider.notifier)
-                                          .setDate(date);
-                                    },
-                                    onTimeChanged: (time) {
-                                      ref
-                                          .read(eventBookingProvider.notifier)
-                                          .setTime(time);
-                                    },
-                                  ),
+                                child: DateTimePicker(
+                                  selectedDate: booking.selectedDate,
+                                  selectedTime: booking.selectedTime,
+                                  endingTime: booking.endingTime, 
+                                  onDateChanged: (date) {
+                                    ref
+                                        .read(eventBookingProvider.notifier)
+                                        .setDate(date);
+                                  },
+                                  onTimeChanged: (time) {
+                                    ref
+                                        .read(eventBookingProvider.notifier)
+                                        .setTime(time);
+                                  },
+                                  onEndingTimeChanged: (endingTime) {
+                                    ref
+                                        .read(eventBookingProvider.notifier)
+                                        .setEndingTime(endingTime);
+                                  },
                                 ),
-                                const SizedBox(height: 24),
+                              ),
+                              const SizedBox(height: 24),
 
-                                // Number of Guests
-                                Row(
-                                  children: [
-                                    Icon(
+                              // Number of Guests
+                              Row(
+                                children: [
+                                  Icon(
                                       Icons.people,
                                       color: colorScheme.primary,
                                       size: 20,
@@ -1106,6 +1142,7 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
                                       // ignore: deprecated_member_use
                                       color: Theme.of(
                                         context,
+                                      // ignore: deprecated_member_use
                                       ).colorScheme.secondary.withOpacity(0.3),
                                       width: 1.5,
                                     ),
@@ -1163,6 +1200,7 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
                                 // ignore: deprecated_member_use
                                 color: Theme.of(
                                   context,
+                                // ignore: deprecated_member_use
                                 ).colorScheme.secondary.withOpacity(0.3),
                                 width: 1.5,
                               ),
@@ -1250,6 +1288,7 @@ class _EventBookingScreenState extends ConsumerState<EventBookingScreen>
                           Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
+                              // ignore: deprecated_member_use
                               color: colorScheme.secondaryFixed.withOpacity(
                                 0.5,
                               ),

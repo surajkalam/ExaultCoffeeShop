@@ -1,3 +1,4 @@
+import 'package:coffee_shop/Authentication/provider/current_user.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,8 +15,9 @@ final authProvider = Provider<FirebaseAuth>((ref) {
 
 // Provider for the current user's phone number (sanitized for Firestore)
 final userPhoneProvider = Provider<String?>((ref) {
-  final user = ref.watch(authProvider).currentUser;
-  return user?.phoneNumber?.replaceAll('+', '').replaceAll(' ', '_');
+  final currentuser = ref.read(currentUserProvider);
+  // return currentuser!.phoneNumber!.replaceAll('+', '').replaceAll(' ', '_');
+  return currentuser!.phoneNumber;
 });
 
 // Main favorites provider
@@ -26,67 +28,10 @@ final favoritesProvider =
         getPhoneNumber: () => ref.read(userPhoneProvider),
       );
     });
-
-// class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
-//   final FirebaseFirestore firestore;
-//   final String? Function() getPhoneNumber;
-
-//   FavoritesNotifier({required this.firestore, required this.getPhoneNumber})
-//     : super(const AsyncValue.data(null));
-
-//   Future<void> toggleFavorite(Map<String, dynamic> itemData) async {
-//     state = const AsyncValue.loading();
-//     try {
-//       final usernumber = FirebaseAuth.instance.currentUser;
-//       late final phoneNumber = usernumber?.phoneNumber;
-//       final userPhoneNumber = getPhoneNumber();
-//       if (userPhoneNumber == null) throw Exception('User not logged in');
-
-//       final itemName = itemData['name'];
-//       final favoritesRef = firestore
-//           .collection('users')
-
-//           .doc(phoneNumber)
-//           .collection('favorites')
-//           .doc(itemName);
-
-//       final doc = await favoritesRef.get();
-
-//       if (doc.exists) {
-//         await favoritesRef.delete();
-//       } else {
-//         await favoritesRef.set({
-//           ...itemData,
-//           'addedAt': FieldValue.serverTimestamp(),
-//         });
-//       }
-//       state = const AsyncValue.data(null);
-//     } catch (e) {
-//       state = AsyncValue.error(e, StackTrace.current);
-//     }
-//   }
-
-//   Future<bool> isFavorite(String itemName) async {
-//     try {
-//       final userPhoneNumber = getPhoneNumber();
-//       if (userPhoneNumber == null) return false;
-
-//       final doc = await firestore
-//           .collection('users')
-//           .doc(userPhoneNumber)
-//           .collection('favorites')
-//           .doc(itemName)
-//           .get();
-
-//       return doc.exists;
-//     } catch (e) {
-//       return false;
-//     }
-//   }
-// }
 class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
   final FirebaseFirestore firestore;
   final String? Function() getPhoneNumber;
+
 
   FavoritesNotifier({required this.firestore, required this.getPhoneNumber})
     : super(const AsyncValue.data(null));

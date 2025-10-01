@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop/Features/Home/models/items_model.dart';
+import 'package:coffee_shop/Features/firebasestoredata/Screens/booking/booking_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -392,6 +393,76 @@ class ImageUploadState {
     );
   }
 }
+
+// services/admin_firestore_service.dart - Update the updateBookingStatus method
+Future<void> updateBookingStatus({
+  required String bookingId,
+  required String status,
+  required String adminResponse,
+  required String userId,
+}) async {
+  final firestore = FirebaseFirestore.instance;
+  final batch = firestore.batch();
+
+  // Update in admin collection
+  final adminRef = firestore
+      .collection('admin')
+      .doc('bookings')
+      .collection('allBookings')
+      .doc(bookingId);
+  
+  batch.update(adminRef, {
+    'status': status,
+    'adminResponse': adminResponse,
+    'updatedAt': FieldValue.serverTimestamp(),
+    'respondedAt': FieldValue.serverTimestamp(),
+  });
+
+  // Update in user's collection - include adminResponse
+  final userRef = firestore
+      .collection('users')
+      .doc(userId)
+      .collection('bookings')
+      .doc(bookingId);
+  
+  batch.update(userRef, {
+    'status': status,
+    'adminResponse': adminResponse, // Make sure this is included
+    'updatedAt': FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+}
+final adminBookingsProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
+  final adminService = ref.watch(adminFirestoreServiceProvider);
+  
+  return adminService.getAllBookings().map((snapshot) {
+    return snapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        ...doc.data(),
+      };
+    }).toList();
+  });
+});
+final bookingStatsProvider = StreamProvider<Map<String, int>>((ref) {
+  final adminService = ref.watch(adminFirestoreServiceProvider);
+  
+  return adminService.getAllBookings().map((snapshot) {
+    final docs = snapshot.docs;
+    final total = docs.length;
+    final pending = docs.where((doc) => doc['status'] == 'pending').length;
+    final approved = docs.where((doc) => doc['status'] == 'approved').length;
+    final rejected = docs.where((doc) => doc['status'] == 'rejected').length;
+
+    return {
+      'total': total,
+      'pending': pending,
+      'approved': approved,
+      'rejected': rejected,
+    };
+  });
+});
 
 class ImageUploadNotifier extends StateNotifier<ImageUploadState> {
   ImageUploadNotifier() : super(ImageUploadState());

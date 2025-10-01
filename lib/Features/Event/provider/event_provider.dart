@@ -33,21 +33,27 @@ final eventCategoriesProvider = Provider<List<EventCategory>>((ref) {
   ];
 });
 
-final firestoreServiceProvider = Provider<FirestoreService>((ref) {
-  return FirestoreService();
+final userFirestoreServiceProvider = Provider<UserFirestoreService>((ref) {
+  return UserFirestoreService();
 });
 
 final eventBookingProvider = StateNotifierProvider<EventBookingNotifier, EventBooking>((ref) {
   return EventBookingNotifier();
 });
 
+final userBookingsProvider = StreamProvider.family<List<EventBooking>, String>((ref, userId) {
+  final firestoreService = ref.watch(userFirestoreServiceProvider);
+  return firestoreService.getUserBookings(userId);
+});
 class EventBookingNotifier extends StateNotifier<EventBooking> {
   EventBookingNotifier() : super(
     EventBooking(
-      bookingId: '', // Empty initially, will be set when saving to Firebase
+      bookingId: '', 
+
       categoryId: '',
       selectedDate: DateTime.now(),
       selectedTime: const TimeOfDay(hour: 18, minute: 0),
+       endingTime: const TimeOfDay(hour: 11, minute: 0),
       numberOfGuests: 1,
       eventType: '',
       createdAt: DateTime.now(),
@@ -63,7 +69,18 @@ class EventBookingNotifier extends StateNotifier<EventBooking> {
   }
 
   void setTime(TimeOfDay time) {
+
     state = state.copyWith(selectedTime: time);
+   if (state.endingTime.hour == 11 && state.endingTime.minute == 0) { // Only if it's the default
+      final endingTime = TimeOfDay(
+        hour: (time.hour + 1) % 24,
+        minute: time.minute,
+      );
+      state = state.copyWith(endingTime: endingTime);
+    }
+  }
+   void setEndingTime(TimeOfDay endingTime) {
+    state = state.copyWith(endingTime: endingTime);
   }
 
   void setGuests(int guests) {
@@ -90,6 +107,7 @@ class EventBookingNotifier extends StateNotifier<EventBooking> {
       categoryId: '',
       selectedDate: DateTime.now(),
       selectedTime: const TimeOfDay(hour: 18, minute: 0),
+      endingTime: const TimeOfDay(hour: 11, minute: 0),
       numberOfGuests: 1,
       eventType: '',
       createdAt: DateTime.now(),

@@ -1,6 +1,7 @@
 import 'package:coffee_shop/Authentication/auth_wrapper.dart';
 import 'package:coffee_shop/Authentication/phone_auth.dart';
 import 'package:coffee_shop/Features/Event/presentation/event_book.dart';
+import 'package:coffee_shop/Features/Event/presentation/user_bookingscreen.dart';
 import 'package:coffee_shop/Features/Home/Home.dart';
 import 'package:coffee_shop/Features/Home/presentation/onlineorder_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/topbestseller_screen.dart';
@@ -28,6 +29,10 @@ final GoRouter approuter = GoRouter(
     // GoRoute(path: '/', builder: (context, state) => const PhoneOTPVerification()),
     // GoRoute(path: '/', builder: (context, state) => const MainAppere()),
     GoRoute(path: '/Newarraivles', builder: (context, state) => NewArrivals()),
+    GoRoute(
+      path: '/my-bookings',
+      builder: (context, state) => const UserBookingsScreen(),
+    ),
     GoRoute(
       path: '/sessional-items',
       builder: (context, state) => Sessionalitems(),

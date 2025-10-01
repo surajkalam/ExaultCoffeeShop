@@ -55,8 +55,8 @@ class _FavoriteIconState extends ConsumerState<FavoriteIcon> {
             width: width*0.02,
             height:height*0.02,
             child: CircularProgressIndicator(
-              strokeWidth: 0.0,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+              strokeWidth: 0.1,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           )
         : IconButton(

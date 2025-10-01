@@ -3,11 +3,16 @@ import 'package:coffee_shop/Features/firebasestoredata/provider/admin_provider.d
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AdminDashboard extends ConsumerWidget {
+class AdminDashboard extends ConsumerStatefulWidget {
   const AdminDashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends ConsumerState<AdminDashboard> {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SingleChildScrollView(
@@ -20,7 +25,7 @@ class AdminDashboard extends ConsumerWidget {
             const SizedBox(height: 32),
             
             // Quick Actions Section
-            _buildQuickActionsSection(ref,context),
+            _buildQuickActionsSection(ref, context),
             
             const SizedBox(height: 32),
             
@@ -122,15 +127,15 @@ class AdminDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickActionsSection(WidgetRef ref,BuildContext context) {
+  Widget _buildQuickActionsSection(WidgetRef ref, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Quick Actions',
           style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
             color: Color(0xFF5D4037),
           ),
         ),
@@ -138,7 +143,7 @@ class AdminDashboard extends ConsumerWidget {
         Text(
           'Manage your coffee shop items and promotions',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 12,
             color: Colors.grey[600],
           ),
         ),
@@ -150,11 +155,12 @@ class AdminDashboard extends ConsumerWidget {
           crossAxisCount: _getCrossAxisCount(context),
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
+          childAspectRatio: 0.85, // Adjusted aspect ratio to prevent overflow
           children: [
             _buildActionCard(
               'Items Store',
               Icons.coffee,
-              Color(0xFF6D4C41), // Brown
+              Color(0xFF6D4C41),
               'Manage all coffee items, update prices, and modify details',
               Icons.arrow_forward,
               () => ref.read(adminStateProvider.notifier).state = 1,
@@ -162,7 +168,7 @@ class AdminDashboard extends ConsumerWidget {
             _buildActionCard(
               'Offers Store',
               Icons.local_offer,
-              Color(0xFFE65100), // Orange
+              Color(0xFFE65100),
               'Create and manage special offers and discounts',
               Icons.arrow_forward,
               () => ref.read(adminStateProvider.notifier).state = 2,
@@ -170,7 +176,7 @@ class AdminDashboard extends ConsumerWidget {
             _buildActionCard(
               'Vouchers Store',
               Icons.card_giftcard,
-              Color(0xFF2E7D32), // Green
+              Color(0xFF2E7D32),
               'Generate and manage discount vouchers',
               Icons.arrow_forward,
               () => ref.read(adminStateProvider.notifier).state = 3,
@@ -178,7 +184,7 @@ class AdminDashboard extends ConsumerWidget {
             _buildActionCard(
               'New Arrivals',
               Icons.new_releases,
-              Color(0xFF1565C0), // Blue
+              Color(0xFF1565C0),
               'Add and manage new menu items',
               Icons.arrow_forward,
               () => ref.read(adminStateProvider.notifier).state = 4,
@@ -186,7 +192,7 @@ class AdminDashboard extends ConsumerWidget {
             _buildActionCard(
               'Seasonal Items',
               Icons.coffee_maker,
-              Color(0xFF6A1B9A), // Purple
+              Color(0xFF6A1B9A),
               'Manage seasonal specials and limited items',
               Icons.arrow_forward,
               () => ref.read(adminStateProvider.notifier).state = 5,
@@ -194,7 +200,7 @@ class AdminDashboard extends ConsumerWidget {
             _buildActionCard(
               'Add Offer Cart',
               Icons.add_shopping_cart,
-              Color(0xFFC62828), // Red
+              Color(0xFFC62828),
               'Create special offer combinations and bundles',
               Icons.arrow_forward,
               () => _showComingSoonDialog(context),
@@ -252,53 +258,56 @@ class AdminDashboard extends ConsumerWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding:  EdgeInsets.only(left: 14,right: 14,bottom: 6,top: 12), // Reduced padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, // Added to prevent expansion
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10), // Reduced padding
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 24, color: color),
+                child: Icon(icon, size: 20, color: color), // Reduced icon size
               ),
-              const SizedBox(height: 16),
+               SizedBox(height: 8), // Reduced spacing
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14, 
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[800],
                 ),
+                 maxLines: 1, 
+                  overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
+               SizedBox(height: 2), 
               Expanded(
                 child: Text(
                   description,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 10, // Reduced font size
                     color: Colors.grey[600],
-                    height: 1.4,
+                    height: 1.3,
                   ),
-                  maxLines: 3,
+                  maxLines: 2, // Increased to 2 lines
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8), // Reduced spacing
               Row(
                 children: [
                   Text(
                     'Get Started',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 10, // Reduced font size
                       color: color,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  Icon(trailingIcon, size: 16, color: color),
+                  const SizedBox(width: 2),
+                  Icon(trailingIcon, size: 10, color: color), // Reduced icon size
                 ],
               ),
             ],

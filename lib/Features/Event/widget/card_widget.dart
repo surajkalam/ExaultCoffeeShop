@@ -31,8 +31,8 @@ class _CategoryCardState extends State<CategoryCard>
 
   static const Color primaryAccent = Color(0xFF6D4C41);
   static const Color secondaryAccent = Color(0xFFD7CCC8);
-  static const Color vibrantBlue = Color(0xFF2196F3);
-  static const Color vibrantPurple = Color(0xFF9C27B0);
+  static const Color vibrantBlue = Color(0xFF60B5FF);
+  static const Color vibrantPurple = Color(0xFFDB8DD0);
   static const Color vibrantGreen = Color(0xFF4CAF50);
   static const Color vibrantOrange = Color(0xFFFF9800);
 
@@ -58,6 +58,7 @@ class _CategoryCardState extends State<CategoryCard>
 
     _colorAnimation = ColorTween(
       begin: Colors.transparent,
+      // ignore: deprecated_member_use
       end: _getCategoryColor().withOpacity(0.1),
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
@@ -119,12 +120,14 @@ class _CategoryCardState extends State<CategoryCard>
                 boxShadow: [
                   if (widget.isSelected)
                     BoxShadow(
+                      // ignore: deprecated_member_use
                       color: _getCategoryColor().withOpacity(0.3),
                       blurRadius: 20,
                       spreadRadius: 2,
                       offset: const Offset(0, 5),
                     ),
                   BoxShadow(
+                    // ignore: deprecated_member_use
                     color: colorScheme.shadow.withOpacity(0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
@@ -159,7 +162,9 @@ class _CategoryCardState extends State<CategoryCard>
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: widget.isSelected
+                            // ignore: deprecated_member_use
                             ? _getCategoryColor().withOpacity(0.3)
+                            // ignore: deprecated_member_use
                             : colorScheme.outlineVariant.withOpacity(0.2),
                         width: widget.isSelected ? 2 : 1.2,
                       ),
@@ -195,6 +200,7 @@ class _CategoryCardState extends State<CategoryCard>
                                       ? LinearGradient(
                                           colors: [
                                             _getCategoryColor(),
+                                            // ignore: deprecated_member_use
                                             _getCategoryColor().withOpacity(
                                               0.7,
                                             ),
@@ -202,9 +208,11 @@ class _CategoryCardState extends State<CategoryCard>
                                         )
                                       : LinearGradient(
                                           colors: [
+                                            // ignore: deprecated_member_use
                                             colorScheme.primary.withOpacity(
                                               0.1,
                                             ),
+                                            // ignore: deprecated_member_use
                                             colorScheme.secondary.withOpacity(
                                               0.1,
                                             ),
@@ -215,9 +223,11 @@ class _CategoryCardState extends State<CategoryCard>
                                   ), // Slightly reduced
                                   border: Border.all(
                                     color: widget.isSelected
+                                        // ignore: deprecated_member_use
                                         ? _getCategoryColor().withOpacity(0.3)
                                         : colorScheme.outlineVariant
-                                              .withOpacity(0.3),
+                                          // ignore: deprecated_member_use
+                                          .withOpacity(0.3),
                                     width: 1.5,
                                   ),
                                 ),
@@ -234,6 +244,7 @@ class _CategoryCardState extends State<CategoryCard>
                                       shadows: widget.isSelected
                                           ? [
                                               Shadow(
+                                                // ignore: deprecated_member_use
                                                 color: Colors.white.withOpacity(
                                                   0.5,
                                                 ),
@@ -256,6 +267,7 @@ class _CategoryCardState extends State<CategoryCard>
                                           LinearGradient(
                                             colors: [
                                               _getCategoryColor(),
+                                              // ignore: deprecated_member_use
                                               _getCategoryColor().withOpacity(
                                                 0.8,
                                               ),
@@ -321,6 +333,7 @@ class _CategoryCardState extends State<CategoryCard>
                                       boxShadow: [
                                         BoxShadow(
                                           color: _getCategoryColor()
+                                              // ignore: deprecated_member_use
                                               .withOpacity(0.4),
                                           blurRadius: 6, // Reduced
                                           offset: const Offset(0, 2), // Reduced
@@ -354,15 +367,19 @@ class _CategoryCardState extends State<CategoryCard>
 class DateTimePicker extends StatelessWidget {
   final DateTime selectedDate;
   final TimeOfDay selectedTime;
+  final TimeOfDay endingTime;
   final Function(DateTime) onDateChanged;
   final Function(TimeOfDay) onTimeChanged;
+  final Function(TimeOfDay) onEndingTimeChanged;
 
   const DateTimePicker({
     super.key,
     required this.selectedDate,
     required this.selectedTime,
+    required this.endingTime,
     required this.onDateChanged,
     required this.onTimeChanged,
+    required this.onEndingTimeChanged,
   });
 
   static const Color primaryColor = Color(0xFF6D4C41);
@@ -373,7 +390,7 @@ class DateTimePicker extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -411,6 +428,7 @@ class DateTimePicker extends StatelessWidget {
                 'Event Schedule',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   // fontSize: 14,
+                  // ignore: deprecated_member_use
                   color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
                 ),
               ),
@@ -422,7 +440,9 @@ class DateTimePicker extends StatelessWidget {
               children: [
                 Expanded(child: _buildDatePicker(context, colorScheme)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildTimePicker(context, colorScheme)),
+                Expanded(child: _buildTimePicker(context, colorScheme, true)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildTimePicker(context, colorScheme, false)),
               ],
             ),
           ),
@@ -447,6 +467,7 @@ class DateTimePicker extends StatelessWidget {
                   onPrimary: Colors.white,
                   surface: colorScheme.onSecondaryFixed,
                   onSurface: colorScheme.primary,
+                  // ignore: deprecated_member_use
                   onSurfaceVariant: colorScheme.primary.withOpacity(
                     0.7,
                   ), // For subtitle text
@@ -464,6 +485,7 @@ class DateTimePicker extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                   headerHelpStyle: TextStyle(
+                    // ignore: deprecated_member_use
                     color: colorScheme.primary.withOpacity(
                       0.7,
                     ), // "Mon, Sep 29" text color
@@ -482,11 +504,13 @@ class DateTimePicker extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
+              // ignore: deprecated_member_use
               colorScheme.secondaryFixed.withOpacity(0.15), // Orange tint
+              // ignore: deprecated_member_use
               colorScheme.primaryFixed.withOpacity(0.08), // Green tint
             ],
             begin: Alignment.topLeft,
@@ -495,17 +519,20 @@ class DateTimePicker extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
+            // ignore: deprecated_member_use
             color: colorScheme.secondaryFixed.withOpacity(0.4),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: colorScheme.secondaryFixed.withOpacity(0.2),
               blurRadius: 12,
               offset: const Offset(0, 4),
               spreadRadius: 1,
             ),
             BoxShadow(
+              // ignore: deprecated_member_use
               color: colorScheme.shadow.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
@@ -515,29 +542,34 @@ class DateTimePicker extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      // ignore: deprecated_member_use
+                      color: primaryColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.calendar_today,
+                      color: primaryColor,
+                      size: 14,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.calendar_today,
-                    color: primaryColor,
-                    size: 14,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Date',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 11,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      softWrap: true,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Date',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    // fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 8),
             AnimatedSwitcher(
@@ -557,12 +589,20 @@ class DateTimePicker extends StatelessWidget {
     );
   }
 
-  Widget _buildTimePicker(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildTimePicker(
+    BuildContext context,
+    ColorScheme colorScheme,
+    bool isStartTime,
+  ) {
+    final currentTime = isStartTime ? selectedTime : endingTime;
+    final onTap = isStartTime ? onTimeChanged : onEndingTimeChanged;
+    final label = isStartTime ? 'Start' : 'End';
+    final icon = isStartTime ? Icons.play_arrow : Icons.stop;
     return InkWell(
       onTap: () async {
         final TimeOfDay? picked = await showTimePicker(
           context: context,
-          initialTime: selectedTime,
+          initialTime: currentTime,
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
@@ -619,36 +659,45 @@ class DateTimePicker extends StatelessWidget {
             );
           },
         );
-        if (picked != null && picked != selectedTime) {
-          onTimeChanged(picked);
+        if (picked != null && picked != currentTime) {
+          onTap(picked);
         }
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.only(left: 6, right: 6, bottom: 6, top: 10),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              colorScheme.secondaryFixed.withOpacity(0.15), // Orange tint
-              colorScheme.primaryFixed.withOpacity(0.08), // Green tint
+              // ignore: deprecated_member_use
+              colorScheme.secondaryFixed.withOpacity(isStartTime ? 0.15 : 0.1),
+              // ignore: deprecated_member_use
+              colorScheme.primaryFixed.withOpacity(isStartTime ? 0.08 : 0.05),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            stops: [0.0, 0.7],
+            stops: const [0.0, 0.7],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: colorScheme.secondaryFixed.withOpacity(0.4),
-            width: 2,
+            // ignore: deprecated_member_use
+            color: colorScheme.secondaryFixed.withOpacity(
+              isStartTime ? 0.4 : 0.3,
+            ),
+            width: isStartTime ? 2 : 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.secondaryFixed.withOpacity(0.2),
+              // ignore: deprecated_member_use
+              color: colorScheme.secondaryFixed.withOpacity(
+                isStartTime ? 0.2 : 0.1,
+              ),
               blurRadius: 12,
               offset: const Offset(0, 4),
               spreadRadius: 1,
             ),
             BoxShadow(
+              // ignore: deprecated_member_use
               color: colorScheme.shadow.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
@@ -660,20 +709,20 @@ class DateTimePicker extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.access_time, color: primaryColor, size: 14),
-                SizedBox(width: 8),
+                Icon(icon, color: primaryColor, size: 14),
+                SizedBox(width: 4),
                 Text(
-                  'Time',
+                  label,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    // fontSize: 14,
                     color: Theme.of(context).colorScheme.primary,
+                    fontWeight: isStartTime ? FontWeight.w500 : FontWeight.w500,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
+              duration: Duration(milliseconds: 400),
               transitionBuilder: (child, animation) {
                 return ScaleTransition(
                   scale: animation,
@@ -681,33 +730,60 @@ class DateTimePicker extends StatelessWidget {
                 );
               },
               child: Text(
-                selectedTime.format(context),
-                key: ValueKey(selectedTime),
+                currentTime.format(context),
+                key: ValueKey(currentTime),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  // fontSize: 14,
                   color: Theme.of(context).colorScheme.primary,
+                  fontWeight: isStartTime ? FontWeight.w600 : FontWeight.w500,
+                ),
+                softWrap: true,
+              ),
+            ),
+            // Duration indicator for end time
+            if (!isStartTime) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  // ignore: deprecated_member_use
+                  color: colorScheme.primaryFixed.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _calculateDuration(),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 10,
+                    // ignore: deprecated_member_use
+                    color: colorScheme.primary.withOpacity(0.7),
+                  ),
                 ),
               ),
-            ),
-            // Animated chevron icon
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                // ignore: deprecated_member_use
-                color: colorScheme.secondaryFixed.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: colorScheme.secondaryFixed,
-                size: 14,
-              ),
-            ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  String _calculateDuration() {
+    final startMinutes = selectedTime.hour * 60 + selectedTime.minute;
+    final endMinutes = endingTime.hour * 60 + endingTime.minute;
+    final totalMinutes = endMinutes - startMinutes;
+
+    if (totalMinutes < 0) {
+      return 'Next day';
+    }
+
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes % 60;
+
+    if (hours > 0 && minutes > 0) {
+      return '$hours:${minutes}m';
+    } else if (hours > 0) {
+      return '${hours}h';
+    } else {
+      return '${minutes}m';
+    }
   }
 
   String _getWeekday(int weekday) {
