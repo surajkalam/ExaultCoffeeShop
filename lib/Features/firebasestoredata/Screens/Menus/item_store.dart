@@ -22,43 +22,50 @@ class _ItemsStoreScreenState extends ConsumerState<ItemsStoreScreen> {
   void initState() {
     super.initState();
     // Fetch all items when screen loads
-     WidgetsBinding.instance.addPostFrameCallback((_) {
-    _fetchItems();
-    // Check Firebase structure
-    ref.read(firebaseStructureProvider.future);
-  });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchItems();
+      // Check Firebase structure
+      ref.read(firebaseStructureProvider.future);
+    });
   }
 
   // In your items_store_screen.dart, just use this simple fetch:
-void _fetchItems() {
-  log('🔄 Fetching items from Firebase...');
-  if (_selectedCategory == 'All') {
-    ref.read(itemsProvider.notifier).fetchAllItems();
-  } else {
-    ref.read(itemsProvider.notifier).fetchItemsByCategory(_selectedCategory);
+  void _fetchItems() {
+    log('🔄 Fetching items from Firebase...');
+    if (_selectedCategory == 'All') {
+      ref.read(itemsProvider.notifier).fetchAllItems();
+    } else {
+      ref.read(itemsProvider.notifier).fetchItemsByCategory(_selectedCategory);
+    }
   }
-}
 
   void _onSearchChanged(String query) {
     log('🔍 Searching for: $query');
-    setState(() {}); // Trigger rebuild for filtered list
+    setState(() {});
   }
 
   List<Item> _getFilteredItems(List<Item> allItems) {
     final searchQuery = _searchController.text.toLowerCase();
-    
-    var filteredItems = _selectedCategory == 'All' 
-        ? allItems 
-        : allItems.where((item) => 
-            item.category.toLowerCase() == _selectedCategory.toLowerCase()
-          ).toList();
+
+    var filteredItems = _selectedCategory == 'All'
+        ? allItems
+        : allItems
+              .where(
+                (item) =>
+                    item.category.toLowerCase() ==
+                    _selectedCategory.toLowerCase(),
+              )
+              .toList();
 
     if (searchQuery.isNotEmpty) {
-      filteredItems = filteredItems.where((item) =>
-        item.name.toLowerCase().contains(searchQuery) ||
-        item.type.toLowerCase().contains(searchQuery) ||
-        item.category.toLowerCase().contains(searchQuery)
-      ).toList();
+      filteredItems = filteredItems
+          .where(
+            (item) =>
+                item.name.toLowerCase().contains(searchQuery) ||
+                item.type.toLowerCase().contains(searchQuery) ||
+                item.category.toLowerCase().contains(searchQuery),
+          )
+          .toList();
     }
 
     log('📊 Displaying ${filteredItems.length} filtered items');
@@ -69,17 +76,17 @@ void _fetchItems() {
   Widget build(BuildContext context) {
     final itemsState = ref.watch(itemsProvider);
     final categories = ref.watch(categoriesProvider);
-    
+
     // Debug output
     ref.read(debugProvider);
-    
+
     final displayedItems = _getFilteredItems(itemsState.items);
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title:  Text('Items Store Management'),
-        backgroundColor:  Color(0xFF6D4C41),
+        title: Text('Items Store Management'),
+        backgroundColor: Color(0xFF6D4C41),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -94,25 +101,20 @@ void _fetchItems() {
         children: [
           // Search Bar
           _buildSearchBar(),
-          
           // Category Filter
           _buildCategoryFilter(categories),
-          
           // Statistics Cards
           _buildStatistics(displayedItems),
-          
           // Items List
-          Expanded(
-            child: _buildItemsList(itemsState, displayedItems),
-          ),
+          Expanded(child: _buildItemsList(itemsState, displayedItems)),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddItem(context),
         backgroundColor: const Color(0xFF6D4C41),
         foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
         tooltip: 'Add New Item',
+        child: Icon(Icons.add),
       ),
     );
   }
@@ -126,8 +128,8 @@ void _fetchItems() {
         onChanged: _onSearchChanged,
         decoration: InputDecoration(
           hintText: 'Search items by name, type, or category...',
-          hintStyle: TextStyle(color: Colors.black,fontSize: 12),
-          prefixIcon: const Icon(Icons.search,color: Colors.black),
+          hintStyle: TextStyle(color: Colors.black, fontSize: 12),
+          prefixIcon: const Icon(Icons.search, color: Colors.black),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(
@@ -156,7 +158,7 @@ void _fetchItems() {
 
   Widget _buildCategoryFilter(List<String> categories) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(top: 16, left: 10, right: 10, bottom: 10),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,24 +166,32 @@ void _fetchItems() {
           const Text(
             'Filter by Category',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
               color: Color(0xFF5D4037),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 10),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: categories.map((category) {
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: EdgeInsets.only(right: 8),
                   child: FilterChip(
-                    label: Text(category),
+                    label: Text(
+                      category,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                     selected: _selectedCategory == category,
-                    selectedColor: const Color(0xFF6D4C41),
+                    selectedColor: Color(0xFF6D4C41),
                     labelStyle: TextStyle(
-                      color: _selectedCategory == category ? Colors.white : Colors.black,
+                      color: _selectedCategory == category
+                          ? Colors.white
+                          : Colors.black,
                     ),
                     onSelected: (selected) {
                       setState(() {
@@ -204,37 +214,63 @@ void _fetchItems() {
     final totalValue = items.fold(0.0, (sum, item) => sum + item.price);
     final averagePrice = totalItems > 0 ? totalValue / totalItems : 0;
     final activeItems = items.where((item) => item.isAvailable).length;
-
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(10),
       color: Colors.white,
       child: Row(
         children: [
-          _buildStatCard('Total Items', totalItems.toString(), Icons.inventory, const Color(0xFF6D4C41)),
-          const SizedBox(width: 12),
-          _buildStatCard('Active Items', activeItems.toString(), Icons.check_circle, const Color(0xFF2E7D32)),
-          const SizedBox(width: 12),
-          _buildStatCard('Total Value', '\$${totalValue.toStringAsFixed(2)}', Icons.attach_money, const Color(0xFF1565C0)),
-          const SizedBox(width: 12),
-          _buildStatCard('Avg Price', '\$${averagePrice.toStringAsFixed(2)}', Icons.trending_up, const Color(0xFFE91E63)),
+          _buildStatCard(
+            'Total Items',
+            totalItems.toString(),
+            Icons.inventory,
+            const Color(0xFF6D4C41),
+          ),
+          SizedBox(width: 12),
+          _buildStatCard(
+            'Active Items',
+            activeItems.toString(),
+            Icons.check_circle,
+            const Color(0xFF2E7D32),
+          ),
+          SizedBox(width: 12),
+          _buildStatCard(
+            'Total Value',
+            '\$${totalValue.toStringAsFixed(2)}',
+            Icons.attach_money,
+            const Color(0xFF1565C0),
+          ),
+          SizedBox(width: 12),
+          _buildStatCard(
+            'Avg Price',
+            '\$${averagePrice.toStringAsFixed(2)}',
+            Icons.trending_up,
+            const Color(0xFFE91E63),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
+          // ignore: deprecated_member_use
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
+          // ignore: deprecated_member_use
           border: Border.all(color: color.withOpacity(0.3)),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(width: 8),
+            Icon(icon, size: 12, color: color),
+            SizedBox(width: 2),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,17 +278,14 @@ void _fetchItems() {
                   Text(
                     value,
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w400,
                       color: color,
                     ),
                   ),
                   Text(
                     title,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 6, color: Colors.grey[600]),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -322,7 +355,7 @@ void _fetchItems() {
             const Icon(Icons.coffee_outlined, size: 80, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              _selectedCategory == 'All' 
+              _selectedCategory == 'All'
                   ? 'No items found in Firebase'
                   : 'No items in $_selectedCategory category',
               style: const TextStyle(fontSize: 18, color: Colors.grey),
@@ -365,6 +398,7 @@ void _fetchItems() {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Item Image
             Container(
@@ -388,8 +422,6 @@ void _fetchItems() {
               ),
             ),
             const SizedBox(width: 16),
-            
-            // Item Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,15 +432,18 @@ void _fetchItems() {
                         child: Text(
                           item.name,
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       if (!item.isAvailable)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
@@ -428,12 +463,9 @@ void _fetchItems() {
                   const SizedBox(height: 4),
                   Text(
                     item.type,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       Icon(Icons.star, size: 16, color: Colors.amber),
@@ -442,47 +474,52 @@ void _fetchItems() {
                         item.rating.toStringAsFixed(1),
                         style: const TextStyle(fontSize: 12),
                       ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.attach_money, size: 16, color: Colors.green),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 8),
+                      // // Icon(Icons.attach_money, size: 16, color: Colors.green),
+                      // const SizedBox(width: 2),
                       Text(
                         '\$${item.price.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontSize: 14, 
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Colors.green
+                          color: Colors.green,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.access_time, size: 16, color: Colors.blue),
-                      const SizedBox(width: 4),
-                      // Text(
-                      //   '${item.preparationTime}min',
-                      //   style: const TextStyle(fontSize: 12),
-                      // ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _getCategoryColor(item.category).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          item.category.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: _getCategoryColor(item.category),
-                            fontWeight: FontWeight.bold,
+                      SizedBox(
+                        width: 55,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getCategoryColor(
+                              item.category,
+                            ).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Center(
+                            child: Text(
+                              item.category.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: _getCategoryColor(item.category),
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
                       ),
                       const Spacer(),
                       Text(
-                        'ID: ${item.id?.substring(0, 8) ?? "N/A"}',
+                        'ID:${item.id?.substring(0, 8) ?? "N/A"}',
                         style: const TextStyle(
                           fontSize: 10,
                           color: Colors.grey,
@@ -494,8 +531,6 @@ void _fetchItems() {
                 ],
               ),
             ),
-            
-            // Action Buttons
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
               onSelected: (value) => _handleMenuAction(value, item),
@@ -504,13 +539,11 @@ void _fetchItems() {
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(Icons.edit, size: 18, color: Colors.brown,),
+                      Icon(Icons.edit, size: 18, color: Colors.brown),
                       SizedBox(width: 8),
-                      Text('Edit',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.brown,
-                      ),
+                      Text(
+                        'Edit',
+                        style: TextStyle(fontSize: 14, color: Colors.brown),
                       ),
                     ],
                   ),
@@ -525,16 +558,15 @@ void _fetchItems() {
                         color: item.isAvailable ? Colors.orange : Colors.green,
                       ),
                       const SizedBox(width: 8),
-                      Text(item.isAvailable 
-                      ? 'Not Available' 
-                      : 'Mark Available',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: item.isAvailable 
-                         ? Colors.orange
-                          : Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      Text(
+                        item.isAvailable ? 'Not Available' : 'Mark Available',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: item.isAvailable
+                              ? Colors.orange
+                              : Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -601,50 +633,46 @@ void _fetchItems() {
   void _toggleItemAvailability(Item item) {
     log('🔄 Toggling availability for ${item.name}');
     final updatedItem = item.copyWith(isAvailable: !item.isAvailable);
-    
-    ref.read(itemsProvider.notifier).updateItem(updatedItem, item.category)
-      .then((_) {
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${item.name} marked as ${updatedItem.isAvailable ? 'Available' : 'Sold Out'}'
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
-      })
-      .catchError((e) {
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error updating item: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      });
-  }
 
-  void _navigateToAddItem(BuildContext context) {
+    ref
+        .read(itemsProvider.notifier)
+        .updateItem(updatedItem, item.category)
+        .then((_) {
+          // ignore: use_build_context_synchronously
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '${item.name} marked as ${updatedItem.isAvailable ? 'Available' : 'Sold Out'}',
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        })
+        .catchError((e) {
+          // ignore: use_build_context_synchronously
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error updating item: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        });
+  }
+  void _navigateToAddItem(BuildContext context){
     log('➕ Navigating to Add Item screen');
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddEditItemScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddEditItemScreen()),
     ).then((_) {
       // Refresh items after adding/editing
       _fetchItems();
     });
   }
-
   void _navigateToEditItem(BuildContext context, Item item) {
     log('✏️ Navigating to Edit Item screen for ${item.name}');
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => AddEditItemScreen(item: item),
-      ),
+      MaterialPageRoute(builder: (context) => AddEditItemScreen(item: item)),
     ).then((_) {
       // Refresh items after editing
       _fetchItems();
@@ -657,7 +685,9 @@ void _fetchItems() {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Item'),
-        content: Text('Are you sure you want to delete "${item.name}"? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete "${item.name}"? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -679,7 +709,9 @@ void _fetchItems() {
   Future<void> _deleteItem(Item item) async {
     log('🗑️ Deleting item: ${item.name}');
     try {
-      await ref.read(itemsProvider.notifier).deleteItem(item.id!, item.category);
+      await ref
+          .read(itemsProvider.notifier)
+          .deleteItem(item.id!, item.category);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('"${item.name}" deleted successfully'),

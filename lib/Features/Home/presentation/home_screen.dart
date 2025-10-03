@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop/Features/Home/presentation/newarriavls_screen.dart';
+import 'package:coffee_shop/Features/Home/presentation/sessionalitem_screen.dart';
 import 'package:coffee_shop/Features/Home/provider/itemtype_provider.dart';
 import 'package:coffee_shop/Features/Login_Screen/Signupscreen.dart';
 import 'package:coffee_shop/Features/Login_Screen/login_screen.dart';
@@ -123,10 +124,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      // context.push('/offer-data');
-                      context.push('/voucher-data');
-                    },
+                    onTap: () {},
                     child: _buildCarouselSection(
                       height,
                       width,
@@ -145,9 +143,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   SizedBox(height: height * 0.03),
                   GestureDetector(
-                    onTap: () async {
-                      context.push('/admin');
-                    },
+                    onTap: () async {},
                     child: vouchersection(height, width, voucherlist),
                   ),
                   SizedBox(height: height * 0.03),
@@ -157,7 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     colorScheme,
                     textTheme,
                   ),
-                  SizedBox(height: height * 0.03),
+                  SizedBox(height: height * 0.01),
                   _buildSectionTitle(
                     "Top 10 Bestsellers",
                     "In Hyderabad",
@@ -191,7 +187,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   SizedBox(height: height * 0.03),
                   _buildSectionTitle(
-                    "New Arrivals",
+                    "New Arrivals 🌟",
                     "Seasonal specials",
                     colorScheme,
                     textTheme,
@@ -204,13 +200,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     textTheme,
                   ),
                   SizedBox(height: height * 0.03),
-                  _buildNewArrivalsSection(
-                    height,
-                    width,
+                  _buildSectionTitle(
+                    "Sessional Speciales ☕",
+                    "Seasonal specials",
                     colorScheme,
                     textTheme,
                   ),
-                  SizedBox(height: height * 0.03),
+                  SizedBox(height: height * 0.02),
+                  _buildSessionalSection(height, width, colorScheme, textTheme),
+                  SizedBox(height: height * 0.06),
                 ],
               ),
             ),
@@ -989,10 +987,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               );
             }
-
             // Take only first 2 items for home screen preview
-            final previewItems = items.take(2).toList();
-
+            final previewItems = items.take(1).toList();
             return Column(
               children: previewItems
                   .map(
@@ -1033,6 +1029,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     double width,
     String imagePath,
     String title,
+
     String description,
     String tag,
     ColorScheme colorscheme,
@@ -1181,6 +1178,173 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+
+  Widget _buildSessionalSection(
+    double height,
+    double width,
+    ColorScheme colorscheme,
+    TextTheme textTheme,
+  ) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final sessionalAsync = ref.watch(seasonalItemsProvider);
+
+        return sessionalAsync.when(
+          loading: () => Center(
+            child: CircularProgressIndicator(color: AppColors.primaryDark),
+          ),
+          error: (error, stack) => Center(child: Container()),
+          data: (items) {
+            if (items.isEmpty) {
+              return Container();
+            }
+            // Take only first 2 items for home screen preview
+            final previewItems = items.take(1).toList();
+            return Column(
+              children: previewItems
+                  .map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: _buildSessionalItem(
+                        height,
+                        width,
+                        item.image,
+                        item.name,
+                        item.description,
+                        "🌟 Sessional Items",
+                        colorscheme,
+                        textTheme,
+                        onTap: () {
+                          // Navigate to all new arrivals screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SessionalItemsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                  .toList(),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSessionalItem(
+    double height,
+    double width,
+    String imagePath,
+    String title,
+    String description,
+    String tag,
+    ColorScheme colorscheme,
+    TextTheme texttheme, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: height * 0.2,
+        width: width - 20,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              offset: Offset(0, 4),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      title,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                    SizedBox(height: height * 0.004),
+                    Text(
+                      description,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Spacer(),
+                    _buildViewMoreButton(
+                      height,
+                      width,
+                      colorscheme,
+                      texttheme,
+                      isSmall: true,
+                      onTap: onTap,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                child: Image.network(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  height: height * 0.2,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: Icon(Icons.fastfood, color: Colors.grey[500]),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCarouselBannerItem(
     double width,
     double height,
@@ -1283,63 +1447,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getProductsNewarrivalsAsMap() async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    try {
-      log('Fetching new arrivals products');
+  // Future<List<Map<String, dynamic>>> getProductsNewarrivalsAsMap() async {
+  //   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //   try {
+  //     log('Fetching new arrivals products');
 
-      final QuerySnapshot productsSnapshot = await firestore
-          .collection('items')
-          .doc('Newarrivals')
-          .collection('items')
-          .get();
+  //     final QuerySnapshot productsSnapshot = await firestore
+  //         .collection('items')
+  //         .doc('Newarrivals')
+  //         .collection('items')
+  //         .get();
 
-      log('Total products found: ${productsSnapshot.docs.length}');
+  //     log('Total products found: ${productsSnapshot.docs.length}');
 
-      // Convert to List<Map<String, dynamic>>
-      final List<Map<String, dynamic>> products = productsSnapshot.docs.map((
-        doc,
-      ) {
-        final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id; // Include the document ID
-        return data;
-      }).toList();
+  //     // Convert to List<Map<String, dynamic>>
+  //     final List<Map<String, dynamic>> products = productsSnapshot.docs.map((
+  //       doc,
+  //     ) {
+  //       final data = doc.data() as Map<String, dynamic>;
+  //       data['id'] = doc.id; // Include the document ID
+  //       return data;
+  //     }).toList();
 
-      log('Successfully fetched ${products.length} products');
-      return products;
-    } catch (e) {
-      log('Error getting products: $e');
-      rethrow;
-    }
-  }
+  //     log('Successfully fetched ${products.length} products');
+  //     return products;
+  //   } catch (e) {
+  //     log('Error getting products: $e');
+  //     rethrow;
+  //   }
+  // }
 
-  Future<List<Map<String, dynamic>>> getproductsessionalAsMap() async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    try {
-      log('Fetching new arrivals products');
+  // Future<List<Map<String, dynamic>>> getproductsessionalAsMap() async {
+  //   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //   try {
+  //     log('Fetching new arrivals products');
 
-      final QuerySnapshot productsSnapshot = await firestore
-          .collection('items')
-          .doc('Sessional')
-          .collection('items')
-          .get();
+  //     final QuerySnapshot productsSnapshot = await firestore
+  //         .collection('items')
+  //         .doc('Sessional')
+  //         .collection('items')
+  //         .get();
 
-      log('Total products found: ${productsSnapshot.docs.length}');
+  //     log('Total products found: ${productsSnapshot.docs.length}');
 
-      // Convert to List<Map<String, dynamic>>
-      final List<Map<String, dynamic>> products = productsSnapshot.docs.map((
-        doc,
-      ) {
-        final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id; // Include the document ID
-        return data;
-      }).toList();
+  //     // Convert to List<Map<String, dynamic>>
+  //     final List<Map<String, dynamic>> products = productsSnapshot.docs.map((
+  //       doc,
+  //     ) {
+  //       final data = doc.data() as Map<String, dynamic>;
+  //       data['id'] = doc.id; // Include the document ID
+  //       return data;
+  //     }).toList();
 
-      log('Successfully fetched ${products.length} products');
-      return products;
-    } catch (e) {
-      log('Error getting products: $e');
-      rethrow;
-    }
-  }
+  //     log('Successfully fetched ${products.length} products');
+  //     return products;
+  //   } catch (e) {
+  //     log('Error getting products: $e');
+  //     rethrow;
+  //   }
+  // }
 }

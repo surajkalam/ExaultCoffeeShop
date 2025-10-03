@@ -275,14 +275,14 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 14, 
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[800],
                 ),
-                 maxLines: 1, 
+                 maxLines: 1,
                   overflow: TextOverflow.ellipsis,
               ),
-               SizedBox(height: 2), 
+               SizedBox(height: 2),
               Expanded(
                 child: Text(
                   description,
@@ -307,7 +307,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                     ),
                   ),
                   const SizedBox(width: 2),
-                  Icon(trailingIcon, size: 10, color: color), // Reduced icon size
+                  Icon(trailingIcon, size: 10, color: color),
                 ],
               ),
             ],

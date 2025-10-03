@@ -5,25 +5,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widget/widgets.dart';
+
 class UserBookingsScreen extends ConsumerWidget {
   const UserBookingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(currentUserProvider);
-    final userBookings = ref.watch(userBookingsProvider(currentUser?.uid ?? ''));
-
+    final userBookings = ref.watch(userBookingsProvider(currentUser?.phoneNumber ?? ''));
+     var  height=MediaQuery.of(context).size.height;
+    var width=MediaQuery.of(context).size.width;
+     final colorScheme = Theme.of(context).colorScheme;
+      final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Bookings'),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-      ),
+     appBar:  CustomAppBar(
+    titleText: 'Book Your Event',
+    centerTitle: true,
+    ),
       body: userBookings.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
         data: (bookings) {
           if (bookings.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No bookings found',
                 style: TextStyle(fontSize: 16, color: Colors.grey),
@@ -32,11 +37,11 @@ class UserBookingsScreen extends ConsumerWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding:EdgeInsets.all(16),
             itemCount: bookings.length,
             itemBuilder: (context, index) {
               final booking = bookings[index];
-              return _buildBookingCard(booking, context);
+              return _buildBookingCard(booking, context,height,width,colorScheme,textTheme);
             },
           );
         },
@@ -45,61 +50,66 @@ class UserBookingsScreen extends ConsumerWidget {
   }
 
   // ignore: strict_top_level_inference
-  Widget _buildBookingCard(booking, BuildContext context) {
+  Widget _buildBookingCard(booking, BuildContext context,double height, double width,ColorScheme colorScheme,TextTheme textTheme) {
   return Card(
-    margin: const EdgeInsets.only(bottom: 16),
+    margin: EdgeInsets.only(bottom: height * 0.017),
     elevation: 2,
     child: Padding(
-      padding: const EdgeInsets.all(16),
+      padding:  EdgeInsets.all(width*0.018),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with status
           Row(
             children: [
-              _buildStatusIcon(booking.status),
-              const SizedBox(width: 12),
+              _buildStatusIcon(booking.status,height, width),
+              SizedBox(width: width*0.014),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      booking.eventType,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        booking.eventType,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
-                    Text(
-                      _formatDate(booking.selectedDate),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
+                      Text(
+                        _formatDate(booking.selectedDate),
+                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          // ignore: deprecated_member_use
+                          color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                 ),
               ),
-              _buildStatusBadge(booking.status),
+              _buildStatusBadge(context ,booking.status,width, height),
             ],
           ),
           
-          const SizedBox(height: 16),
+           SizedBox(height:height*0.008),
           
           // Booking Details
-          _buildDetailRow('Time', 
-            '${booking.selectedTime.format(context)} - ${booking.endingTime.format(context)}'
+          _buildDetailRow(context ,'Time', 
+            '${booking.selectedTime.format(context)} - ${booking.endingTime.format(context)}',
+            width,height
+
           ),
-          _buildDetailRow('Guests', '${booking.numberOfGuests} people'),
-          _buildDetailRow('Category', _getCategoryName(booking.categoryId)),
+          _buildDetailRow(context,'Guests', '${booking.numberOfGuests} people',width,height),
+          _buildDetailRow(context,'Category', _getCategoryName(booking.categoryId),width,height),
           
           if (booking.specialRequests?.isNotEmpty == true) ...[
-            _buildDetailRow('Special Requests', booking.specialRequests!),
+            _buildDetailRow(context,'Special Requests', booking.specialRequests!,width,height),
           ],
           
           // Admin Response (if available)
           if (booking.status != 'pending' && booking.adminResponse?.isNotEmpty == true) ...[
-            const SizedBox(height: 12),
+            SizedBox(height:height*0.01),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding:  EdgeInsets.all(width*0.018),
               decoration: BoxDecoration(
                 // ignore: deprecated_member_use
                 color: _getStatusColor(booking.status).withOpacity(0.1),
@@ -121,7 +131,7 @@ class UserBookingsScreen extends ConsumerWidget {
                         color: _getStatusColor(booking.status),
                         size: 16,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: width*0.014),
                       Text(
                         booking.status == 'approved'
                           ? 'Approved!' 
@@ -133,16 +143,20 @@ class UserBookingsScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    booking.adminResponse!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSecondaryFixed,
+                   SizedBox(height: height * 0.002),
+                    Text(
+                      booking.adminResponse!,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        // ignore: deprecated_member_use
+                        color: Theme.of(
+                          context,
+                        // ignore: deprecated_member_use
+                        ).colorScheme.primaryContainer.withOpacity(0.5),
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ),
         ],
           if (booking.additionalOptions.isNotEmpty) ...[
@@ -188,9 +202,9 @@ Widget _buildAdditionalOptions(Map<String, dynamic> additionalOptions, BuildCont
   );
 }
 
-  Widget _buildStatusIcon(String status) {
+  Widget _buildStatusIcon(String status,double width, double height) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding:  EdgeInsets.all(width*0.01),
       decoration: BoxDecoration(
         // ignore: deprecated_member_use
         color: _getStatusColor(status).withOpacity(0.2),
@@ -204,40 +218,49 @@ Widget _buildAdditionalOptions(Map<String, dynamic> additionalOptions, BuildCont
     );
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge( BuildContext context , String status,double width, double height) {
     final color = _getStatusColor(status);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding:  EdgeInsets.symmetric(horizontal: width*0.014, vertical: height*0.008),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color),
       ),
       child: Text(
         status.toUpperCase(),
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
+       style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color:color,
+            fontSize: 10,
+          ),
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context,String label, String value,double width, double height) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding:  EdgeInsets.only(bottom: height*0.008),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: width*0.3,
             child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              '$label :',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            fontSize: 11,
+          ),
             ),
           ),
-          Expanded(child: Text(value)),
+          Expanded(child: Text(value,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            fontSize: 11,
+          ),
+          ),
+          ),
         ],
       ),
     );

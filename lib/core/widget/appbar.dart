@@ -44,7 +44,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       : null
       ),
       actions: actions,
-      backgroundColor: backgroundColor ?? const Color.fromARGB(255, 81, 140, 240),
+      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
       elevation: elevation ?? Theme.of(context).appBarTheme.elevation,
       centerTitle: centerTitle,
       toolbarHeight: toolbarHeight,

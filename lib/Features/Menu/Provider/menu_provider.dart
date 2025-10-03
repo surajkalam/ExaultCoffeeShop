@@ -437,25 +437,5 @@ final  menuCategoriesProvider = FutureProvider<Map<String, List<Map<String, dyna
     "price":'450',
   },
     ],
-    // 'vadapav': [
-    //   {
-    //     "name": "vadapav",
-    //     "type": "vadapav",
-    //     "rating": 4.6,
-    //     "image": 'Assets/Images/Pumpkin-Spice-Latte.png',
-    //     "description": "Crispy fries tossed in spicy peri peri seasoning.",
-    //     "price":'450',
-    //   },
-    // ],
-    // 'panipuri': [
-    //   {
-    //     "name": "paipuri",
-    //     "type": "panipuri",
-    //     "rating": 4.6,
-    //     "image": 'Assets/Images/Pumpkin-Spice-Latte.png',
-    //     "description": "Crispy fries tossed in spicy peri peri seasoning.",
-    //     "price":'450',
-    //   },
-    // ],
 };
 }
