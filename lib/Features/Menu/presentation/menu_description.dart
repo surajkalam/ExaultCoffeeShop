@@ -26,7 +26,7 @@ class CategoryItemsScreen extends ConsumerWidget {
   
     log('welcome menu description screen');
     final currentUser = ref.watch(currentUserProvider);
-    log('Current user: ${currentUser?.uid ?? "No user logged in"}, '
+    log('Current user: ${currentUser?.phoneNumber?? "No user logged in"}, '
         'Phone: ${currentUser?.phoneNumber ?? "N/A"}');
     log('categoryName : $categoryName');
     final height = MediaQuery.of(context).size.height;
@@ -171,7 +171,7 @@ class CategoryItemsScreen extends ConsumerWidget {
           Stack(
             children: [
               Container(
-                height: height * 0.12,
+                height: height * 0.133,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
@@ -220,10 +220,9 @@ class CategoryItemsScreen extends ConsumerWidget {
               ),
             ],
           ),
-
           // Product Details Section
           Padding(
-            padding: const EdgeInsets.all(1.0),
+            padding:EdgeInsets.only(left: width * 0.01,right: width * 0.01),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -249,9 +248,7 @@ class CategoryItemsScreen extends ConsumerWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-
                 SizedBox(height: 6),
-
                 // Price and Add to Cart Button
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: width * 0.03),

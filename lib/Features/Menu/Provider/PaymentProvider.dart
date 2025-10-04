@@ -15,7 +15,7 @@ final razorpayServiceProvider = Provider<RazorpayService>((ref) {
 });
 final paymentProvider = StateNotifierProvider<PaymentNotifier, PaymentState>((ref) {
   return PaymentNotifier(
-    ref as WidgetRef, // Pass ref
+    ref,
     ref.read(razorpayServiceProvider),
     FirebaseFirestore.instance,
     FirebaseAuth.instance, // Still needed for initialization, but user access will use provider
@@ -55,17 +55,17 @@ class PaymentState {
 }
 
 class PaymentNotifier extends StateNotifier<PaymentState> {
-   final WidgetRef _ref;
+  final Ref _ref;
   final RazorpayService _razorpayService;
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
   // ignore: unused_field
-  late String _currentUserEmail;
+  late String _currentUser;
   late Map<String, dynamic> _paymentData;
 
   PaymentNotifier(this._ref,this._razorpayService, this._firestore, this._auth)
     : super(PaymentState()) {
-    _currentUserEmail = _auth.currentUser?.email ?? 'guest';
+    _currentUser = _auth.currentUser?.phoneNumber ?? 'guest';
   }
 
   Future<void> initiatePayment({
@@ -96,6 +96,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
         orderId: orderId,
         onSuccess: _handlePaymentSuccess,
         onError: _handlePaymentError,
+        contact: _currentUser
       );
 
       state = state.copyWith(isLoading: false);
@@ -134,7 +135,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
 
       state = state.copyWith(
         paymentSuccess: true,
-        paymentData: completedPaymentData, // SET paymentData HERE
+        paymentData: completedPaymentData,
         successMessage: 'Payment successful! Order ID: $orderId',
       );
     } catch (e, stackTrace) {
@@ -162,7 +163,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     final usernumber = FirebaseAuth.instance.currentUser;
     late final phoneNumber = usernumber?.phoneNumber;
     // final phoneNumber = user.phoneNumber!;
-    final userId = user.uid;
+    final userId =phoneNumber;
     // final phoneNumber = user.phoneNumber;
 
     // Reference to the user document
@@ -178,7 +179,6 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
         'lastLogin': FieldValue.serverTimestamp(),
       });
     }
-
     // Save payment under the user's payments subcollection
     await userDocRef.collection('payments').doc(paymentDetails['orderId']).set({
       ...paymentDetails,
@@ -186,7 +186,6 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
       'userPhone': phoneNumber,
       'timestamp': FieldValue.serverTimestamp(),
     });
-
     await _firestore
         .collection('users')
         .doc(phoneNumber)
@@ -196,64 +195,15 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
 
     log('Payment details saved to Firebase successfully');
   }
-  //   Future<void> _savePaymentToFirebase(
-  //   Map<String, dynamic> paymentDetails,
-  // ) async {
-  //   try {
-  //     final user = FirebaseAuth.instance.currentUser;
-  //     if (user == null) {
-  //       throw Exception('User not logged in');
-  //     }
-
-  //     final userId = user.uid;
-  //     final phoneNumber = user.phoneNumber;
-
-  //     // Reference to the user document
-  //     final userDocRef = _firestore.collection('users').doc(userId);
-
-  //     // Check if user document exists, if not create it
-  //     final userDoc = await userDocRef.get();
-  //     if (!userDoc.exists) {
-  //       await userDocRef.set({
-  //         'userId': userId,
-  //         'phoneNumber': phoneNumber,
-  //         'createdAt': FieldValue.serverTimestamp(),
-  //         'lastLogin': FieldValue.serverTimestamp(),
-  //       });
-  //     }
-
-  //     // Save payment under the user's payments subcollection
-  //     await userDocRef
-  //         .collection('payments')
-  //         .doc(paymentDetails['orderId'])
-  //         .set({
-  //           ...paymentDetails,
-  //           'userId': userId,
-  //           'userPhone': phoneNumber,
-  //           'timestamp': FieldValue.serverTimestamp(),
-  //         });
-
-  //     log('Payment saved successfully for user: $userId');
-  //   } catch (e) {
-  //     log('Error saving payment: $e');
-  //     throw Exception('Payment save failed: $e');
-  //   }
-  // }
-
   void _handlePaymentError(PaymentFailureResponse response) {
     state = state.copyWith(
       error: 'Payment failed: ${response.message}',
       paymentSuccess: false,
     );
   }
-
   void clearError() {
     state = state.copyWith(error: null);
   }
-
-  // void clearSuccess() {
-  //   state = state.copyWith(successMessage: null, paymentSuccess: false);
-  // }
   void clearSuccess() {
     state = state.copyWith(
       successMessage: null,
@@ -261,7 +211,6 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
       paymentData: null,
     );
   }
-
   // In your PaymentNotifier class
   Map<String, dynamic> getLastPaymentData() {
     return _paymentData;

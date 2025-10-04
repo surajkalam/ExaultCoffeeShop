@@ -4,6 +4,7 @@ import 'package:coffee_shop/Features/Profile/Provider/profile_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/core.dart';
 
 class RewarsScreens extends ConsumerWidget {
@@ -47,7 +48,7 @@ class RewarsScreens extends ConsumerWidget {
               height: height,
               width: width,
               onTap: () {
-                // context.push('/offer');
+                context.push('/navbar');
               },
               colorscheme: colorScheme,
               texttheme: textTheme,
@@ -62,6 +63,9 @@ class RewarsScreens extends ConsumerWidget {
               width: width,
               colorscheme: colorScheme,
               texttheme: textTheme,
+              onTap: (){
+                 context.push('/app-reference');
+              }
             ),
             SizedBox(height: height * 0.03),
             _buildSectionTitle("Rewards", colorScheme, textTheme),

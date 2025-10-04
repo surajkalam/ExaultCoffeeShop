@@ -230,7 +230,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       leading: _buildLocationButton(width, colorscheme),
       automaticallyImplyLeading: true,
       title: Text(
-        "Exault Coffee",
+        "Exult Coffee",
         style: textTheme.titleMedium?.copyWith(color: colorscheme.primary),
       ),
       actions: _buildAppBarActions(colorscheme),
@@ -601,7 +601,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     try {
-      log('Fetching products for category: $category');
+      // log('Fetching products for category: $category');
 
       final QuerySnapshot categorySnapshot = await firestore
           .collection('items')
@@ -609,14 +609,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           .collection(category)
           .get();
 
-      log('Total products found in $category: ${categorySnapshot.docs.length}');
+      // log('Total products found in $category: ${categorySnapshot.docs.length}');
 
       // Print each product's data to console
-      for (final doc in categorySnapshot.docs) {
-        log('Product ID: ${doc.id}');
-        log('Product data: ${doc.data()}');
-        log('-----------------------------');
-      }
+      // for (final doc in categorySnapshot.docs) {
+      //   log('Product ID: ${doc.id}');
+      //   log('Product data: ${doc.data()}');
+      //   log('-----------------------------');
+      // }
 
       final List<Product> allProducts = categorySnapshot.docs.map((productDoc) {
         final data = productDoc.data() as Map<String, dynamic>;
@@ -624,9 +624,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         data['id'] = productDoc.id;
         return Product.fromMap(data);
       }).toList();
-      log(
-        'Successfully fetched ${allProducts.length} products from category $category',
-      );
+      // log(
+      //   'Successfully fetched ${allProducts.length} products from category $category',
+      // );
       return allProducts;
     } catch (e) {
       log('Error getting products: $e');
@@ -744,7 +744,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           final selectedCategory = category.isNotEmpty
                               ? category
                               : categories[index];
-                          log('Category tapped: ${categories[index]}');
+                          // log('Category tapped: ${categories[index]}');
                           getProductsByCategory(
                             selectedCategory,
                             '1757264051191711',

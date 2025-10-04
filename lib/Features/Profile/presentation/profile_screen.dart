@@ -37,7 +37,7 @@ class ProfileScreen extends ConsumerWidget {
     final selectedImage = ref.watch(selectedImageProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
- final currentPoints = ref.watch(currentPointsProvider);
+    final currentPoints = ref.watch(currentPointsProvider);
 
     return Scaffold(
       backgroundColor: colorScheme.onPrimary,

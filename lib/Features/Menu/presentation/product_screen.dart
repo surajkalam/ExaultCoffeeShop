@@ -866,7 +866,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     if (appliedVoucherId != null) {
       log('Applied Voucher: $appliedVoucherId');
     }
-
     if (user == null || user.phoneNumber == null) {
       log('User not authenticated with phone number');
       ScaffoldMessenger.of(context).showSnackBar(

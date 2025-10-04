@@ -27,6 +27,7 @@ void main() async {
   //   webProvider: ReCaptchaV3Provider('6LdxOMErAAAAAH6WkDCHztkWBmB0DocRPoZX3E1G'),
   //   appleProvider: AppleProvider.appAttest,
   // );
+   debugPrint = (String? message, {int? wrapWidth}) {};
   runApp(ProviderScope(child: MainApp()));
 }
 

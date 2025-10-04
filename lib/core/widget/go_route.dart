@@ -5,6 +5,7 @@ import 'package:coffee_shop/Features/Event/presentation/user_bookingscreen.dart'
 import 'package:coffee_shop/Features/Home/Home.dart';
 import 'package:coffee_shop/Features/Home/presentation/onlineorder_screen.dart';
 import 'package:coffee_shop/Features/Home/presentation/topbestseller_screen.dart';
+import 'package:coffee_shop/Features/Profile/presentation/coffeereferscreen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/order_screen.dart';
 import 'package:coffee_shop/Features/Profile/presentation/voucher_screen.dart';
 import 'package:coffee_shop/Features/firebasestoredata/Screens/widget/admin_pannel.dart';
@@ -54,7 +55,7 @@ final GoRouter approuter = GoRouter(
       builder: (context, state) => GiveVoucherScreen(),
     ),
     GoRoute(path: '/navbar', builder: (context, state) => const MainAppere()),
-    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    // GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
 
     GoRoute(
       path: '/menu/:category',
@@ -166,6 +167,10 @@ final GoRouter approuter = GoRouter(
     //   path: '/scratch-cart',
     //   builder: (context, state) => const ScratchCardsScreen(),
     // ),
+     GoRoute(
+      path: '/app-reference',
+      builder: (context, state) => const CoffeeReferFriendScreen(),
+    ),
     GoRoute(
       path: '/chat-screen',
       builder: (context, state) => const TwaktoScreen(),
