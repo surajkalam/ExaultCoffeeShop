@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:coffee_shop/Authentication/provider/current_user.dart';
 import 'package:coffee_shop/Features/Menu/Provider/favorite_provider.dart';
+import 'package:coffee_shop/Features/Menu/Provider/menu_provider.dart';
 import 'package:coffee_shop/Features/Menu/Provider/paymentProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -592,6 +593,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     ColorScheme colorscheme,
     TextTheme texttheme,
   ) {
+    final pricingResult = ref.watch(
+      productPricingProvider(totalPrice.toDouble()),
+    );
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -669,29 +673,84 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 ),
               ),
               Text(
-                '₹${totalPrice.toStringAsFixed(2)}',
+                '₹${pricingResult.subtotal.toStringAsFixed(2)}',
                 style: texttheme.bodyMedium?.copyWith(
                   color: colorscheme.primary,
                 ),
               ),
             ],
           ),
-
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Delivery Charges:',
+                style: texttheme.bodySmall?.copyWith(
+                  color: colorscheme.secondary,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                '₹${pricingResult.deliveryCharge.toStringAsFixed(2)}',
+                style: texttheme.bodyMedium?.copyWith(
+                  color: colorscheme.primary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Service Charges:',
+                style: texttheme.bodySmall?.copyWith(
+                  color: colorscheme.secondary,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                '₹${pricingResult.serviceCharge.toStringAsFixed(2)}',
+                style: texttheme.bodyMedium?.copyWith(
+                  color: colorscheme.primary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Taxes (10%):',
+                style: texttheme.bodySmall?.copyWith(
+                  color: colorscheme.secondary,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                '₹${pricingResult.tax.toStringAsFixed(2)}',
+                style: texttheme.bodyMedium?.copyWith(
+                  color: colorscheme.primary,
+                ),
+              ),
+            ],
+          ),
           // Discount if applied
-          if (appliedVoucherId != null) ...[
+          if (pricingResult.voucherDiscountPercentage > 0) ...[
             SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Discount ($voucherDiscount%):',
+                  'Discount (${pricingResult.voucherDiscountPercentage}%):',
                   style: texttheme.bodySmall?.copyWith(
                     color: Colors.green,
                     fontSize: 12,
                   ),
                 ),
                 Text(
-                  '-₹${discountAmount.toStringAsFixed(2)}',
+                  '-₹${pricingResult.discountAmount.toStringAsFixed(2)}',
                   style: texttheme.bodyMedium?.copyWith(color: Colors.green),
                 ),
               ],
@@ -715,7 +774,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 ),
               ),
               Text(
-                '₹${finalPrice.toStringAsFixed(2)}',
+                '₹${pricingResult.grandTotal.toStringAsFixed(2)}',
                 style: texttheme.bodyMedium?.copyWith(
                   color: colorscheme.secondaryFixed,
                   fontWeight: FontWeight.bold,
@@ -783,12 +842,18 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     TextTheme texttheme,
   ) {
     final isLoggedIn = ref.watch(isLoggedInProvider);
+
+    // Calculate final pricing
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: isLoggedIn
             ? () {
                 final user = ref.read(currentUserProvider);
+                final subtotal = price * quantity;
+                final pricingResult = ref.watch(
+                  productPricingProvider(subtotal.toDouble()),
+                );
                 if (user == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -809,7 +874,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     product,
                     quantity,
                     price,
-                    finalPrice,
+                    pricingResult.grandTotal, // Pass the correct grand total
+                    colorscheme,
+                    texttheme,
                   );
                 }
               }
@@ -853,19 +920,40 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     Map<String, dynamic> product,
     int quantity,
     num price,
-    num finalPrice,
+    num finalPrice, // This is the old parameter - we'll replace it
+    ColorScheme colorscheme,
+    TextTheme texttheme,
   ) async {
     final user = ref.read(currentUserProvider);
     final appliedVoucherId = ref.read(appliedVoucherIdProvider);
 
+    // Calculate the current pricing using the provider
+    final subtotal = price * quantity;
+    final pricingResult = ref.read(productPricingProvider(subtotal.toDouble()));
+
     log('User: ${user?.uid ?? "No user"}');
     log('Phone: ${user?.phoneNumber ?? "N/A"}');
     log('=== Checkout Details ===');
-    log('Total Items: $quantity');
-    log('Total Price: ₹${finalPrice.toStringAsFixed(2)}');
+    log('Product: ${product['name']}');
+    log('Quantity: $quantity');
+    log('Unit Price: ₹${price.toStringAsFixed(2)}');
+    log('Subtotal: ₹${pricingResult.subtotal.toStringAsFixed(2)}');
+    log('Delivery: ₹${pricingResult.deliveryCharge.toStringAsFixed(2)}');
+    log('Service: ₹${pricingResult.serviceCharge.toStringAsFixed(2)}');
+    log('Tax: ₹${pricingResult.tax.toStringAsFixed(2)}');
+
+    if (pricingResult.voucherDiscountPercentage > 0) {
+      log(
+        'Discount: ${pricingResult.voucherDiscountPercentage}% (-₹${pricingResult.discountAmount.toStringAsFixed(2)})',
+      );
+    }
+
+    log('Grand Total: ₹${pricingResult.grandTotal.toStringAsFixed(2)}');
+
     if (appliedVoucherId != null) {
       log('Applied Voucher: $appliedVoucherId');
     }
+
     if (user == null || user.phoneNumber == null) {
       log('User not authenticated with phone number');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -882,18 +970,13 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
     final orderId = 'ORD_${DateTime.now().millisecondsSinceEpoch}';
 
-    log('=== Checkout Details ===');
-    log('Product: ${product['name']}');
-    log('Quantity: $quantity');
-    log('Unit Price: ₹${price.toStringAsFixed(2)}');
-    log('Final Price: ₹${finalPrice.toStringAsFixed(2)}');
-
     try {
       log('Initiating payment...');
       await ref
           .read(paymentProvider.notifier)
           .initiatePayment(
-            amount: finalPrice,
+            amount:
+                pricingResult.grandTotal, // Use pricing provider's grand total
             productName: product['name'],
             quantity: quantity,
             orderId: orderId,

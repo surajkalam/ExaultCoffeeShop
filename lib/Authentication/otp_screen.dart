@@ -63,7 +63,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final isLoading =
-        authState.isLoading || _isLoading; // Combined loading states
+        authState.isLoading || _isLoading;
      final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
@@ -76,73 +76,77 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         backgroundColor: colorScheme.surface,
       
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          // crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              'We’ve sent a 6-digit verification code to your number',
-              style: textTheme.bodyMedium?.copyWith(color: colorScheme.primaryContainer),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              ' ${widget.phoneNumber}',
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary,),
-            ),
-            SizedBox(height: 20,),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(6, (index) {
-                return SizedBox(
-                  width: 40,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: colorScheme.shadow),
-                    ),
-                    child: TextField(
-                      controller: _otpControllers[index],
-                      focusNode: _focusNodes[index],
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
-                      maxLength: 1,
-                      decoration: const InputDecoration(counterText: ''),
-                      onChanged: (value) {
-                        if (value.length == 1 && index < 5) {
-                          FocusScope.of(
-                            context,
-                          ).requestFocus(_focusNodes[index + 1]);
-                        } else if (value.isEmpty && index > 0) {
-                          FocusScope.of(
-                            context,
-                          ).requestFocus(_focusNodes[index - 1]);
-                        }
-
-                        // Auto-verification when all digits are entered
-                        if (value.isNotEmpty && index == 5) {
-                          String fullCode = _otpControllers
-                              .map((controller) => controller.text)
-                              .join();
-                          if (fullCode.length == 6) {
-                            _verifyOtp();
+      body: Stack(
+        children:[
+          Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            // crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'We’ve sent a 6-digit verification code to your number',
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.primaryContainer),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                ' ${widget.phoneNumber}',
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary,),
+              ),
+              SizedBox(height: 20,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(6, (index) {
+                  return SizedBox(
+                    width: 40,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: colorScheme.shadow),
+                      ),
+                      child: TextField(
+                        controller: _otpControllers[index],
+                        focusNode: _focusNodes[index],
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
+                        maxLength: 1,
+                        decoration: const InputDecoration(counterText: ''),
+                        onChanged: (value) {
+                          if (value.length == 1 && index < 5) {
+                            FocusScope.of(
+                              context,
+                            ).requestFocus(_focusNodes[index + 1]);
+                          } else if (value.isEmpty && index > 0) {
+                            FocusScope.of(
+                              context,
+                            ).requestFocus(_focusNodes[index - 1]);
                           }
-                        }
-                      },
+        
+                          // Auto-verification when all digits are entered
+                          if (value.isNotEmpty && index == 5) {
+                            String fullCode = _otpControllers
+                                .map((controller) => controller.text)
+                                .join();
+                            if (fullCode.length == 6) {
+                              _verifyOtp();
+                            }
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: 20),
-            isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _verifyOtp,
-                    child: const Text('Verify OTP'),
-                  ),
-          ],
+                  );
+                }),
+              ),
+              const SizedBox(height: 20),
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _verifyOtp,
+                      child: const Text('Verify OTP'),
+                    ),
+            ],
+          ),
         ),
+        ],
       ),
     );
   }
@@ -158,132 +162,4 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     super.dispose();
   }
 }
-// import 'dart:developer';
 
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter/material.dart';
-// import 'package:pinput/pinput.dart';
-
-// class OtpScreen extends StatefulWidget {
-//   const OtpScreen({super.key});
-
-//   @override
-//   State<OtpScreen> createState() => _OtpScreenState();
-// }
-
-// class _OtpScreenState extends State<OtpScreen> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: Padding(
-//         padding: const EdgeInsets.all(20.0),
-//         child: Column(
-//           mainAxisSize: MainAxisSize.max,
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Image.asset(
-//               "assets/img1.png",
-//               width: 200,
-//               height: 200,
-//             ),
-//             const SizedBox(
-//               height: 20,
-//             ),
-//             const Text(
-//               "Phone Verification",
-//               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-//             ),
-//             const SizedBox(
-//               height: 10,
-//             ),
-//             const Text(
-//               "We need to register your phone number before getting started",
-//               textAlign: TextAlign.center,
-//               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-//             ),
-//             const SizedBox(
-//               height: 20,
-//             ),
-//             Pinput(
-//               length: 6,
-//               autofocus: true,
-//               onCompleted: (value) async {
-//                 LoginController controller = LoginController();
-//                 if (await controller.signInWithOtp()) {
-//                   ScaffoldMessenger.of(context)
-//                       .showSnackBar(SnackBar(content: Text('Successful')));
-//                 }
-//               },
-//             ),
-//             const SizedBox(
-//               height: 20,
-//             ),
-//             ElevatedButton(
-//                 style: ButtonStyle(
-//                     shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(8))),
-//                     backgroundColor: const WidgetStatePropertyAll(
-//                         Color.fromARGB(255, 7, 192, 106)),
-//                     fixedSize: WidgetStatePropertyAll(
-//                         Size.fromWidth(MediaQuery.of(context).size.width))),
-//                 onPressed: () {},
-//                 child: const Text(
-//                   "Send the code",
-//                   style: TextStyle(color: Colors.white),
-//                 ))
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class LoginController {
-//   String verificationId = '';
-//   String phoneNumber = '';
-//   String smsCode = '';
-
-//   // phone verification
-//   Future<bool> verifyPhoneNumber(String phoneNumber) async {
-//     try {
-//       await FirebaseAuth.instance
-//         .verifyPhoneNumber(
-//           phoneNumber: phoneNumber,
-//           verificationCompleted: (PhoneAuthCredential credential) async {
-//             await FirebaseAuth.instance
-//               .signInWithCredential(credential);
-//           },
-//           verificationFailed: (FirebaseAuthException e) {},
-//           codeSent: (String verificationId, int? resendToken) {
-//             this.verificationId = verificationId;
-//             this.phoneNumber = phoneNumber;
-//           },
-//           codeAutoRetrievalTimeout: (String verificationId) {
-//             this.verificationId = verificationId;
-//           },
-//         );
-
-//       return true;
-//     } catch (exception) {
-//       log(exception.toString());
-//       return false;
-//     }
-//   }
-
-//   // otp verification
-//   Future<bool> signInWithOtp() async {
-//     PhoneAuthCredential credential = PhoneAuthProvider.credential(
-//       verificationId: verificationId,
-//       smsCode: smsCode,
-//     );
-//     try {
-//       await FirebaseAuth.instance
-//         .signInWithCredential(credential);
-
-//       return true;
-//     } catch (exception) {
-//       log(exception.toString());
-//       return false;
-//     }
-//   }
-// }

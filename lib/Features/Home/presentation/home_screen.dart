@@ -143,7 +143,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   SizedBox(height: height * 0.03),
                   GestureDetector(
-                    onTap: () async {},
+                    onTap: () async {
+                      context.push('/voucher-screen');
+                    },
                     child: vouchersection(height, width, voucherlist),
                   ),
                   SizedBox(height: height * 0.03),
@@ -336,7 +338,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(width: 1.5, color: colorscheme.onPrimary),
+          border: Border.all(width: 1.5, color: colorscheme.secondaryFixed),
         ),
         child: IconButton(
           icon: Icon(

@@ -1,4 +1,5 @@
 // give_voucher_screen.dart
+import 'package:coffee_shop/core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -14,10 +15,9 @@ class GiveVoucherScreen extends ConsumerWidget {
     final voucherData = ref.watch(voucherCategoriesProvider);
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Give Voucher'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+      appBar: CustomAppBar(
+         titleText: 'Voucher',
+         centerTitle: true,
       ),
       body: voucherData.when(
         loading: () => const Center(child: CircularProgressIndicator()),

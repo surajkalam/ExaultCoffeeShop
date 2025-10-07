@@ -24,7 +24,7 @@ final GoRouter approuter = GoRouter(
   debugLogDiagnostics: true,
   routes: [
     GoRoute(path: '/', builder: (context, state) => const AuthWrapper()),
-    GoRoute(path: '/admin', builder: (context, state) =>  AdminPanel()),
+    GoRoute(path: '/admin', builder: (context, state) => AdminPanel()),
     // GoRoute(path: '/', builder: (context, state) => const Datadstore()),
     // GoRoute(path: '/', builder: (context, state) => const PhoneAuth()),
     // GoRoute(path: '/', builder: (context, state) => const PhoneOTPVerification()),
@@ -44,7 +44,7 @@ final GoRouter approuter = GoRouter(
     ),
     GoRoute(
       path: '/offer-data',
-      builder: (context, state) =>OfferdataStoreScreen(),
+      builder: (context, state) => OfferdataStoreScreen(),
     ),
     GoRoute(
       path: '/login-screen',
@@ -55,8 +55,8 @@ final GoRouter approuter = GoRouter(
       builder: (context, state) => GiveVoucherScreen(),
     ),
     GoRoute(path: '/navbar', builder: (context, state) => const MainAppere()),
-    // GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
 
+    // GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/menu/:category',
       builder: (context, state) {
@@ -156,8 +156,9 @@ final GoRouter approuter = GoRouter(
     //     return RecentOrderScreen(paymentData: paymentData ?? {});
     //   },
     // ),
-    GoRoute(path: '/recent-order',
-    builder:(context,state)=>RecentOrdersScreen(),
+    GoRoute(
+      path: '/recent-order',
+      builder: (context, state) => RecentOrdersScreen(),
     ),
     GoRoute(
       path: '/datastore',
@@ -167,7 +168,7 @@ final GoRouter approuter = GoRouter(
     //   path: '/scratch-cart',
     //   builder: (context, state) => const ScratchCardsScreen(),
     // ),
-     GoRoute(
+    GoRoute(
       path: '/app-reference',
       builder: (context, state) => const CoffeeReferFriendScreen(),
     ),

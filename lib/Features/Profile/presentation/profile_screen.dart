@@ -552,13 +552,6 @@ class ProfileScreen extends ConsumerWidget {
     TextTheme texttheme,
   ) {
     final options = [
-      // {
-      //   'title': 'Rewards',
-      //   'icon': Iconsax.profile_circle,
-      //   'onTap': () =>
-      //       // _navigateToEditProfile(context, ref, colorscheme, texttheme),
-      //       context.push('/scratch-cart'),
-      // },
       {
         'title': 'Favorite Items',
         'icon': Iconsax.heart,
@@ -574,15 +567,20 @@ class ProfileScreen extends ConsumerWidget {
         'icon': Iconsax.card,
         'onTap': () => context.push('/billing-info'),
       },
-      {
-        'title': 'Recent Orders',
-        'icon': Iconsax.receipt,
-        'onTap': () => context.push('/recent-order'),
-      },
+      // {
+      //   'title': 'Recent Orders',
+      //   'icon': Iconsax.receipt,
+      //   'onTap': () => context.push('/recent-order'),
+      // },
       {
         'title': 'Help & Support',
         'icon': Iconsax.message_question,
         'onTap': () => context.push('/help-support'),
+      },
+      {
+        'title': 'Logout',
+        'icon': Icons.logout,
+        'onTap': () => _showLogoutConfirmation(context, colorscheme, ref),
       },
     ];
 
@@ -644,6 +642,106 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
+
+
+ Future<void> _showLogoutConfirmation(BuildContext context, ColorScheme colorscheme, WidgetRef ref) async {
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Icon(
+                Icons.logout_rounded,
+                size: 48,
+                color: Colors.orange,
+              ),
+              SizedBox(height: 16),
+              // Title
+              Text(
+                'Confirm Logout',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8),
+              // Message
+              Text(
+                'Are you sure you want to logout from your account?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              SizedBox(height: 24),
+              // Buttons
+              Row(
+                children: [
+                  // Cancel Button
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(color: Colors.grey),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  // Logout Button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        // FIX: Use the correct method call
+                        await ref.read(authNotifierProvider.notifier).signOut();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Logged out successfully'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Logout',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
   void _showImagePickerBottomSheet(
     BuildContext context,
